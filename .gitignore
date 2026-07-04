@@ -1,0 +1,4 @@
+Intermediate
+*.user
+.vs
+log.txt
