@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include "IconRenderer.h"
 
 #define WINDOW_TITLE_BAR_HEIGHT 24
 #define WINDOW_TAB_BAR_HEIGHT 24
@@ -77,6 +78,7 @@ struct WindowTree
     SDL_Window* m_window;
     SDL_Renderer* m_renderer;
     WindowLayout m_layout;
+    Recti m_windowedRect{ 100,100,640,512 };
     u32 m_windowID = 0;
     bool m_dirty = true;
     bool m_fullscreen = false;
@@ -90,4 +92,5 @@ struct WindowTree
     bool CheckForTab(int x, int y, WindowTabQuery& query);
     int CountVirtualWindows();
     void CollapseEmptyLayouts();
+    Icons FindIcon(int x, int y);
 };

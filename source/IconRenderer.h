@@ -4,6 +4,8 @@
 
 enum Icons
 {
+    Icon_None = -1,
+
     Icon_Close,
     Icon_Fullscreen,
     Icon_Windowed,

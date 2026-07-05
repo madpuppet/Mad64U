@@ -115,6 +115,14 @@ WindowTree* Application::FindWindow(int id)
     return nullptr;
 }
 
+SDL_DisplayID GetMouseDisplay()
+{
+    SDL_FPoint pt;
+    SDL_GetGlobalMouseState(&pt.x, &pt.y);
+    SDL_Point point{ (int)pt.x,(int)pt.y };
+    return SDL_GetDisplayForPoint(&point);
+}
+
 void Application::HandleEvent(SDL_Event* e)
 {
     switch (e->type)
@@ -130,23 +138,76 @@ void Application::HandleEvent(SDL_Event* e)
             {
                 tree->m_dirty = true;
 
+                auto icon = tree->FindIcon((int)e->button.x, (int)e->button.y);
+                if (icon != Icon_None)
+                {
+                    switch (icon)
+                    {
+                        case Icon_Fullscreen:
+                        {
+                            SDL_GetWindowPosition(tree->m_window, &tree->m_windowedRect.x, &tree->m_windowedRect.y);
+                            SDL_GetWindowSize(tree->m_window, &tree->m_windowedRect.w, &tree->m_windowedRect.h);
+
+                            SDL_Rect rect;
+                            SDL_GetDisplayBounds(GetMouseDisplay(), &rect);
+                            SDL_SetWindowPosition(tree->m_window, rect.x, rect.y);
+                            SDL_SetWindowSize(tree->m_window, rect.w, rect.h);
+                            SDL_SyncWindow(tree->m_window);
+                            tree->m_fullscreen = true;
+                            tree->m_dirty = true;
+                            tree->LayoutWindows();
+                        }
+                        break;
+
+                        case Icon_Windowed:
+                        {
+                            SDL_SetWindowPosition(tree->m_window, tree->m_windowedRect.x, tree->m_windowedRect.y);
+                            SDL_SetWindowSize(tree->m_window, tree->m_windowedRect.w, tree->m_windowedRect.h);
+                            SDL_SyncWindow(tree->m_window);
+                            tree->m_fullscreen = false;
+                            tree->m_dirty = true;
+                            tree->LayoutWindows();
+                        }
+                        break;
+
+                        case Icon_Close:
+                        {
+                            auto it = std::find(m_windowTrees.begin(), m_windowTrees.end(), tree);
+                            if (it != m_windowTrees.end()) {
+                                m_windowTrees.erase(it);
+                            }
+                            delete tree;
+                            if (m_windowTrees.empty())
+                                m_quit = true;
+                        }
+                        break;
+
+                        case Icon_Resize:
+                        {
+                            int w, h;
+                            SDL_GetWindowSizeInPixels(tree->m_window, &w, &h);
+                            if ((w - e->button.x) < 15 && (h - e->button.y) < 15)
+                            {
+                                m_mouseMode = MouseMode_ResizingWindow;
+                                m_mouseTree = tree;
+                                m_mouseGrabPos.x = (int)e->button.x;
+                                m_mouseGrabPos.y = (int)e->button.y;
+                                m_mouseInitial.x = w;
+                                m_mouseInitial.y = h;
+                                SDL_CaptureMouse(true);
+                                return;
+                            }
+                        }
+                        break;
+
+                        default:
+                            break;
+                    }
+                }
+
                 // check for resizing
                 if (!tree->m_fullscreen)
                 {
-                    int w, h;
-                    SDL_GetWindowSizeInPixels(tree->m_window, &w, &h);
-                    if ((w - e->button.x) < 15 && (h - e->button.y) < 15)
-                    {
-                        m_mouseMode = MouseMode_ResizingWindow;
-                        m_mouseTree = tree;
-                        m_mouseGrabPos.x = (int)e->button.x;
-                        m_mouseGrabPos.y = (int)e->button.y;
-                        m_mouseInitial.x = w;
-                        m_mouseInitial.y = h;
-                        SDL_CaptureMouse(true);
-                        return;
-                    }
-
                     // check for title bar
                     if (e->button.y < WINDOW_TITLE_BAR_HEIGHT)
                     {
@@ -192,6 +253,7 @@ void Application::HandleEvent(SDL_Event* e)
                     break;
 
                 case MouseMode_ResizingWindow:
+                    SDL_CaptureMouse(false);
                     m_mouseMode = MouseMode_Idle;
                     break;
 
@@ -245,6 +307,8 @@ void Application::HandleEvent(SDL_Event* e)
                         }
 
                         // delete the old window tree now..
+                        auto it = std::find(m_windowTrees.begin(), m_windowTrees.end(), m_mouseTree);
+                        m_windowTrees.erase(it);
                         delete m_mouseTree;
                         m_mouseTree = nullptr;
 

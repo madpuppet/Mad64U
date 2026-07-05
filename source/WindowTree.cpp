@@ -431,6 +431,7 @@ WindowTree::WindowTree(const Recti& area)
 WindowTree::~WindowTree()
 {
     Application::Instance().GetFontRenderer().FlushRenderer(m_renderer);
+    Application::Instance().GetIconRenderer().FlushRenderer(m_renderer);
 
     SDL_DestroyRenderer(m_renderer);
     SDL_DestroyWindow(m_window);
@@ -532,4 +533,26 @@ void WindowTree::CollapseEmptyLayouts()
     LayoutWindows();
 }
 
-
+Icons WindowTree::FindIcon(int x, int y)
+{
+    int w, h;
+    SDL_GetWindowSizeInPixels(m_window, &w, &h);
+    Recti closeIcon{ w - 12 - 8, WINDOW_TITLE_BAR_HEIGHT / 2 - 8, 16, 16 };
+    Recti windowIcon{ w - 30 - 8, WINDOW_TITLE_BAR_HEIGHT / 2 - 8, 16, 16 };
+    Recti resizeIcon{ w - 16, h - 16, 16, 16 };
+    if (closeIcon.Contains(x, y))
+        return Icon_Close;
+    if (m_fullscreen)
+    {
+        if (windowIcon.Contains(x, y))
+            return Icon_Windowed;
+    }
+    else
+    {
+        if (windowIcon.Contains(x, y))
+            return Icon_Fullscreen;
+        if (resizeIcon.Contains(x, y))
+            return Icon_Resize;
+    }
+    return Icon_None;
+}
