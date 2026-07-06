@@ -18,8 +18,11 @@ public:
     TTF_Font* GetUIFont() { return m_uiFont; }
     TTF_Font* GetTextFont() { return m_textFont; }
     const WindowDockQuery& GetWindowDockQuery() { return m_mouseDockQuery; }
+    const WindowSplitQuery& GetWindowSplitQuery() { return m_mouseSplitQuery; }
     CachedFontRenderer& GetFontRenderer() { return *m_fontRenderer; }
     IconRenderer& GetIconRenderer() { return *m_iconRenderer; }
+
+    bool IsMovingSplit() { return m_mouseMode == MouseMode_MovingSplit; }
 
 protected:
     std::vector<WindowTree*> m_windowTrees;
@@ -33,15 +36,18 @@ protected:
         MouseMode_Idle,
         MouseMode_MovingWindow,
         MouseMode_ResizingWindow,
-        MouseMode_SelectingTab
+        MouseMode_SelectingTab,
+        MouseMode_MovingSplit
     } m_mouseMode = MouseMode_Idle;
     Vec2i m_mouseGrabPos;
     Vec2i m_mouseInitial;
     WindowDockQuery m_mouseDockQuery;
     WindowTabQuery m_mouseTabQuery;
+    WindowSplitQuery m_mouseSplitQuery;
     WindowTree* m_mouseTree = nullptr;
     WindowTree* m_mouseOriginateTree = nullptr;
     CachedFontRenderer* m_fontRenderer;
     IconRenderer* m_iconRenderer;
+    WindowTree* m_activeTree = nullptr;
 };
 

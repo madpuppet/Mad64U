@@ -30,6 +30,7 @@ extern void Log(const char* pFormat, ...);
 inline int Max(int x, int y) { return x > y ? x : y; }
 inline int Min(int x, int y) { return x < y ? x : y; }
 inline int Abs(int x) { return x < 0 ? -x : x; }
+inline float Clamp(float val, float min, float max) { return val < min ? min : (val > max ? max : val); }
 
 inline size_t HashU16(size_t old, u16 value)
 {
@@ -51,6 +52,7 @@ struct Recti
     int x, y, w, h;
     bool Contains(int xx, int yy) { return xx >= x && xx < (x + w) && yy >= y && yy < (y + h); }
     bool Overlaps(const Recti& o) { return x < (o.x + o.w) && (x + w) >= o.x && y < (o.y + o.h) && (y + h); }
+    SDL_FRect AsSDLFRect() const { return SDL_FRect((float)x, (float)y, (float)w, (float)h); }
 };
 
 struct Vec2i

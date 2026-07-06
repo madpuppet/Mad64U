@@ -233,11 +233,15 @@
     <ClInclude Include="include\SDL3\SDL_version.h" />
     <ClInclude Include="include\SDL3\SDL_video.h" />
     <ClInclude Include="include\SDL3\SDL_vulkan.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="source\Application.h" />
     <ClInclude Include="source\CachedFontRenderer.h" />
     <ClInclude Include="source\common.h" />
     <ClInclude Include="source\IconRenderer.h" />
     <ClInclude Include="source\WindowTree.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Mad64.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

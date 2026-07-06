@@ -8,6 +8,15 @@
 #define WINDOW_CLIENT_BORDER 5
 #define TEXT_HBORDER 4
 
+struct WindowSplitQuery
+{
+    bool m_foundSplit = false;
+    struct WindowTree* m_tree;
+    struct WindowLayout* m_layout;
+    int m_grabOffset;
+    int m_splitPos;
+};
+
 struct WindowDockQuery
 {
     enum SplitPosition
@@ -68,6 +77,7 @@ struct WindowLayout
     bool CheckForTab(int x, int y, WindowTabQuery& query);
     int CountVirtualWindows();
     void CollapseEmptyLayouts();
+    bool CheckForSplit(int x, int y, WindowSplitQuery& query);
 };
 
 struct WindowTree
@@ -93,4 +103,8 @@ struct WindowTree
     int CountVirtualWindows();
     void CollapseEmptyLayouts();
     Icons FindIcon(int x, int y);
+    bool CheckForSplit(int x, int y, WindowSplitQuery& query);
+
+    void MakeFullscreen();
+    void MakeWindowed();
 };

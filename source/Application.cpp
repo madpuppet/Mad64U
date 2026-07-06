@@ -43,11 +43,11 @@ int Application::Run(int argc)
     SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
     auto win1 = new WindowTree(Recti{ 100,100,640,512 });
     auto vwin1 = new VirtualWindow;
-    auto testRender1 = [vwin1](SDL_Renderer* renderer, const Recti& area)
+    auto testRender1 = [](SDL_Renderer* renderer, const Recti& area)
         {
-            SDL_FRect bodyArea{ (float)(vwin1->m_area.x), (float)(vwin1->m_area.y), (float)(vwin1->m_area.w), (float)(vwin1->m_area.h)};
-            SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-            SDL_RenderFillRect(renderer, &bodyArea);
+            SDL_SetRenderDrawColor(renderer, 0, 0, 255, 32);
+            SDL_FRect body = area.AsSDLFRect();
+            SDL_RenderFillRect(renderer, &body);
         };
     vwin1->m_name = "YetAnotherFile.asm";
     vwin1->m_paintCallback = testRender1;
@@ -57,11 +57,11 @@ int Application::Run(int argc)
 
     auto win2 = new WindowTree(Recti{ 300,100,640,512 });
     auto vwin2 = new VirtualWindow;
-    auto testRender2 = [vwin2](SDL_Renderer* renderer, const Recti& area)
+    auto testRender2 = [](SDL_Renderer* renderer, const Recti& area)
         {
-            SDL_FRect bodyArea{ (float)(vwin2->m_area.x), (float)(vwin2->m_area.y), (float)(vwin2->m_area.w), (float)(vwin2->m_area.h) };
-            SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-            SDL_RenderFillRect(renderer, &bodyArea);
+            SDL_SetRenderDrawColor(renderer, 0, 255, 0, 32);
+            SDL_FRect body = area.AsSDLFRect();
+            SDL_RenderFillRect(renderer, &body);
         };
     vwin2->m_name = "SomeTest.asm";
     vwin2->m_paintCallback = testRender2;
@@ -71,11 +71,11 @@ int Application::Run(int argc)
 
     auto win3 = new WindowTree(Recti{ 500,100,640,512 });
     auto vwin3 = new VirtualWindow;
-    auto testRender3 = [vwin3](SDL_Renderer* renderer, const Recti& area)
+    auto testRender3 = [](SDL_Renderer* renderer, const Recti& area)
         {
-            SDL_FRect bodyArea{ (float)(vwin3->m_area.x), (float)(vwin3->m_area.y), (float)(vwin3->m_area.w), (float)(vwin3->m_area.h) };
-            SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-            SDL_RenderFillRect(renderer, &bodyArea);
+            SDL_SetRenderDrawColor(renderer, 255, 0, 0, 32);
+            SDL_FRect body = area.AsSDLFRect();
+            SDL_RenderFillRect(renderer, &body);
         };
     vwin3->m_name = "Battlefields.c";
     vwin3->m_paintCallback = testRender3;
@@ -94,7 +94,7 @@ int Application::Run(int argc)
             if (tree->m_dirty)
             {
                 tree->Paint(nullptr);
-                tree->m_dirty = false;
+//                tree->m_dirty = false;
             }
         }
     }
@@ -113,14 +113,6 @@ WindowTree* Application::FindWindow(int id)
             return t;
     }
     return nullptr;
-}
-
-SDL_DisplayID GetMouseDisplay()
-{
-    SDL_FPoint pt;
-    SDL_GetGlobalMouseState(&pt.x, &pt.y);
-    SDL_Point point{ (int)pt.x,(int)pt.y };
-    return SDL_GetDisplayForPoint(&point);
 }
 
 void Application::HandleEvent(SDL_Event* e)
@@ -145,28 +137,15 @@ void Application::HandleEvent(SDL_Event* e)
                     {
                         case Icon_Fullscreen:
                         {
-                            SDL_GetWindowPosition(tree->m_window, &tree->m_windowedRect.x, &tree->m_windowedRect.y);
-                            SDL_GetWindowSize(tree->m_window, &tree->m_windowedRect.w, &tree->m_windowedRect.h);
-
-                            SDL_Rect rect;
-                            SDL_GetDisplayBounds(GetMouseDisplay(), &rect);
-                            SDL_SetWindowPosition(tree->m_window, rect.x, rect.y);
-                            SDL_SetWindowSize(tree->m_window, rect.w, rect.h);
-                            SDL_SyncWindow(tree->m_window);
-                            tree->m_fullscreen = true;
-                            tree->m_dirty = true;
-                            tree->LayoutWindows();
+                            tree->MakeFullscreen();
+                            return;
                         }
                         break;
 
                         case Icon_Windowed:
                         {
-                            SDL_SetWindowPosition(tree->m_window, tree->m_windowedRect.x, tree->m_windowedRect.y);
-                            SDL_SetWindowSize(tree->m_window, tree->m_windowedRect.w, tree->m_windowedRect.h);
-                            SDL_SyncWindow(tree->m_window);
-                            tree->m_fullscreen = false;
-                            tree->m_dirty = true;
-                            tree->LayoutWindows();
+                            tree->MakeWindowed();
+                            return;
                         }
                         break;
 
@@ -179,6 +158,7 @@ void Application::HandleEvent(SDL_Event* e)
                             delete tree;
                             if (m_windowTrees.empty())
                                 m_quit = true;
+                            return;
                         }
                         break;
 
@@ -195,8 +175,8 @@ void Application::HandleEvent(SDL_Event* e)
                                 m_mouseInitial.x = w;
                                 m_mouseInitial.y = h;
                                 SDL_CaptureMouse(true);
-                                return;
                             }
+                            return;
                         }
                         break;
 
@@ -231,6 +211,24 @@ void Application::HandleEvent(SDL_Event* e)
                     m_mouseTabQuery.m_tabIndex = -1;
                     if (tree->CheckForTab((int)e->button.x, (int)e->button.y, m_mouseTabQuery))
                     {
+                        if (tree->CountVirtualWindows() == 1)
+                        {
+                            int x, y;
+                            SDL_GetWindowPosition(tree->m_window, &x, &y);
+
+                            float mx, my;
+                            SDL_GetGlobalMouseState(&mx, &my);
+                            m_mouseMode = MouseMode_MovingWindow;
+                            m_mouseTree = tree;
+                            m_mouseOriginateTree = nullptr;
+                            m_mouseGrabPos.x = (int)mx;
+                            m_mouseGrabPos.y = (int)my;
+                            m_mouseInitial.x = x;
+                            m_mouseInitial.y = y;
+                            SDL_CaptureMouse(true);
+                            return;
+                        }
+
                         m_mouseMode = MouseMode_SelectingTab;
                         m_mouseTabQuery.m_layout->m_activeTab = m_mouseTabQuery.m_tabIndex;
 
@@ -238,7 +236,21 @@ void Application::HandleEvent(SDL_Event* e)
                         SDL_GetGlobalMouseState(&mx, &my);
                         m_mouseGrabPos.x = (int)mx;
                         m_mouseGrabPos.y = (int)my;
+                        return;
                     }
+                }
+
+                // check for split
+                m_mouseSplitQuery.m_foundSplit = false;
+                if (tree->CheckForSplit((int)e->button.x, (int)e->button.y, m_mouseSplitQuery))
+                {
+                    m_mouseMode = MouseMode_MovingSplit;
+                    float mx, my;
+                    SDL_GetGlobalMouseState(&mx, &my);
+                    m_mouseGrabPos.x = (int)mx;
+                    m_mouseGrabPos.y = (int)my;
+                    SDL_CaptureMouse(true);
+                    return;
                 }
             }
         }
@@ -255,6 +267,13 @@ void Application::HandleEvent(SDL_Event* e)
                 case MouseMode_ResizingWindow:
                     SDL_CaptureMouse(false);
                     m_mouseMode = MouseMode_Idle;
+                    break;
+
+                case MouseMode_MovingSplit:
+                    SDL_CaptureMouse(false);
+                    m_mouseMode = MouseMode_Idle;
+                    m_mouseSplitQuery.m_foundSplit = false;
+                    m_mouseSplitQuery.m_tree->m_dirty = true;
                     break;
 
                 case MouseMode_MovingWindow:
@@ -379,6 +398,32 @@ void Application::HandleEvent(SDL_Event* e)
                 }
                 break;
 
+                case MouseMode_MovingSplit:
+                {
+                    float mx, my;
+                    SDL_GetGlobalMouseState(&mx, &my);
+                    switch (m_mouseSplitQuery.m_layout->m_splitType)
+                    {
+                        case WindowLayout::Vertical:
+                        {
+                            int offset = (int)my - m_mouseGrabPos.y;
+                            int splitPos = m_mouseSplitQuery.m_splitPos + offset;
+                            m_mouseSplitQuery.m_layout->m_splitPercentage = Clamp((float)(splitPos - m_mouseSplitQuery.m_layout->m_area.y) / (float)m_mouseSplitQuery.m_layout->m_area.h, 0.0f, 1.0f);
+                        }
+                        break;
+
+                        case WindowLayout::Horizontal:
+                        {
+                            int offset = (int)mx - m_mouseGrabPos.x;
+                            int splitPos = m_mouseSplitQuery.m_splitPos + offset;
+                            m_mouseSplitQuery.m_layout->m_splitPercentage = Clamp((float)(splitPos - m_mouseSplitQuery.m_layout->m_area.x) / (float)m_mouseSplitQuery.m_layout->m_area.w, 0.0f, 1.0f);
+                        }
+                        break;
+                    }
+                    m_mouseSplitQuery.m_tree->LayoutWindows();
+                }
+                break;
+
                 case MouseMode_MovingWindow:
                 {
                     m_mouseTree->m_dirty = true;
@@ -417,7 +462,16 @@ void Application::HandleEvent(SDL_Event* e)
             break;
 
         case SDL_EVENT_KEY_DOWN:
+        {
+            const SDL_KeyboardEvent& key = e->key;
+            if (!key.repeat && key.key == SDLK_RETURN && (key.mod & SDL_KMOD_ALT))
+            {
+                if (m_activeTree)
+                {
+                }
+            }
             break;
+        }
 
         case SDL_EVENT_KEY_UP:
             break;

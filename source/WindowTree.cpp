@@ -51,9 +51,9 @@ void WindowLayout::Layout(SDL_Renderer *renderer, const Recti& area)
             auto& fr = Application::Instance().GetFontRenderer();
             SDL_Color col{ 255,255,255,255 };
             Recti clientArea{ area.x + WINDOW_CLIENT_BORDER, area.y + WINDOW_TAB_BAR_HEIGHT + WINDOW_CLIENT_BORDER, area.w - WINDOW_CLIENT_BORDER * 2, area.h - WINDOW_CLIENT_BORDER * 2 - WINDOW_TAB_BAR_HEIGHT };
-            Recti tabArea{ area.x, area.y, area.w, WINDOW_TAB_BAR_HEIGHT };
-            int tabX = area.x;
-            int tabY = area.y;
+            Recti tabArea{ area.x, area.y + WINDOW_CLIENT_BORDER, area.w, WINDOW_TAB_BAR_HEIGHT - WINDOW_CLIENT_BORDER };
+            int tabX = area.x + WINDOW_CLIENT_BORDER;
+            int tabY = area.y + WINDOW_CLIENT_BORDER;
             for (auto t : m_tabs)
             {
                 t->m_area = clientArea;
@@ -222,12 +222,7 @@ void WindowLayout::Paint(SDL_Renderer *renderer, const Recti& area)
     {
         if (m_splitType == NoSplit)
         {
-            // render tab bar
-            SDL_FRect sdlBarRect{ (float)m_area.x, (float)m_area.y, (float)m_area.w, (float)WINDOW_TAB_BAR_HEIGHT };
-            SDL_SetRenderDrawColor(renderer, 32, 32, 32, 255);
-            SDL_RenderFillRect(renderer, &sdlBarRect);
-
-            Recti bodyRect{ m_area.x, m_area.y + WINDOW_TAB_BAR_HEIGHT, m_area.w, m_area.h - WINDOW_TAB_BAR_HEIGHT };
+            Recti bodyRect{ m_area.x, m_area.y + WINDOW_TAB_BAR_HEIGHT + WINDOW_CLIENT_BORDER, m_area.w, m_area.h - WINDOW_TAB_BAR_HEIGHT - WINDOW_CLIENT_BORDER*2 };
             if (!m_tabs.empty())
             {
                 // render tabs
@@ -253,7 +248,7 @@ void WindowLayout::Paint(SDL_Renderer *renderer, const Recti& area)
 
                 // render active tab body
                 if (m_activeTab != -1)
-                    m_tabs[m_activeTab]->m_paintCallback(renderer, area);
+                    m_tabs[m_activeTab]->m_paintCallback(renderer, m_tabs[m_activeTab]->m_area);
             }
             else
             {
@@ -262,11 +257,74 @@ void WindowLayout::Paint(SDL_Renderer *renderer, const Recti& area)
                 SDL_SetRenderDrawColor(renderer, 32, 32, 32, 255);
                 SDL_RenderFillRect(renderer, &sdlBodyRect);
             }
+
+            float bx1 = (float)(m_area.x + WINDOW_CLIENT_BORDER - 1);
+            float bx2 = (float)(m_area.x + m_area.w - WINDOW_CLIENT_BORDER + 1);
+            float by1 = (float)(m_area.y + WINDOW_TAB_BAR_HEIGHT + WINDOW_CLIENT_BORDER - 1);
+            float by2 = (float)(m_area.y + m_area.h - WINDOW_CLIENT_BORDER + 1);
+            SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
+            SDL_RenderLine(renderer, bx1, by1, bx1, by2);
+            SDL_RenderLine(renderer, bx1, by1, bx2, by1);
+            SDL_SetRenderDrawColor(renderer, 32, 32, 32, 255);
+            SDL_RenderLine(renderer, bx2, by1, bx2, by2);
+            SDL_RenderLine(renderer, bx1, by2, bx2, by2);
         }
         else
         {
             m_splits[0]->Paint(renderer, area);
             m_splits[1]->Paint(renderer, area);
+
+            auto& splitQuery = Application::Instance().GetWindowSplitQuery();
+            switch (m_splitType)
+            {
+                case WindowLayout::Vertical:
+                {
+                    int x1 = m_area.x;
+                    int x2 = m_area.x + m_area.w;
+                    int y = m_area.y + (int)(m_area.h * m_splitPercentage);
+                    int y1 = y - 4;
+                    int y2 = y + 4;
+
+                    if (splitQuery.m_layout == this && splitQuery.m_foundSplit)
+                    {
+                        SDL_FRect bodyArea{ (float)x1, (float)y1, (float)(x2 - x1),(float)(y2 - y1) };
+                        SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+                        SDL_RenderFillRect(renderer, &bodyArea);
+                    }
+                    else
+                    {
+                        int x = m_area.x + (int)(m_area.w / 2);
+                        SDL_FRect nob = SDL_FRect{ (float)(x - 2), (float)(y - 2), (float)4, (float)4 };
+                        SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+                        SDL_RenderFillRect(renderer, &nob);
+                    }
+                }
+                break;
+
+                case WindowLayout::Horizontal:
+                {
+                    int y1 = m_area.y;
+                    int y2 = m_area.y + m_area.h;
+                    int x = m_area.x + (int)(m_area.w * m_splitPercentage);
+                    int x1 = x - 4;
+                    int x2 = x + 4;
+
+                    if (splitQuery.m_layout == this && splitQuery.m_foundSplit)
+                    {
+                        SDL_FRect bodyArea = SDL_FRect{ (float)x1, (float)y1, (float)(x2 - x1),(float)(y2 - y1) };
+                        SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+                        SDL_RenderFillRect(renderer, &bodyArea);
+                    }
+                    else
+                    {
+                        int y = m_area.y + (int)(m_area.h / 2);
+                        SDL_FRect nob = SDL_FRect{ (float)(x-2), (float)(y-2), (float)4, (float)4 };
+                        SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+                        SDL_RenderFillRect(renderer, &nob);
+                    }
+                }
+                break;
+            }
         }
     }
 }
@@ -371,12 +429,53 @@ void WindowLayout::CollapseEmptyLayouts()
     }
 }
 
+bool WindowLayout::CheckForSplit(int x, int y, WindowSplitQuery& query)
+{
+    if (m_splitType != NoSplit)
+    {
+        switch (m_splitType)
+        {
+            case Horizontal:
+            {
+                int splitX = m_area.x + (int)(m_area.w * m_splitPercentage);
+                if (Abs(x - splitX) < 6)
+                {
+                    query.m_foundSplit = true;
+                    query.m_layout = this;
+                    query.m_splitPos = splitX;
+                    return true;
+                }
+            }
+            break;
+
+            case Vertical:
+            {
+                int splitY = m_area.y + (int)(m_area.h * m_splitPercentage);
+                if (Abs(y - splitY) < 6)
+                {
+                    query.m_foundSplit = true;
+                    query.m_layout = this;
+                    query.m_splitPos = splitY;
+                    return true;
+                }
+            }
+            break;
+        }
+        if (m_splits[0]->CheckForSplit(x, y, query))
+            return true;
+        if (m_splits[1]->CheckForSplit(x, y, query))
+            return true;
+    }
+    return false;
+}
+
 void WindowTree::LayoutWindows()
 {
     int w, h;
     SDL_GetWindowSize(m_window, &w, &h);
     Recti area{ 0,WINDOW_TITLE_BAR_HEIGHT,w,h - WINDOW_TITLE_BAR_HEIGHT };
     m_layout.Layout(m_renderer, area);
+    m_dirty = true;
 }
 
 void WindowTree::AddWindow(int x, int y, VirtualWindow* window)
@@ -516,6 +615,12 @@ void WindowTree::GatherVirtualWindows(std::vector<VirtualWindow*>& virtualWindow
     m_layout.GatherVirtualWindows(virtualWindows);
 }
 
+bool WindowTree::CheckForSplit(int x, int y, WindowSplitQuery& query)
+{
+    query.m_tree = this;
+    return m_layout.CheckForSplit(x, y, query);
+}
+
 bool WindowTree::CheckForTab(int x, int y, WindowTabQuery& query)
 {
     query.m_tree = this;
@@ -556,3 +661,39 @@ Icons WindowTree::FindIcon(int x, int y)
     }
     return Icon_None;
 }
+
+SDL_DisplayID GetMouseDisplay()
+{
+    SDL_FPoint pt;
+    SDL_GetGlobalMouseState(&pt.x, &pt.y);
+    SDL_Point point{ (int)pt.x,(int)pt.y };
+    return SDL_GetDisplayForPoint(&point);
+}
+
+void WindowTree::MakeFullscreen()
+{
+    if (!m_fullscreen)
+    {
+        SDL_GetWindowPosition(m_window, &m_windowedRect.x, &m_windowedRect.y);
+        SDL_GetWindowSize(m_window, &m_windowedRect.w, &m_windowedRect.h);
+
+        SDL_Rect rect;
+        SDL_GetDisplayBounds(GetMouseDisplay(), &rect);
+        SDL_SetWindowPosition(m_window, rect.x, rect.y);
+        SDL_SetWindowSize(m_window, rect.w, rect.h);
+        SDL_SyncWindow(m_window);
+        m_fullscreen = true;
+        LayoutWindows();
+    }
+}
+
+void WindowTree::MakeWindowed()
+{
+    SDL_SetWindowPosition(m_window, m_windowedRect.x, m_windowedRect.y);
+    SDL_SetWindowSize(m_window, m_windowedRect.w, m_windowedRect.h);
+    SDL_SyncWindow(m_window);
+    m_fullscreen = false;
+    LayoutWindows();
+}
+
+
