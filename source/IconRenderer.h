@@ -1,6 +1,7 @@
 #pragma once
 
 #include <unordered_map>
+#include "Singleton.h"
 
 enum Icons
 {
@@ -11,7 +12,8 @@ enum Icons
     Icon_Windowed,
     Icon_Resize
 };
-class IconRenderer
+
+class IconRenderer : public Singleton<IconRenderer>
 {
 public:
     IconRenderer();

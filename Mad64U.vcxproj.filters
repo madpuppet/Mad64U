@@ -25,10 +25,19 @@
     <ClCompile Include="source\Application.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="source\CachedFontRenderer.cpp">
+    <ClCompile Include="source\FontRenderer.cpp">
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="source\IconRenderer.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="source\WindowBase.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="source\WindowLayout.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="source\WindowManager.cpp">
       <Filter>source</Filter>
     </ClCompile>
   </ItemGroup>
@@ -300,13 +309,28 @@
     <ClInclude Include="include\SDL3\SDL_vulkan.h">
       <Filter>3rdParty\SDL3</Filter>
     </ClInclude>
-    <ClInclude Include="source\CachedFontRenderer.h">
+    <ClInclude Include="source\FontRenderer.h">
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="source\IconRenderer.h">
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\WindowQueries.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="source\WindowLayout.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="source\WindowManager.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="source\WindowBase.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Singleton.h">
       <Filter>Resource Files</Filter>
     </ClInclude>
   </ItemGroup>

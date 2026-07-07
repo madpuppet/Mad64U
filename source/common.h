@@ -59,3 +59,8 @@ struct Vec2i
 {
     int x, y;
 };
+
+struct Colori
+{
+    int r, g, b, a;
+};

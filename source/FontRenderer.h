@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <list>
 #include "SDL3/SDL.h"
+#include "Singleton.h"
 
 template <typename MyType>
 class TLRUList
@@ -116,12 +117,9 @@ private:
 
 
 
-class CachedFontRenderer
+class FontRenderer : public Singleton<FontRenderer>
 {
 public:
-    CachedFontRenderer();
-    ~CachedFontRenderer();
-
     enum FontIDX
     {
         UIFont,

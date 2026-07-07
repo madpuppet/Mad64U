@@ -1,85 +1,15 @@
 #pragma once
 
 #include <functional>
+#include "WindowQueries.h"
+#include "WindowLayout.h"
+#include "WindowBase.h"
 #include "IconRenderer.h"
 
 #define WINDOW_TITLE_BAR_HEIGHT 24
 #define WINDOW_TAB_BAR_HEIGHT 24
 #define WINDOW_CLIENT_BORDER 5
 #define TEXT_HBORDER 4
-
-struct WindowSplitQuery
-{
-    bool m_foundSplit = false;
-    struct WindowTree* m_tree;
-    struct WindowLayout* m_layout;
-    int m_grabOffset;
-    int m_splitPos;
-};
-
-struct WindowDockQuery
-{
-    enum SplitPosition
-    {
-        SplitPosition_None,
-        SplitPosition_Left,
-        SplitPosition_Right,
-        SplitPosition_Top,
-        SplitPosition_Bottom
-    } m_splitPosition;
-
-    bool m_foundDock = false;
-    struct WindowTree* m_tree = nullptr;
-    struct WindowLayout* m_layout = nullptr;
-    bool m_verticalSplit = false;
-    Recti m_bodyArea;
-    Recti m_splitArea;
-};
-
-struct WindowTabQuery
-{
-    struct WindowTree* m_tree = nullptr;
-    struct WindowLayout* m_layout = nullptr;
-    int m_tabIndex = -1;
-};
-
-struct VirtualWindow
-{
-    std::string m_name;
-    Recti m_area;
-    std::function<void(SDL_Renderer*, const Recti&)> m_paintCallback;
-    Recti m_tabArea;
-};
-
-struct WindowLayout
-{
-    ~WindowLayout();
-
-    enum SplitType
-    {
-        NoSplit,
-        Vertical,
-        Horizontal
-    } m_splitType = NoSplit;
-
-    Recti m_area{ 0,0,0,0 };
-    WindowLayout* m_splits[2] = { 0,0 };
-    float m_splitPercentage = 0.5f;
-    std::vector<VirtualWindow*> m_tabs;
-    int m_activeTab = 0;
-
-    void Layout(SDL_Renderer *renderer, const Recti& area);
-    void AddWindow(int x, int y, VirtualWindow* window);
-    void RemoveWindow(VirtualWindow* window);
-    bool CheckForDocking(int x, int y, WindowDockQuery &query);
-    void Paint(SDL_Renderer* renderer, const Recti& area);
-    void GatherVirtualWindows(std::vector<VirtualWindow*>& virtualWindows);
-    bool CheckForTab(int x, int y, WindowTabQuery& query);
-    int CountVirtualWindows();
-    void CollapseEmptyLayouts();
-    bool CheckForSplit(int x, int y, WindowSplitQuery& query);
-    bool CheckForLayout(int x, int y, WindowLayout*& layout);
-};
 
 struct WindowTree
 {
@@ -95,13 +25,13 @@ struct WindowTree
     bool m_fullscreen = false;
 
     void LayoutWindows();
-    void AddWindow(int x, int y, VirtualWindow* window);
-    void RemoveWindow(VirtualWindow* window);
+    void AddWindow(int x, int y, WindowBase* window);
+    void RemoveWindow(WindowBase* window);
     bool CheckForDocking(int x, int y, WindowDockQuery &query);
     void Paint(Recti *area);
-    void GatherVirtualWindows(std::vector<VirtualWindow*>& virtualWindows);
+    void GatherWindows(std::vector<WindowBase*>& windows);
     bool CheckForTab(int x, int y, WindowTabQuery& query);
-    int CountVirtualWindows();
+    int CountWindows();
     void CollapseEmptyLayouts();
     Icons FindIcon(int x, int y);
     bool CheckForSplit(int x, int y, WindowSplitQuery& query);
@@ -111,7 +41,3 @@ struct WindowTree
     void MakeWindowed();
 };
 
-class WindowManager
-{
-
-};

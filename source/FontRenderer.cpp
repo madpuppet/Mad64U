@@ -1,5 +1,5 @@
 #include "common.h"
-#include "cachedFontRenderer.h"
+#include "FontRenderer.h"
 #include <algorithm>
 #include "Application.h"
 #include "SDL3/SDL.h"
@@ -7,15 +7,7 @@
 
 #define MAX_ITEMS 1024
 
-CachedFontRenderer::CachedFontRenderer()
-{
-}
-
-CachedFontRenderer::~CachedFontRenderer()
-{
-}
-
-size_t CachedFontRenderer::Hash(SDL_Renderer* renderer, const std::string &str, FontIDX fontIdx)
+size_t FontRenderer::Hash(SDL_Renderer* renderer, const std::string &str, FontIDX fontIdx)
 {
     size_t hash = (intptr_t)renderer;
     for (int i = 0; i < str.size(); i++)
@@ -39,7 +31,7 @@ std::vector<u16>& StringToUnicode(const std::string& str)
 }
 
 // split render into 2 phases, allowing you to do other things with the render rectangle
-CachedFontRenderer::CachedString * CachedFontRenderer::PrepareRender(SDL_Renderer * renderer, const std::string & str, int x, int y, FontIDX fontIdx)
+FontRenderer::CachedString *FontRenderer::PrepareRender(SDL_Renderer * renderer, const std::string & str, int x, int y, FontIDX fontIdx)
 {
     TTF_Font* font = (fontIdx == UIFont) ? Application::Instance().GetUIFont() : Application::Instance().GetTextFont();
     CachedString* cs = nullptr;
@@ -98,14 +90,14 @@ CachedFontRenderer::CachedString * CachedFontRenderer::PrepareRender(SDL_Rendere
     return cs;
 }
 
-void CachedFontRenderer::FlushRenderer(SDL_Renderer* renderer)
+void FontRenderer::FlushRenderer(SDL_Renderer* renderer)
 {
     // Remove all entries where the value is empty.
     std::erase_if(m_map, [renderer](const auto& Pair) { return Pair.second->renderer == renderer; });
     m_lru.RemoveIf([renderer](const auto& Item) { return Item->renderer == renderer; });
 }
 
-void CachedFontRenderer::Render(CachedString* cs, const SDL_Color& col)
+void FontRenderer::Render(CachedString* cs, const SDL_Color& col)
 {
     // got tex, now render it
     SDL_SetTextureColorMod(cs->tex, col.r, col.g, col.b);
@@ -113,7 +105,7 @@ void CachedFontRenderer::Render(CachedString* cs, const SDL_Color& col)
     SDL_RenderTexture(cs->renderer, cs->tex, NULL, &cs->rect);
 }
 
-void CachedFontRenderer::RenderAt(CachedString* cs, const SDL_Color& col, int x, int y)
+void FontRenderer::RenderAt(CachedString* cs, const SDL_Color& col, int x, int y)
 {
     // got tex, now render it
     SDL_FRect quad = { (float)x, (float)y, (float)cs->rect.w, (float)cs->rect.h };
@@ -122,7 +114,7 @@ void CachedFontRenderer::RenderAt(CachedString* cs, const SDL_Color& col, int x,
     SDL_RenderTexture(cs->renderer, cs->tex, NULL, &quad);
 }
 
-void CachedFontRenderer::RenderText(SDL_Renderer* renderer, const std::string& str, const SDL_Color& col, int x, int y, FontIDX fontIdx, SDL_Rect* outputQuad, bool bCalcSizeOnly)
+void FontRenderer::RenderText(SDL_Renderer* renderer, const std::string& str, const SDL_Color& col, int x, int y, FontIDX fontIdx, SDL_Rect* outputQuad, bool bCalcSizeOnly)
 {
     auto cs = PrepareRender(renderer, str, x, y, fontIdx);
     if (!bCalcSizeOnly)

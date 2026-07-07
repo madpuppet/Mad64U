@@ -1,56 +1,24 @@
 #pragma once
 
 #include "WindowTree.h"
-#include "CachedFontRenderer.h"
+#include "FontRenderer.h"
 #include "IconRenderer.h"
+#include "WindowManager.h"
+#include "Singleton.h"
 
-class Application
+class Application : public Singleton<Application>
 {
 public:
-    static Application* s_instance;
-    static Application& Instance() { return *s_instance; };
-
-    Application() { s_instance = this; }
-    int Run(int argc);
-    void HandleEvent(SDL_Event* e);
-    ~Application() {}
+    int Run();
 
     TTF_Font* GetUIFont() { return m_uiFont; }
     TTF_Font* GetTextFont() { return m_textFont; }
-    const WindowDockQuery& GetWindowDockQuery() { return m_mouseDockQuery; }
-    const WindowSplitQuery& GetWindowSplitQuery() { return m_mouseSplitQuery; }
-    CachedFontRenderer& GetFontRenderer() { return *m_fontRenderer; }
-    IconRenderer& GetIconRenderer() { return *m_iconRenderer; }
-    WindowLayout* GetActiveWindowLayout() { return m_activeLayout; }
-    WindowTree* GetActiveWindowTree() { return m_activeTree; }
 
-    bool IsMovingSplit() { return m_mouseMode == MouseMode_MovingSplit; }
+    void Quit() { m_quit = true; }
 
 protected:
-    std::vector<WindowTree*> m_windowTrees;
     TTF_Font* m_uiFont = nullptr;
     TTF_Font* m_textFont = nullptr;
     bool m_quit = false;
-    WindowTree* FindWindow(int id);
-
-    enum MouseMode
-    {
-        MouseMode_Idle,
-        MouseMode_MovingWindow,
-        MouseMode_ResizingWindow,
-        MouseMode_SelectingTab,
-        MouseMode_MovingSplit
-    } m_mouseMode = MouseMode_Idle;
-    Vec2i m_mouseGrabPos;
-    Vec2i m_mouseInitial;
-    WindowDockQuery m_mouseDockQuery;
-    WindowTabQuery m_mouseTabQuery;
-    WindowSplitQuery m_mouseSplitQuery;
-    WindowTree* m_mouseTree = nullptr;
-    WindowTree* m_mouseOriginateTree = nullptr;
-    WindowTree* m_activeTree = nullptr;
-    WindowLayout* m_activeLayout = nullptr;
-    CachedFontRenderer* m_fontRenderer;
-    IconRenderer* m_iconRenderer;
 };
 

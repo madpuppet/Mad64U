@@ -141,9 +141,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="source\Application.cpp" />
-    <ClCompile Include="source\CachedFontRenderer.cpp" />
+    <ClCompile Include="source\FontRenderer.cpp" />
     <ClCompile Include="source\IconRenderer.cpp" />
     <ClCompile Include="source\Mad64U.cpp" />
+    <ClCompile Include="source\WindowBase.cpp" />
+    <ClCompile Include="source\WindowLayout.cpp" />
+    <ClCompile Include="source\WindowManager.cpp" />
     <ClCompile Include="source\WindowTree.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -235,10 +238,15 @@
     <ClInclude Include="include\SDL3\SDL_vulkan.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="source\Application.h" />
-    <ClInclude Include="source\CachedFontRenderer.h" />
+    <ClInclude Include="source\FontRenderer.h" />
     <ClInclude Include="source\common.h" />
     <ClInclude Include="source\IconRenderer.h" />
+    <ClInclude Include="source\Singleton.h" />
+    <ClInclude Include="source\WindowLayout.h" />
+    <ClInclude Include="source\WindowManager.h" />
+    <ClInclude Include="source\WindowQueries.h" />
     <ClInclude Include="source\WindowTree.h" />
+    <ClInclude Include="source\WindowBase.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Mad64.rc" />

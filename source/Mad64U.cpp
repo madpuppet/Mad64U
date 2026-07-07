@@ -4,9 +4,8 @@
 
 int main(int argc, char* argv[])
 {
-    auto app = new Application;
-    int rc = app->Run(argc);
-    return rc;
+    Application::Startup();
+    return Application::Instance().Run();
 }
 
 void Log(const char* pFormat, ...)
