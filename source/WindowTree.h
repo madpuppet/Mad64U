@@ -78,6 +78,7 @@ struct WindowLayout
     int CountVirtualWindows();
     void CollapseEmptyLayouts();
     bool CheckForSplit(int x, int y, WindowSplitQuery& query);
+    bool CheckForLayout(int x, int y, WindowLayout*& layout);
 };
 
 struct WindowTree
@@ -104,7 +105,13 @@ struct WindowTree
     void CollapseEmptyLayouts();
     Icons FindIcon(int x, int y);
     bool CheckForSplit(int x, int y, WindowSplitQuery& query);
+    bool CheckForLayout(int x, int y, WindowLayout*& layout);
 
     void MakeFullscreen();
     void MakeWindowed();
+};
+
+class WindowManager
+{
+
 };

@@ -185,11 +185,33 @@ void Application::HandleEvent(SDL_Event* e)
                     }
                 }
 
-                // check for resizing
-                if (!tree->m_fullscreen)
+                // check for dragging the title bar
+                if (!tree->m_fullscreen && e->button.y < WINDOW_TITLE_BAR_HEIGHT)
                 {
-                    // check for title bar
-                    if (e->button.y < WINDOW_TITLE_BAR_HEIGHT)
+                    int x, y;
+                    SDL_GetWindowPosition(tree->m_window, &x, &y);
+
+                    float mx, my;
+                    SDL_GetGlobalMouseState(&mx, &my);
+                    m_mouseMode = MouseMode_MovingWindow;
+                    m_mouseTree = tree;
+                    m_mouseOriginateTree = nullptr;
+                    m_mouseGrabPos.x = (int)mx;
+                    m_mouseGrabPos.y = (int)my;
+                    m_mouseInitial.x = x;
+                    m_mouseInitial.y = y;
+                    SDL_CaptureMouse(true);
+                    return;
+                }
+
+                // check for a tab
+                m_mouseTabQuery.m_tabIndex = -1;
+                if (tree->CheckForTab((int)e->button.x, (int)e->button.y, m_mouseTabQuery))
+                {
+                    m_activeTree = m_mouseTabQuery.m_tree;
+                    m_activeLayout = m_mouseTabQuery.m_layout;
+
+                    if (tree->CountVirtualWindows() == 1)
                     {
                         int x, y;
                         SDL_GetWindowPosition(tree->m_window, &x, &y);
@@ -207,37 +229,14 @@ void Application::HandleEvent(SDL_Event* e)
                         return;
                     }
 
-                    // check for a tab
-                    m_mouseTabQuery.m_tabIndex = -1;
-                    if (tree->CheckForTab((int)e->button.x, (int)e->button.y, m_mouseTabQuery))
-                    {
-                        if (tree->CountVirtualWindows() == 1)
-                        {
-                            int x, y;
-                            SDL_GetWindowPosition(tree->m_window, &x, &y);
+                    m_mouseMode = MouseMode_SelectingTab;
+                    m_mouseTabQuery.m_layout->m_activeTab = m_mouseTabQuery.m_tabIndex;
 
-                            float mx, my;
-                            SDL_GetGlobalMouseState(&mx, &my);
-                            m_mouseMode = MouseMode_MovingWindow;
-                            m_mouseTree = tree;
-                            m_mouseOriginateTree = nullptr;
-                            m_mouseGrabPos.x = (int)mx;
-                            m_mouseGrabPos.y = (int)my;
-                            m_mouseInitial.x = x;
-                            m_mouseInitial.y = y;
-                            SDL_CaptureMouse(true);
-                            return;
-                        }
-
-                        m_mouseMode = MouseMode_SelectingTab;
-                        m_mouseTabQuery.m_layout->m_activeTab = m_mouseTabQuery.m_tabIndex;
-
-                        float mx, my;
-                        SDL_GetGlobalMouseState(&mx, &my);
-                        m_mouseGrabPos.x = (int)mx;
-                        m_mouseGrabPos.y = (int)my;
-                        return;
-                    }
+                    float mx, my;
+                    SDL_GetGlobalMouseState(&mx, &my);
+                    m_mouseGrabPos.x = (int)mx;
+                    m_mouseGrabPos.y = (int)my;
+                    return;
                 }
 
                 // check for split
@@ -251,6 +250,14 @@ void Application::HandleEvent(SDL_Event* e)
                     m_mouseGrabPos.y = (int)my;
                     SDL_CaptureMouse(true);
                     return;
+                }
+
+                // check for layout select
+                WindowLayout* layout;
+                if (tree->CheckForLayout((int)e->button.x, (int)e->button.y, layout))
+                {
+                    m_activeTree = tree;
+                    m_activeLayout = layout;
                 }
             }
         }
@@ -358,13 +365,12 @@ void Application::HandleEvent(SDL_Event* e)
                             auto vw = m_mouseTabQuery.m_layout->m_tabs[m_mouseTabQuery.m_tabIndex];
                             m_mouseTabQuery.m_layout->m_tabs.erase(m_mouseTabQuery.m_layout->m_tabs.begin() + m_mouseTabQuery.m_tabIndex);
                             m_mouseTabQuery.m_layout->m_activeTab = 0;
-                            m_mouseTabQuery.m_tree->LayoutWindows();
-
                             if (m_mouseTabQuery.m_layout->m_tabs.empty())
                             {
                                 // collapse empty tab
                                 m_mouseTabQuery.m_tree->CollapseEmptyLayouts();
                             }
+                            m_mouseTabQuery.m_tree->LayoutWindows();
 
                             float mx, my;
                             SDL_GetGlobalMouseState(&mx, &my);

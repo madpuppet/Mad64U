@@ -21,6 +21,8 @@ public:
     const WindowSplitQuery& GetWindowSplitQuery() { return m_mouseSplitQuery; }
     CachedFontRenderer& GetFontRenderer() { return *m_fontRenderer; }
     IconRenderer& GetIconRenderer() { return *m_iconRenderer; }
+    WindowLayout* GetActiveWindowLayout() { return m_activeLayout; }
+    WindowTree* GetActiveWindowTree() { return m_activeTree; }
 
     bool IsMovingSplit() { return m_mouseMode == MouseMode_MovingSplit; }
 
@@ -46,8 +48,9 @@ protected:
     WindowSplitQuery m_mouseSplitQuery;
     WindowTree* m_mouseTree = nullptr;
     WindowTree* m_mouseOriginateTree = nullptr;
+    WindowTree* m_activeTree = nullptr;
+    WindowLayout* m_activeLayout = nullptr;
     CachedFontRenderer* m_fontRenderer;
     IconRenderer* m_iconRenderer;
-    WindowTree* m_activeTree = nullptr;
 };
 

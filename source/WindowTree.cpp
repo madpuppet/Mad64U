@@ -216,6 +216,25 @@ bool WindowLayout::CheckForDocking(int x, int y, WindowDockQuery &query)
     }
 }
 
+bool WindowLayout::CheckForLayout(int x, int y, WindowLayout*& layout)
+{
+
+    if (!m_area.Contains(x, y))
+        return false;
+
+    if (m_splitType == NoSplit)
+    {
+        layout = this;
+        return true;
+    }
+    else
+    {
+        if (m_splits[0]->CheckForLayout(x, y, layout))
+            return true;
+        return m_splits[1]->CheckForLayout(x, y, layout);
+    }
+}
+
 void WindowLayout::Paint(SDL_Renderer *renderer, const Recti& area)
 {
     if (m_area.Overlaps(area))
@@ -262,10 +281,20 @@ void WindowLayout::Paint(SDL_Renderer *renderer, const Recti& area)
             float bx2 = (float)(m_area.x + m_area.w - WINDOW_CLIENT_BORDER + 1);
             float by1 = (float)(m_area.y + WINDOW_TAB_BAR_HEIGHT + WINDOW_CLIENT_BORDER - 1);
             float by2 = (float)(m_area.y + m_area.h - WINDOW_CLIENT_BORDER + 1);
-            SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
+            bool selected = Application::Instance().GetActiveWindowLayout() == this;
+            if (selected)
+                SDL_SetRenderDrawColor(renderer, 196, 196, 196, 255);
+            else
+                SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
+
             SDL_RenderLine(renderer, bx1, by1, bx1, by2);
             SDL_RenderLine(renderer, bx1, by1, bx2, by1);
-            SDL_SetRenderDrawColor(renderer, 32, 32, 32, 255);
+
+            if (selected)
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+            else
+                SDL_SetRenderDrawColor(renderer, 32, 32, 32, 255);
+
             SDL_RenderLine(renderer, bx2, by1, bx2, by2);
             SDL_RenderLine(renderer, bx1, by2, bx2, by2);
         }
@@ -294,7 +323,7 @@ void WindowLayout::Paint(SDL_Renderer *renderer, const Recti& area)
                     else
                     {
                         int x = m_area.x + (int)(m_area.w / 2);
-                        SDL_FRect nob = SDL_FRect{ (float)(x - 2), (float)(y - 2), (float)4, (float)4 };
+                        SDL_FRect nob = SDL_FRect{ (float)(x - 4), (float)(y - 1), (float)8, (float)2 };
                         SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
                         SDL_RenderFillRect(renderer, &nob);
                     }
@@ -318,7 +347,7 @@ void WindowLayout::Paint(SDL_Renderer *renderer, const Recti& area)
                     else
                     {
                         int y = m_area.y + (int)(m_area.h / 2);
-                        SDL_FRect nob = SDL_FRect{ (float)(x-2), (float)(y-2), (float)4, (float)4 };
+                        SDL_FRect nob = SDL_FRect{ (float)(x-1), (float)(y-4), (float)2, (float)8 };
                         SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
                         SDL_RenderFillRect(renderer, &nob);
                     }
@@ -403,6 +432,8 @@ void WindowLayout::CollapseEmptyLayouts()
         if (empty0 && empty1)
         {
             m_splitType = NoSplit;
+            delete m_splits[0];
+            delete m_splits[1];
         }
         else if (empty0)
         {
@@ -411,6 +442,9 @@ void WindowLayout::CollapseEmptyLayouts()
             m_tabs = std::move(m_splits[1]->m_tabs);
             auto new0 = m_splits[1]->m_splits[0];
             auto new1 = m_splits[1]->m_splits[1];
+            m_splits[1]->m_splits[0] = nullptr;
+            m_splits[1]->m_splits[1] = nullptr;
+            m_splits[1]->m_splitType = NoSplit;
             delete m_splits[1];
             m_splits[0] = new0;
             m_splits[1] = new1;
@@ -695,5 +729,11 @@ void WindowTree::MakeWindowed()
     m_fullscreen = false;
     LayoutWindows();
 }
+
+bool WindowTree::CheckForLayout(int x, int y, WindowLayout*& layout)
+{
+    return m_layout.CheckForLayout(x, y, layout);
+}
+
 
 
