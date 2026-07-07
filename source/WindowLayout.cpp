@@ -329,6 +329,19 @@ void WindowLayout::Paint(SDL_Renderer* renderer, const Recti& area)
     }
 }
 
+WindowLayout* WindowLayout::FindFirstNonSplitLayout()
+{
+    if (m_splitType == NoSplit)
+        return this;
+    else
+    {
+        auto layout = m_splits[0]->FindFirstNonSplitLayout();
+        if (layout)
+            return layout;
+        return m_splits[1]->FindFirstNonSplitLayout();
+    }
+}
+
 bool WindowLayout::CheckForTab(int x, int y, WindowTabQuery& query)
 {
     if (!m_area.Contains(x, y))

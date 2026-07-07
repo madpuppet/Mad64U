@@ -13,6 +13,15 @@ WindowTree* WindowManager::FindWindowByID(int id)
     return nullptr;
 }
 
+void WindowManager::LayoutMenu()
+{
+    if (m_activeTree)
+    {
+        m_menuTree.Layout(m_activeTree);
+    }
+}
+
+
 void WindowManager::HandleEvent(SDL_Event* e)
 {
     switch (e->type)
@@ -104,6 +113,7 @@ void WindowManager::HandleEvent(SDL_Event* e)
                 {
                     m_activeTree = m_mouseTabQuery.m_tree;
                     m_activeLayout = m_mouseTabQuery.m_layout;
+                    m_menuTree.Layout(m_activeTree);
 
                     if (tree->CountWindows() == 1)
                     {
@@ -152,6 +162,7 @@ void WindowManager::HandleEvent(SDL_Event* e)
                 {
                     m_activeTree = tree;
                     m_activeLayout = layout;
+                    m_menuTree.Layout(m_activeTree);
                 }
             }
         }
@@ -398,6 +409,14 @@ void WindowManager::HandleEvent(SDL_Event* e)
             return;
     }
 }
+
+void WindowManager::SetActiveTree(WindowTree* tree)
+{
+    m_activeTree = tree;
+    m_activeLayout = tree->FindFirstNonSplitLayout();
+    m_menuTree.Layout(m_activeTree);
+}
+
 
 void WindowManager::Paint()
 {

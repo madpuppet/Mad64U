@@ -147,6 +147,7 @@
     <ClCompile Include="source\WindowBase.cpp" />
     <ClCompile Include="source\WindowLayout.cpp" />
     <ClCompile Include="source\WindowManager.cpp" />
+    <ClCompile Include="source\WindowMenuList.cpp" />
     <ClCompile Include="source\WindowTree.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -244,6 +245,7 @@
     <ClInclude Include="source\Singleton.h" />
     <ClInclude Include="source\WindowLayout.h" />
     <ClInclude Include="source\WindowManager.h" />
+    <ClInclude Include="source\WindowMenuList.h" />
     <ClInclude Include="source\WindowQueries.h" />
     <ClInclude Include="source\WindowTree.h" />
     <ClInclude Include="source\WindowBase.h" />

@@ -182,7 +182,15 @@ void WindowTree::Paint(Recti* area)
         ir.DrawIcon(m_renderer, Icon_Resize, windowArea.w - 8, windowArea.h - 8);
     }
 
+    if (wm.GetActiveWindowTree() == this)
+        wm.PaintMenu();
+
     SDL_RenderPresent(m_renderer);
+}
+
+WindowLayout* WindowTree::FindFirstNonSplitLayout()
+{
+    return m_layout.FindFirstNonSplitLayout();
 }
 
 void WindowTree::GatherWindows(std::vector<WindowBase*>& windows)

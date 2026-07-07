@@ -31,5 +31,6 @@ struct WindowLayout
     void CollapseEmptyLayouts();
     bool CheckForSplit(int x, int y, WindowSplitQuery& query);
     bool CheckForLayout(int x, int y, WindowLayout*& layout);
+    WindowLayout* FindFirstNonSplitLayout();
 };
 

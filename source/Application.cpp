@@ -3,6 +3,7 @@
 #include "WindowTree.h"
 #include "IconRenderer.h"
 #include "WindowBase.h"
+#include "WindowMenuList.h"
 
 class TestWindow : public WindowBase
 {
@@ -66,6 +67,20 @@ int Application::Run()
     win->m_layout.m_tabs.push_back(new TestWindow("another.c", Colori{ 0,0,255,32 }));
     win->m_layout.m_tabs.push_back(new TestWindow("another.txt", Colori{ 0,255,0,32 }));
     wm.AddWindowTree(win);
+
+    auto fileMenu = new WindowMenu;
+    fileMenu->m_name = "File";
+    fileMenu->m_items.push_back(new WindowMenuItem("New"));
+    fileMenu->m_items.push_back(new WindowMenuItem("Load"));
+    fileMenu->m_items.push_back(new WindowMenuItem("Save"));
+    wm.AddWindowMenu(fileMenu);
+    auto buildMenu = new WindowMenu;
+    buildMenu->m_name = "Build";
+    buildMenu->m_items.push_back(new WindowMenuItem("Build"));
+    buildMenu->m_items.push_back(new WindowMenuItem("Run"));
+    buildMenu->m_items.push_back(new WindowMenuItem("Launch on U64"));
+    wm.AddWindowMenu(buildMenu);
+    wm.SetActiveTree(win);
 
     SDL_Event e;
     while (!m_quit)

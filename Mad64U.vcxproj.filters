@@ -40,6 +40,9 @@
     <ClCompile Include="source\WindowManager.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="source\WindowMenuList.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\common.h">
@@ -332,6 +335,9 @@
     </ClInclude>
     <ClInclude Include="source\Singleton.h">
       <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\WindowMenuList.h">
+      <Filter>source</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

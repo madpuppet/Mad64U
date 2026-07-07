@@ -122,3 +122,9 @@ void FontRenderer::RenderText(SDL_Renderer* renderer, const std::string& str, co
     if (outputQuad)
         *outputQuad = SDL_Rect{ (int)cs->rect.x, (int)cs->rect.y, (int)cs->rect.w, (int)cs->rect.h };
 }
+
+void FontRenderer::CalcTextArea(SDL_Renderer* renderer, const std::string& str, const Vec2i &pos, FontIDX fontIdx, Recti &area)
+{
+    auto cs = PrepareRender(renderer, str, pos.x, pos.y, fontIdx);
+    area = Recti{ (int)cs->rect.x, (int)cs->rect.y, (int)cs->rect.w, (int)cs->rect.h };
+}

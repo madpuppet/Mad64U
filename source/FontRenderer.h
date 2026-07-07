@@ -134,10 +134,10 @@ public:
         std::string str;
         SDL_Texture* tex;
         int w, h;
-        std::list<CachedString*>::iterator it;
     };
 
     void RenderText(SDL_Renderer *renderer, const std::string& str, const SDL_Color& col, int x, int y, FontIDX fontIdx, SDL_Rect *outputQuad, bool bCalcSizeOnly);
+    void CalcTextArea(SDL_Renderer* renderer, const std::string& str, const Vec2i &pos, FontIDX fontIdx, Recti& area);
 
     // split render into 2 phases, allowing you to do other things with the render rectangle
     // do not retain the cached string over long periods as it could be reused eventually (after 256 renders)
