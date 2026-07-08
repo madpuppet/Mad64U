@@ -17,7 +17,7 @@ void WindowManager::LayoutMenu()
 {
     if (m_activeTree)
     {
-        m_menuTree.Layout(m_activeTree);
+        m_menuList.Layout(m_activeTree);
     }
 }
 
@@ -88,6 +88,16 @@ void WindowManager::HandleEvent(SDL_Event* e)
                     }
                 }
 
+                if (m_menuList.CheckForMenu(tree, (int)e->button.x, (int)e->button.y, m_mouseMenuQuery))
+                {
+                    auto menu = m_menuList.m_menus[m_mouseMenuQuery.m_menuIdx];
+                    menu->m_open = true;
+                    m_mouseMode = MouseMode_UsingMenu;
+                    m_activeTree = tree;
+                    SDL_CaptureMouse(true);
+                    return;
+                }
+
                 // check for dragging the title bar
                 if (!tree->m_fullscreen && e->button.y < WINDOW_TITLE_BAR_HEIGHT)
                 {
@@ -113,7 +123,7 @@ void WindowManager::HandleEvent(SDL_Event* e)
                 {
                     m_activeTree = m_mouseTabQuery.m_tree;
                     m_activeLayout = m_mouseTabQuery.m_layout;
-                    m_menuTree.Layout(m_activeTree);
+                    m_menuList.Layout(m_activeTree);
 
                     if (tree->CountWindows() == 1)
                     {
@@ -162,7 +172,7 @@ void WindowManager::HandleEvent(SDL_Event* e)
                 {
                     m_activeTree = tree;
                     m_activeLayout = layout;
-                    m_menuTree.Layout(m_activeTree);
+                    m_menuList.Layout(m_activeTree);
                 }
             }
         }
@@ -172,6 +182,22 @@ void WindowManager::HandleEvent(SDL_Event* e)
         {
             switch (m_mouseMode)
             {
+                case MouseMode_UsingMenu:
+                    SDL_CaptureMouse(false);
+                    if (m_mouseMenuQuery.m_menuIdx != -1)
+                    {
+                        auto menu = m_menuList.m_menus[m_mouseMenuQuery.m_menuIdx];
+                        menu->m_open = false;
+                        m_mouseMenuQuery.m_tree->m_dirty = true;
+                        if (m_mouseMenuQuery.m_menuItemIdx != -1)
+                        {
+                            auto item = menu->m_items[m_mouseMenuQuery.m_menuItemIdx];
+                            item->m_activate();
+                        }
+                    }
+                    m_mouseMode = MouseMode_Idle;
+                    break;
+
                 case MouseMode_SelectingTab:
                     m_mouseMode = MouseMode_Idle;
                     break;
@@ -254,6 +280,28 @@ void WindowManager::HandleEvent(SDL_Event* e)
         {
             switch (m_mouseMode)
             {
+                case MouseMode_UsingMenu:
+                {
+                    if (m_mouseMenuQuery.m_tree)
+                        m_mouseMenuQuery.m_tree->m_dirty = true;
+
+                    int oldMenuIdx = m_mouseMenuQuery.m_menuIdx;
+                    m_menuList.CheckForMenu(m_activeTree, (int)e->button.x, (int)e->button.y, m_mouseMenuQuery);
+                    if (m_mouseMenuQuery.m_menuIdx != -1)
+                    {
+                        if (oldMenuIdx != -1 && m_mouseMenuQuery.m_menuIdx != oldMenuIdx)
+                        {
+                            m_menuList.m_menus[oldMenuIdx]->m_open = false;
+                            m_menuList.m_menus[m_mouseMenuQuery.m_menuIdx]->m_open = true;
+                        }
+                    }
+                    else
+                    {
+                        m_mouseMenuQuery.m_menuIdx = oldMenuIdx;
+                    }
+                }
+                break;
+
                 case MouseMode_SelectingTab:
                 {
                     float mx, my;
@@ -414,7 +462,7 @@ void WindowManager::SetActiveTree(WindowTree* tree)
 {
     m_activeTree = tree;
     m_activeLayout = tree->FindFirstNonSplitLayout();
-    m_menuTree.Layout(m_activeTree);
+    m_menuList.Layout(m_activeTree);
 }
 
 

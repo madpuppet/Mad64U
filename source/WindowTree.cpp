@@ -183,7 +183,9 @@ void WindowTree::Paint(Recti* area)
     }
 
     if (wm.GetActiveWindowTree() == this)
-        wm.PaintMenu();
+    {
+        wm.PaintMenu(wm.GetWindowMenuQuery());
+    }
 
     SDL_RenderPresent(m_renderer);
 }

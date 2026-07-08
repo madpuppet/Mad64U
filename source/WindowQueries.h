@@ -35,3 +35,11 @@ struct WindowTabQuery
     int m_tabIndex = -1;
 };
 
+struct WindowMenuQuery
+{
+    void Reset() { m_tree = nullptr; m_menuIdx = -1; m_menuItemIdx = -1; }
+    struct WindowTree* m_tree = nullptr;
+    int m_menuIdx = 0;
+    int m_menuItemIdx = 0;
+};
+

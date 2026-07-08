@@ -70,15 +70,15 @@ int Application::Run()
 
     auto fileMenu = new WindowMenu;
     fileMenu->m_name = "File";
-    fileMenu->m_items.push_back(new WindowMenuItem("New"));
-    fileMenu->m_items.push_back(new WindowMenuItem("Load"));
-    fileMenu->m_items.push_back(new WindowMenuItem("Save"));
+    fileMenu->m_items.push_back(new WindowMenuItem("New", []() {Log("New\n");}));
+    fileMenu->m_items.push_back(new WindowMenuItem("Load", []() {Log("Load\n"); }));
+    fileMenu->m_items.push_back(new WindowMenuItem("Save", []() {Log("Save\n"); }));
     wm.AddWindowMenu(fileMenu);
     auto buildMenu = new WindowMenu;
     buildMenu->m_name = "Build";
-    buildMenu->m_items.push_back(new WindowMenuItem("Build"));
-    buildMenu->m_items.push_back(new WindowMenuItem("Run"));
-    buildMenu->m_items.push_back(new WindowMenuItem("Launch on U64"));
+    buildMenu->m_items.push_back(new WindowMenuItem("Build", []() {Log("Build\n"); }));
+    buildMenu->m_items.push_back(new WindowMenuItem("Run", []() {Log("Run\n"); }));
+    buildMenu->m_items.push_back(new WindowMenuItem("Launch on U64", []() {Log("Launch\n"); }));
     wm.AddWindowMenu(buildMenu);
     wm.SetActiveTree(win);
 
