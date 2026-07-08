@@ -112,8 +112,9 @@ void WindowTree::Paint(Recti* area)
 {
     auto& wm = WindowManager::Instance();
     auto& ir = IconRenderer::Instance();
+    auto& tp = Application::Instance().GetThemeProperties();
 
-    SDL_SetRenderDrawColor(m_renderer, 64, 64, 64, 255);
+    tp.SetRenderDrawColor(m_renderer, ThemeColor::WindowBackground);
     SDL_RenderClear(m_renderer);
     SDL_SetRenderDrawBlendMode(m_renderer, SDL_BLENDMODE_BLEND);
 
@@ -140,23 +141,8 @@ void WindowTree::Paint(Recti* area)
 
     // draw title bar and resize tab
     SDL_FRect sdlBarRect{ 0, 0, (float)windowArea.w, (float)WINDOW_TITLE_BAR_HEIGHT };
-    SDL_SetRenderDrawColor(m_renderer, 64, 32, 16, 255);
+    tp.SetRenderDrawColor(m_renderer, ThemeColor::TitleBar);
     SDL_RenderFillRect(m_renderer, &sdlBarRect);
-    if (!m_fullscreen)
-    {
-        int x0 = windowArea.w;
-        int x1 = windowArea.w - 5;
-        int x2 = windowArea.w - 10;
-        int x3 = windowArea.w - 15;
-        int y0 = windowArea.h;
-        int y1 = windowArea.h - 5;
-        int y2 = windowArea.h - 10;
-        int y3 = windowArea.h - 15;
-        SDL_SetRenderDrawColor(m_renderer, 128, 128, 128, 255);
-        SDL_RenderLine(m_renderer, (float)x3, (float)y0, (float)x0, (float)y3);
-        SDL_RenderLine(m_renderer, (float)x2, (float)y0, (float)x0, (float)y2);
-        SDL_RenderLine(m_renderer, (float)x1, (float)y0, (float)x0, (float)y1);
-    }
 
     // render dock guide
     auto &dockQuery = wm.GetWindowDockQuery();

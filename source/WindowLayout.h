@@ -22,6 +22,7 @@ struct WindowLayout
 
     void Layout(SDL_Renderer* renderer, const Recti& area);
     void AddWindow(int x, int y, WindowBase* window);
+    void AddWindow(WindowBase* window);
     void RemoveWindow(WindowBase* window);
     bool CheckForDocking(int x, int y, WindowDockQuery& query);
     void Paint(SDL_Renderer* renderer, const Recti& area);

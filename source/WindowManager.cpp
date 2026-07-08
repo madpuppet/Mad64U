@@ -21,6 +21,18 @@ void WindowManager::LayoutMenu()
     }
 }
 
+WindowBase* WindowManager::GetActiveWindowBase()
+{
+    if (m_activeLayout && m_activeLayout->m_splitType == WindowLayout::NoSplit && m_activeLayout->m_tabs.size() > 0)
+        return m_activeLayout->m_tabs[m_activeLayout->m_activeTab];
+    return nullptr;
+}
+
+void WindowManager::LayoutWindows()
+{
+    for (auto tree : m_windowTrees)
+        tree->LayoutWindows();
+}
 
 void WindowManager::HandleEvent(SDL_Event* e)
 {
@@ -220,6 +232,9 @@ void WindowManager::HandleEvent(SDL_Event* e)
                     m_mouseTree->m_dirty = true;
                     if (m_mouseDockQuery.m_foundDock)
                     {
+                        m_activeTree = nullptr;
+                        m_activeLayout = nullptr;
+
                         m_mouseDockQuery.m_tree->m_dirty = true;
                         m_mouseDockQuery.m_foundDock = false;
 
@@ -231,6 +246,9 @@ void WindowManager::HandleEvent(SDL_Event* e)
                         {
                             for (auto vw : windows)
                                 m_mouseDockQuery.m_layout->m_tabs.push_back(vw);
+
+                            m_activeTree = m_mouseDockQuery.m_tree;
+                            m_activeLayout = m_mouseDockQuery.m_layout;
                         }
                         else
                         {
@@ -261,6 +279,9 @@ void WindowManager::HandleEvent(SDL_Event* e)
                             for (auto vw : m_mouseDockQuery.m_layout->m_tabs)
                                 m_mouseDockQuery.m_layout->m_splits[1 - splitIdx]->m_tabs.push_back(vw);
                             m_mouseDockQuery.m_layout->m_tabs.clear();
+
+                            m_activeTree = m_mouseDockQuery.m_tree;
+                            m_activeLayout = m_mouseDockQuery.m_layout->m_splits[splitIdx];
                         }
 
                         // delete the old window tree now..
@@ -313,6 +334,8 @@ void WindowManager::HandleEvent(SDL_Event* e)
                         int count = m_mouseTabQuery.m_tree->CountWindows();
                         if (count > 1)
                         {
+                            m_activeLayout = nullptr;
+
                             // drag out virtual window into a new window tree
                             // go to MovingWindow mode
                             auto vw = m_mouseTabQuery.m_layout->m_tabs[m_mouseTabQuery.m_tabIndex];
@@ -339,7 +362,8 @@ void WindowManager::HandleEvent(SDL_Event* e)
                             tree->m_layout.m_splitType = WindowLayout::NoSplit;
                             tree->m_layout.m_tabs.push_back(vw);
                             tree->m_dirty = true;
-                            tree->LayoutWindows();
+                            m_activeTree = tree;
+                            m_activeLayout = &tree->m_layout;
                             m_windowTrees.push_back(tree);
                             m_mouseTree = tree;
                         }
@@ -475,6 +499,15 @@ void WindowManager::Paint()
             tree->Paint(nullptr);
             tree->m_dirty = false;
         }
+    }
+}
+
+void WindowManager::PaintAll()
+{
+    for (auto tree : m_windowTrees)
+    {
+        tree->Paint(nullptr);
+        tree->m_dirty = false;
     }
 }
 

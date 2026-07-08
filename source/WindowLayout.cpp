@@ -44,6 +44,16 @@ void WindowLayout::Layout(SDL_Renderer* renderer, const Recti& area)
     }
 }
 
+void WindowLayout::AddWindow(WindowBase* window)
+{
+    if (m_splitType == NoSplit)
+    {
+        m_tabs.push_back(window);
+        m_activeTab = (int)m_tabs.size() - 1;
+    }
+}
+
+
 void WindowLayout::AddWindow(int x, int y, WindowBase* window)
 {
     if (m_splitType == NoSplit)
@@ -199,6 +209,7 @@ bool WindowLayout::CheckForLayout(int x, int y, WindowLayout*& layout)
 void WindowLayout::Paint(SDL_Renderer* renderer, const Recti& area)
 {
     auto& wm = WindowManager::Instance();
+    auto& tp = Application::Instance().GetThemeProperties();
 
     if (m_area.Overlaps(area))
     {
@@ -212,18 +223,18 @@ void WindowLayout::Paint(SDL_Renderer* renderer, const Recti& area)
                 for (auto w : m_tabs)
                 {
                     SDL_FRect sdlTabInnerRect{ (float)w->m_tabArea.x, (float)(w->m_tabArea.y + 2), (float)w->m_tabArea.w, (float)WINDOW_TAB_BAR_HEIGHT - 2 };
-                    SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
+                    tp.SetRenderDrawColor(renderer, ThemeColor::TabBackground);
                     SDL_RenderFillRect(renderer, &sdlTabInnerRect);
 
-                    SDL_Color col{ 200,200,200,255 };
+                    SDL_Color col = tp.m_colors[(int)ThemeColor::TabText];
                     if (m_activeTab != -1 && m_tabs[m_activeTab] == w)
-                        col = SDL_Color{ 255,255,255,255 };
+                        col = tp.m_colors[(int)ThemeColor::TabTextSelected];
 
                     fr.RenderText(renderer, w->m_name, col, w->m_tabArea.x + TEXT_HBORDER, w->m_tabArea.y + 4, FontRenderer::UIFont, nullptr, false);
 
                     if (m_activeTab != -1 && m_tabs[m_activeTab] == w)
                     {
-                        SDL_SetRenderDrawColor(renderer, 255, 128, 255, 255);
+                        tp.SetRenderDrawColor(renderer, ThemeColor::TabHighlight);
                         SDL_RenderLine(renderer, (float)w->m_tabArea.x, (float)w->m_tabArea.y + 1, (float)w->m_tabArea.x + (float)w->m_tabArea.w, (float)w->m_tabArea.y + 1);
                     }
                 }
@@ -236,7 +247,7 @@ void WindowLayout::Paint(SDL_Renderer* renderer, const Recti& area)
             {
                 // just clear the body
                 SDL_FRect sdlBodyRect{ (float)bodyRect.x, (float)bodyRect.y, (float)bodyRect.w, (float)bodyRect.h };
-                SDL_SetRenderDrawColor(renderer, 32, 32, 32, 255);
+                tp.SetRenderDrawColor(renderer, ThemeColor::WindowClientEmpty);
                 SDL_RenderFillRect(renderer, &sdlBodyRect);
             }
 

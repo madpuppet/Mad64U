@@ -9,6 +9,7 @@ public:
     Recti m_area;
     Recti m_tabArea;
 
-    virtual void Paint(SDL_Renderer* renderer, const Recti& dirtyArea) {}
+    virtual void Paint(SDL_Renderer* renderer, const Recti& dirtyArea) = 0;
+    virtual void Close() = 0;
 };
 

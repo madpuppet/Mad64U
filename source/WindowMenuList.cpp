@@ -81,15 +81,12 @@ void WindowMenuList::Paint(const WindowMenuQuery& highlight)
 
 void WindowMenuList::Layout(WindowTree *tree)
 {
-    if (tree != m_tree)
+    m_tree = tree;
+    Vec2i pos{ 16,2 };
+    for (auto menu : m_menus)
     {
-        m_tree = tree;
-        Vec2i pos{ 16,2 };
-        for (auto menu : m_menus)
-        {
-            menu->Layout(tree->m_renderer, pos);
-            pos.x = menu->m_area.x + menu->m_area.w + 32;
-        }
+        menu->Layout(tree->m_renderer, pos);
+        pos.x = menu->m_area.x + menu->m_area.w + 32;
     }
 }
 

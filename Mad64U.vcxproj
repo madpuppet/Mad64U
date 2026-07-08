@@ -144,6 +144,7 @@
     <ClCompile Include="source\FontRenderer.cpp" />
     <ClCompile Include="source\IconRenderer.cpp" />
     <ClCompile Include="source\Mad64U.cpp" />
+    <ClCompile Include="source\SourceFileManager.cpp" />
     <ClCompile Include="source\WindowBase.cpp" />
     <ClCompile Include="source\WindowLayout.cpp" />
     <ClCompile Include="source\WindowManager.cpp" />
@@ -243,6 +244,7 @@
     <ClInclude Include="source\common.h" />
     <ClInclude Include="source\IconRenderer.h" />
     <ClInclude Include="source\Singleton.h" />
+    <ClInclude Include="source\SourceFileManager.h" />
     <ClInclude Include="source\WindowLayout.h" />
     <ClInclude Include="source\WindowManager.h" />
     <ClInclude Include="source\WindowMenuList.h" />

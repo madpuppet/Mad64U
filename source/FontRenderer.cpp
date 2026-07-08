@@ -76,8 +76,6 @@ FontRenderer::CachedString *FontRenderer::PrepareRender(SDL_Renderer * renderer,
 
         m_map[hash] = cs;
 
-        Log("Add Text: %s,  Renderer: %p,  Hash: %lld\n", cs->str.c_str(), cs->renderer, cs->hash);
-
         SDL_Color white = { 255, 255, 255, 255 };
         SDL_Surface* surface = TTF_RenderText_Blended(font, str.c_str(), str.size(), white);
         cs->tex = SDL_CreateTextureFromSurface(renderer, surface);

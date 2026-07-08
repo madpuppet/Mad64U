@@ -31,12 +31,15 @@ public:
 
     WindowLayout* GetActiveWindowLayout() { return m_activeLayout; }
     WindowTree* GetActiveWindowTree() { return m_activeTree; }
+    WindowBase* GetActiveWindowBase();
 
     bool IsMovingSplit() { return m_mouseMode == MouseMode_MovingSplit; }
     void Paint();
+    void PaintAll();
     void PaintMenu(const WindowMenuQuery& highlight) { m_menuList.Paint(highlight); }
     void LayoutMenu();
     void SetActiveTree(WindowTree* tree);
+    void LayoutWindows();
 
     // used for test data
     void AddWindowTree(WindowTree* tree) { m_windowTrees.push_back(tree); tree->LayoutWindows(); }
