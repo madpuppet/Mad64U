@@ -87,7 +87,7 @@ WindowTree::WindowTree(const Recti& area)
     SDL_SetWindowPosition(m_window, area.x, area.y);
     m_windowID = SDL_GetWindowID(m_window);
 
-    m_renderer = SDL_CreateRenderer(m_window, "gpu");
+    m_renderer = SDL_CreateRenderer(m_window, "direct3d11");
     if (m_renderer == NULL)
     {
         Log("Renderer could not be created! SDL_Error: %s\n", SDL_GetError());
@@ -271,3 +271,12 @@ bool WindowTree::CheckForLayout(int x, int y, WindowLayout*& layout)
 {
     return m_layout.CheckForLayout(x, y, layout);
 }
+
+WindowLayout* WindowTree::FindLayoutFromWindow(WindowBase* window, int& tabIdx)
+{
+    return m_layout.FindLayoutFromWindow(window, tabIdx);
+}
+
+
+
+

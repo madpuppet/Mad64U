@@ -53,6 +53,7 @@ struct Recti
     bool Contains(int xx, int yy) { return xx >= x && xx < (x + w) && yy >= y && yy < (y + h); }
     bool Overlaps(const Recti& o) { return x < (o.x + o.w) && (x + w) >= o.x && y < (o.y + o.h) && (y + h); }
     SDL_FRect AsSDLFRect() const { return SDL_FRect((float)x, (float)y, (float)w, (float)h); }
+    SDL_Rect AsSDLRect() const { return SDL_Rect(x, y, w, h); }
 };
 
 struct Vec2i

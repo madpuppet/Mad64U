@@ -24,6 +24,7 @@ struct WindowTree
     bool m_dirty = true;
     bool m_fullscreen = false;
 
+    WindowLayout *FindLayoutFromWindow(WindowBase *window, int &tabIdx);
     void LayoutWindows();
     void AddWindow(int x, int y, WindowBase* window);
     void RemoveWindow(WindowBase* window);

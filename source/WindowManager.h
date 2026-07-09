@@ -40,6 +40,7 @@ public:
     void LayoutMenu();
     void SetActiveTree(WindowTree* tree);
     void LayoutWindows();
+    void RemoveWindow(WindowBase* window);
 
     // used for test data
     void AddWindowTree(WindowTree* tree) { m_windowTrees.push_back(tree); tree->LayoutWindows(); }

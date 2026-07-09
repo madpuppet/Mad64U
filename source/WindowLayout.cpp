@@ -22,6 +22,7 @@ void WindowLayout::Layout(SDL_Renderer* renderer, const Recti& area)
                 fr.RenderText(renderer, t->m_name, col, tabX, tabY, FontRenderer::UIFont, &tabTextArea, true);
                 t->m_tabArea = { tabX, tabY, tabTextArea.w + TEXT_HBORDER * 2, tabTextArea.h };
                 tabX = tabTextArea.x + tabTextArea.w + TEXT_HBORDER * 3;
+                t->LayoutScrollbars();
             }
         }
         break;
@@ -241,7 +242,13 @@ void WindowLayout::Paint(SDL_Renderer* renderer, const Recti& area)
 
                 // render active tab body
                 if (m_activeTab != -1)
+                {
+                    m_tabs[m_activeTab]->PaintScrollbars(renderer);
+                    SDL_Rect clientArea = m_tabs[m_activeTab]->m_clientArea.AsSDLRect();
+                    SDL_SetRenderClipRect(renderer, &clientArea);
                     m_tabs[m_activeTab]->Paint(renderer, area);
+                    SDL_SetRenderClipRect(renderer, nullptr);
+                }
             }
             else
             {
@@ -351,6 +358,29 @@ WindowLayout* WindowLayout::FindFirstNonSplitLayout()
             return layout;
         return m_splits[1]->FindFirstNonSplitLayout();
     }
+}
+
+WindowLayout* WindowLayout::FindLayoutFromWindow(WindowBase* window, int& tabIdx)
+{
+    if (m_splitType == NoSplit)
+    {
+        for (size_t i = 0; i < m_tabs.size(); i++)
+        {
+            if (m_tabs[i] == window)
+            {
+                tabIdx = (int)i;
+                return this;
+            }
+        }
+    }
+    else
+    {
+        auto layout = m_splits[0]->FindLayoutFromWindow(window, tabIdx);
+        if (layout)
+            return layout;
+        return m_splits[1]->FindLayoutFromWindow(window, tabIdx);
+    }
+    return nullptr;
 }
 
 bool WindowLayout::CheckForTab(int x, int y, WindowTabQuery& query)

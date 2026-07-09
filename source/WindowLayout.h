@@ -33,5 +33,6 @@ struct WindowLayout
     bool CheckForSplit(int x, int y, WindowSplitQuery& query);
     bool CheckForLayout(int x, int y, WindowLayout*& layout);
     WindowLayout* FindFirstNonSplitLayout();
+    WindowLayout* FindLayoutFromWindow(WindowBase* window, int& tabIdx);
 };
 

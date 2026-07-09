@@ -32,6 +32,9 @@ enum class ThemeColor
     SourceBackgroundSelected,
     SourceText,
     SourceTextSelected,
+    ScrollBarBackground,
+    ScrollBar,
+    ScrollBarSelected,
     MAX
 };
 constexpr size_t NumThemeColor = static_cast<size_t>(ThemeColor::MAX);

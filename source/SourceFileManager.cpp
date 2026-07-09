@@ -32,7 +32,7 @@ void SourceFileRenderer::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     else
         tp.SetRenderDrawColor(renderer, ThemeColor::SourceBackground);
 
-    SDL_FRect body = m_area.AsSDLFRect();
+    SDL_FRect body = m_clientArea.AsSDLFRect();
     SDL_RenderFillRect(renderer, &body);
 
     auto& fr = FontRenderer::Instance();
@@ -43,15 +43,15 @@ void SourceFileRenderer::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     else
         col = tp.m_colors[(int)ThemeColor::SourceText];
 
-    int x = m_area.x;
-    int y = m_area.y;
+    int x = m_clientArea.x;
+    int y = m_clientArea.y;
     for (auto line : m_sourceFile->m_lines)
     {
-        if (y + SOURCE_FILE_LINE_HEIGHT >= m_area.y)
+        if (y + SOURCE_FILE_LINE_HEIGHT >= m_clientArea.y)
             fr.RenderText(renderer, line->m_chars, col, x, y, FontRenderer::TextFont, nullptr, false);
 
         y += SOURCE_FILE_LINE_HEIGHT;
-        if (y > m_area.y + m_area.h)
+        if (y > m_clientArea.y + m_clientArea.h)
             break;
     }
 }
@@ -62,7 +62,7 @@ void SourceFileRenderer::Close()
     {
         { SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 2, "Cancel" },
         { SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "Yes" },
-        { 0, 0, "No" }
+        { 0, 0, "Cancel" }
     };
 
     SDL_MessageBoxData data =
@@ -97,6 +97,10 @@ void SourceFileRenderer::Close()
                     break;
             }
         }
+    }
+    else
+    {
+        SourceFileManager::Instance().CloseFile(m_sourceFile);
     }
 }
 
@@ -156,6 +160,7 @@ bool SourceFileManager::LoadFile(const std::string& path)
 
     std::string line;
     auto sourceFile = new SourceFile(path);
+    Vec2i size{ 0,0 };
     while (std::getline(file, line))
     {
         // Strip trailing CR if reading a Windows file on Linux/macOS.
@@ -165,11 +170,14 @@ bool SourceFileManager::LoadFile(const std::string& path)
         }
         SourceLine* sl = new SourceLine;
         sl->m_chars = std::move(line);
+        size.x = Max(size.x, (int)(sl->m_chars.size() * 16));
         sourceFile->m_lines.push_back(sl);
     }
+    size.y = (int)(sourceFile->m_lines.size() * 16);
     m_sourceFiles.push_back(sourceFile);
 
     auto sourceFileRenderer = new SourceFileRenderer(sourceFile);
+    sourceFileRenderer->m_clientContentSize = size;
     m_sourceFileRenderers.push_back(sourceFileRenderer);
     WindowManager::Instance().GetActiveWindowLayout()->AddWindow(sourceFileRenderer);
     WindowManager::Instance().GetActiveWindowTree()->LayoutWindows();
@@ -184,5 +192,28 @@ bool SourceFileManager::SaveFile(SourceFile* file)
 
 bool SourceFileManager::CloseFile(SourceFile* file)
 {
+    // delete all renderers
+    std::vector<SourceFileRenderer*> removed;
+
+    for (auto fr : m_sourceFileRenderers)
+    {
+        if (fr->m_sourceFile == file)
+        {
+            removed.push_back(fr);
+            WindowManager::Instance().RemoveWindow(fr);
+        }
+    }
+
+    auto condition = [&removed](const auto& fr) -> bool
+        {
+            return std::find(removed.begin(), removed.end(), fr) != removed.end();
+        };
+    std::erase_if(m_sourceFileRenderers, condition);
+
+    // delete the file
+    delete file;
+    m_sourceFiles.erase(std::find(m_sourceFiles.begin(), m_sourceFiles.end(), file));
+
+    WindowManager::Instance().LayoutWindows();
     return true;
 }

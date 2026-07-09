@@ -249,6 +249,7 @@ void WindowManager::HandleEvent(SDL_Event* e)
 
                             m_activeTree = m_mouseDockQuery.m_tree;
                             m_activeLayout = m_mouseDockQuery.m_layout;
+                            m_menuList.Layout(m_activeTree);
                         }
                         else
                         {
@@ -282,6 +283,7 @@ void WindowManager::HandleEvent(SDL_Event* e)
 
                             m_activeTree = m_mouseDockQuery.m_tree;
                             m_activeLayout = m_mouseDockQuery.m_layout->m_splits[splitIdx];
+                            m_menuList.Layout(m_activeTree);
                         }
 
                         // delete the old window tree now..
@@ -366,6 +368,8 @@ void WindowManager::HandleEvent(SDL_Event* e)
                             m_activeLayout = &tree->m_layout;
                             m_windowTrees.push_back(tree);
                             m_mouseTree = tree;
+                            m_menuList.Layout(tree);
+                            tree->LayoutWindows();
                         }
                     }
                 }
@@ -377,7 +381,10 @@ void WindowManager::HandleEvent(SDL_Event* e)
                     int newW = Max(128, (int)e->button.x - m_mouseGrabPos.x + m_mouseInitial.x);
                     int newH = Max(128, (int)e->button.y - m_mouseGrabPos.y + m_mouseInitial.y);
                     SDL_SetWindowSize(m_mouseTree->m_window, newW, newH);
+                    SDL_SyncWindow(m_mouseTree->m_window);
+                    SDL_SetRenderViewport(m_mouseTree->m_renderer, nullptr);
                     m_mouseTree->LayoutWindows();
+                    m_mouseTree->Paint(nullptr);
                 }
                 break;
 
@@ -516,4 +523,28 @@ WindowManager::~WindowManager()
     for (auto tree : m_windowTrees)
         delete tree;
 }
+
+void WindowManager::RemoveWindow(WindowBase* window)
+{
+    for (auto tree : m_windowTrees)
+    {
+        int tabIdx = 0;
+        auto layout = tree->FindLayoutFromWindow(window, tabIdx);
+        if (layout)
+        {
+            if (layout->m_activeTab == tabIdx)
+                layout->m_activeTab = 0;
+            layout->m_tabs.erase(layout->m_tabs.begin() + tabIdx);
+            if (layout->m_tabs.empty())
+            {
+                // collapse empty tab
+                tree->CollapseEmptyLayouts();
+            }
+            tree->LayoutWindows();
+            return;
+        }
+    }
+}
+
+
 

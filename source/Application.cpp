@@ -10,14 +10,19 @@
 class TestWindow : public WindowBase
 {
 public:
-    TestWindow(const std::string& name, const Colori& col) : m_bgCol(col) { m_name = name; }
+    TestWindow(const std::string& name, const SDL_Color& col) : m_bgCol(col) { m_name = name; }
     void Paint(SDL_Renderer* renderer, const Recti& dirtyArea) override
     {
         SDL_SetRenderDrawColor(renderer, m_bgCol.r, m_bgCol.g, m_bgCol.b, m_bgCol.a);
-        SDL_FRect body = m_area.AsSDLFRect();
+        SDL_FRect body = m_clientArea.AsSDLFRect();
         SDL_RenderFillRect(renderer, &body);
     }
-    Colori m_bgCol;
+    void Close()
+    {
+        WindowManager::Instance().RemoveWindow(this);
+        delete this;
+    }
+    SDL_Color m_bgCol;
 };
 
 
@@ -201,6 +206,9 @@ void Application::CreateThemes()
         theme.m_colors[(int)ThemeColor::SourceBackgroundSelected] = SDL_Color(0, 0, 0, 255);
         theme.m_colors[(int)ThemeColor::SourceText] = SDL_Color(180, 200, 240, 128);
         theme.m_colors[(int)ThemeColor::SourceTextSelected] = SDL_Color(180, 200, 240, 255);
+        theme.m_colors[(int)ThemeColor::ScrollBarBackground] = SDL_Color(0, 0, 0, 255);
+        theme.m_colors[(int)ThemeColor::ScrollBar] = SDL_Color(128, 128, 0, 255);
+        theme.m_colors[(int)ThemeColor::ScrollBarSelected] = SDL_Color(255, 255, 0, 255);
     }
 
     {
@@ -220,6 +228,9 @@ void Application::CreateThemes()
         theme.m_colors[(int)ThemeColor::SourceBackgroundSelected] = SDL_Color(200, 180, 150, 255);
         theme.m_colors[(int)ThemeColor::SourceText] = SDL_Color(0, 0, 0, 128);
         theme.m_colors[(int)ThemeColor::SourceTextSelected] = SDL_Color(0, 0, 0, 255);
+        theme.m_colors[(int)ThemeColor::ScrollBarBackground] = SDL_Color(0, 0, 0, 255);
+        theme.m_colors[(int)ThemeColor::ScrollBar] = SDL_Color(128, 128, 0, 255);
+        theme.m_colors[(int)ThemeColor::ScrollBarSelected] = SDL_Color(255, 255, 0, 255);
     }
 }
 
@@ -266,6 +277,12 @@ int Application::Run()
     SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
 
     auto win = new WindowTree(Recti{ 300,100,640,512 });
+    auto testr = new TestWindow("TEST_RED", SDL_Color{ 255,0,0,255 });
+    auto testg = new TestWindow("TEST_GREEN", SDL_Color{ 0,255,0,255 });
+    auto testb = new TestWindow("TEST_BLUE", SDL_Color{ 0,0,255,255 });
+    win->m_layout.m_tabs.push_back(testr);
+    win->m_layout.m_tabs.push_back(testg);
+    win->m_layout.m_tabs.push_back(testb);
     wm.AddWindowTree(win);
     wm.SetActiveTree(win);
 
