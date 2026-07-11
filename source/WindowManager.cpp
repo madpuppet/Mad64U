@@ -211,6 +211,7 @@ void WindowManager::HandleEvent(SDL_Event* e)
                     {
                         m_activeTree = tree;
                         m_activeLayout = layout;
+                        m_activeWindow = layout->GetActiveWindow();
                         m_menuList.Layout(m_activeTree);
                     }
                 }

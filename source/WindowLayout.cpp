@@ -62,7 +62,9 @@ bool WindowLayout::Tick()
     }
     else
     {
-        return m_splits[0]->Tick() || m_splits[1]->Tick();
+        bool result = m_splits[0]->Tick();
+        result |= m_splits[1]->Tick();
+        return result;
     }
 }
 
