@@ -42,11 +42,14 @@ void LoadFileCallback(void* userdata, const char* const* filelist, int filter)
 {
     if (filelist && *filelist)
     {
+        std::vector<std::string> paths;
         while (*filelist)
         {
-            SourceFileManager::Instance().LoadFile(*filelist);
+            paths.push_back(std::string(*filelist));
             filelist++;
         }
+
+        SourceFileManager::Instance().RequestLoadFiles(paths);
     }
     else
     {
@@ -203,12 +206,14 @@ void Application::CreateThemes()
         theme.m_colors[(int)ThemeColor::TabTextSelected] = SDL_Color(255, 255, 255, 255);
         theme.m_colors[(int)ThemeColor::TabHighlight] = SDL_Color(255, 128, 255, 255);
         theme.m_colors[(int)ThemeColor::SourceBackground] = SDL_Color(32, 32, 32, 255);
-        theme.m_colors[(int)ThemeColor::SourceBackgroundSelected] = SDL_Color(0, 0, 0, 255);
-        theme.m_colors[(int)ThemeColor::SourceText] = SDL_Color(180, 200, 240, 128);
-        theme.m_colors[(int)ThemeColor::SourceTextSelected] = SDL_Color(180, 200, 240, 255);
+        theme.m_colors[(int)ThemeColor::SourceBackgroundSelected] = SDL_Color(56, 60, 64, 255);
         theme.m_colors[(int)ThemeColor::ScrollBarBackground] = SDL_Color(0, 0, 0, 255);
         theme.m_colors[(int)ThemeColor::ScrollBar] = SDL_Color(128, 128, 0, 255);
         theme.m_colors[(int)ThemeColor::ScrollBarSelected] = SDL_Color(255, 255, 0, 255);
+        theme.m_colors[(int)ThemeColor::Cursor] = SDL_Color(255, 255, 128, 255);
+        theme.m_colors[(int)ThemeColor::TextGeneral] = SDL_Color(230, 230, 230, 255);
+        theme.m_colors[(int)ThemeColor::TextOperator] = SDL_Color(64, 255, 255, 255);
+        theme.m_colors[(int)ThemeColor::TextComment] = SDL_Color(128, 255, 128, 255);
     }
 
     {
@@ -224,13 +229,47 @@ void Application::CreateThemes()
         theme.m_colors[(int)ThemeColor::TabText] = SDL_Color(200, 200, 200, 255);
         theme.m_colors[(int)ThemeColor::TabTextSelected] = SDL_Color(255, 255, 255, 255);
         theme.m_colors[(int)ThemeColor::TabHighlight] = SDL_Color(255, 128, 255, 255);
-        theme.m_colors[(int)ThemeColor::SourceBackground] = SDL_Color(180, 160, 130, 255);
+        theme.m_colors[(int)ThemeColor::SourceBackground] = SDL_Color(180, 170, 160, 255);
         theme.m_colors[(int)ThemeColor::SourceBackgroundSelected] = SDL_Color(200, 180, 150, 255);
-        theme.m_colors[(int)ThemeColor::SourceText] = SDL_Color(0, 0, 0, 128);
-        theme.m_colors[(int)ThemeColor::SourceTextSelected] = SDL_Color(0, 0, 0, 255);
         theme.m_colors[(int)ThemeColor::ScrollBarBackground] = SDL_Color(0, 0, 0, 255);
         theme.m_colors[(int)ThemeColor::ScrollBar] = SDL_Color(128, 128, 0, 255);
         theme.m_colors[(int)ThemeColor::ScrollBarSelected] = SDL_Color(255, 255, 0, 255);
+        theme.m_colors[(int)ThemeColor::Cursor] = SDL_Color(64, 64, 0, 255);
+        theme.m_colors[(int)ThemeColor::TextGeneral] = SDL_Color(0, 0, 0, 255);
+        theme.m_colors[(int)ThemeColor::TextOperator] = SDL_Color(0, 0, 255, 255);
+        theme.m_colors[(int)ThemeColor::TextComment] = SDL_Color(0, 128, 0, 255);
+    }
+}
+
+Uint32 TimerEventType = 0;
+static Uint32 SDLCALL TimerCallback(void* userdata, SDL_TimerID timerID, Uint32 interval)
+{
+    SDL_Event event{};
+    event.type = TimerEventType;
+    event.user.code = 123;
+    event.user.data1 = userdata;
+
+    SDL_PushEvent(&event);
+
+    // Return the next interval.
+    // Return 0 to make this a one-shot timer.
+    return interval;
+}
+
+void Application::AddTimerEvent()
+{
+    TimerEventType = SDL_RegisterEvents(1);
+
+    if (TimerEventType == 0)
+    {
+        Log("SDL_RegisterEvents failed: %s\n", SDL_GetError());
+        return;
+    }
+
+    SDL_TimerID timer = SDL_AddTimer(WINDOW_TICK_MS, TimerCallback, nullptr);
+    if (timer == 0)
+    {
+        Log("SDL_AddTimer failed: %s\n", SDL_GetError());
     }
 }
 
@@ -247,22 +286,6 @@ int Application::Run()
     {
         auto name = SDL_GetRenderDriver(i);
         Log("RENDERER: %s\n", name);
-    }
-
-    // init fonts
-    TTF_Init();
-    m_uiFont = TTF_OpenFont("data/font.ttf", 16);
-    if (m_uiFont == nullptr)
-    {
-        Log("Unable to create font.ttf\n");
-        exit(0);
-    }
-
-    m_textFont = TTF_OpenFont("data/font.ttf", 16);
-    if (m_textFont == nullptr)
-    {
-        Log("Unable to create fontc64.ttf\n");
-        exit(0);
     }
 
     // create 
@@ -288,13 +311,21 @@ int Application::Run()
 
     CreateThemes();
     CreateMenus();
+    AddTimerEvent();
 
     SDL_Event e;
     while (!m_quit)
     {
         while (SDL_PollEvent(&e))
-            wm.HandleEvent(&e);
-
+        {
+            if (e.type == TimerEventType)
+            {
+                SourceFileManager::Instance().Tick();
+                WindowManager::Instance().Tick();
+            }
+            else
+                wm.HandleEvent(&e);
+        }
         wm.Paint();
     }
 

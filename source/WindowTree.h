@@ -38,7 +38,8 @@ struct WindowTree
     bool CheckForSplit(int x, int y, WindowSplitQuery& query);
     bool CheckForLayout(int x, int y, WindowLayout*& layout);
     WindowLayout* FindFirstNonSplitLayout();
-    bool CheckForMenu(int x, int y, WindowMenuQuery& query);
+    bool CheckForScrollBar(int x, int y, WindowScrollBarQuery& query);
+    void Tick();
 
     void MakeFullscreen();
     void MakeWindowed();

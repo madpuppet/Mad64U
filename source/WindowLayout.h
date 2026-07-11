@@ -32,6 +32,10 @@ struct WindowLayout
     void CollapseEmptyLayouts();
     bool CheckForSplit(int x, int y, WindowSplitQuery& query);
     bool CheckForLayout(int x, int y, WindowLayout*& layout);
+    bool CheckForScrollBar(int x, int y, WindowScrollBarQuery& query);
+    bool Tick();
+    class WindowBase* GetActiveWindow();
+
     WindowLayout* FindFirstNonSplitLayout();
     WindowLayout* FindLayoutFromWindow(WindowBase* window, int& tabIdx);
 };

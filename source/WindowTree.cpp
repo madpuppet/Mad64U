@@ -277,6 +277,15 @@ WindowLayout* WindowTree::FindLayoutFromWindow(WindowBase* window, int& tabIdx)
     return m_layout.FindLayoutFromWindow(window, tabIdx);
 }
 
+bool WindowTree::CheckForScrollBar(int x, int y, WindowScrollBarQuery& query)
+{
+    query.m_tree = this;
+    return m_layout.CheckForScrollBar(x, y, query);
+}
 
+void WindowTree::Tick()
+{
+    m_dirty |= m_layout.Tick();
+}
 
 

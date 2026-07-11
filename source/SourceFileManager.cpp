@@ -3,105 +3,32 @@
 #include "WindowManager.h"
 #include "FontRenderer.h"
 #include "Application.h"
+#include "SourceFileRenderer.h"
 #include <filesystem>
 #include <fstream>
 #include <string>
 #include <vector>
 
-#define SOURCE_FILE_LINE_HEIGHT 16
+const char* s_keywords_asm[] = { "tax", "eor", "dec", "pla", "rts", "rti", "bcc", "txa", "clc", "sec", "cpx", "cpy", "cmp", "bne", "beq", "bmi", "bpl", "ldx", "ldy", "stx", "sty", "jsr", "jmp", "tay", "tya", "pha", "dey", "dex", "inc", "inx", "iny", "lda", "sta", "adc", "lsr", "asr", "asl", "lsl", "and", "ora", "xor", "sei", "cli", 0};
+const char* s_keywords_c[] = { "void", "for", "if", "else", 0 };
 
-SourceFileRenderer::SourceFileRenderer(SourceFile* file) : m_sourceFile(file)
+void SourceFileManager::InitKeywords(const char** keywords, SourceType sourceType, bool caseSensitive)
 {
-    if (file->m_path.empty())
+    const char** k = keywords;
+    while (*k)
     {
-        m_name = "<new-file>";
-    }
-    else
-    {
-        std::filesystem::path path = file->m_path;
-        m_name = path.filename().string();
+        if (caseSensitive)
+            m_keywords[(int)SourceType::Asm].insert(HashU8(0, *k));
+        else
+            m_keywords[(int)SourceType::Asm].insert(HashU8NoCase(0, *k));
+        k++;
     }
 }
 
-void SourceFileRenderer::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
+SourceFileManager::SourceFileManager()
 {
-    auto& tp = Application::Instance().GetThemeProperties();
-    auto window = WindowManager::Instance().GetActiveWindowBase();
-    if (window == this)
-        tp.SetRenderDrawColor(renderer, ThemeColor::SourceBackgroundSelected);
-    else
-        tp.SetRenderDrawColor(renderer, ThemeColor::SourceBackground);
-
-    SDL_FRect body = m_clientArea.AsSDLFRect();
-    SDL_RenderFillRect(renderer, &body);
-
-    auto& fr = FontRenderer::Instance();
-
-    SDL_Color col;
-    if (window == this)
-        col = tp.m_colors[(int)ThemeColor::SourceTextSelected];
-    else
-        col = tp.m_colors[(int)ThemeColor::SourceText];
-
-    int x = m_clientArea.x;
-    int y = m_clientArea.y;
-    for (auto line : m_sourceFile->m_lines)
-    {
-        if (y + SOURCE_FILE_LINE_HEIGHT >= m_clientArea.y)
-            fr.RenderText(renderer, line->m_chars, col, x, y, FontRenderer::TextFont, nullptr, false);
-
-        y += SOURCE_FILE_LINE_HEIGHT;
-        if (y > m_clientArea.y + m_clientArea.h)
-            break;
-    }
-}
-
-void SourceFileRenderer::Close()
-{
-    SDL_MessageBoxButtonData buttons[] =
-    {
-        { SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 2, "Cancel" },
-        { SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "Yes" },
-        { 0, 0, "Cancel" }
-    };
-
-    SDL_MessageBoxData data =
-    {
-        SDL_MESSAGEBOX_INFORMATION,
-        nullptr,               // parent window
-        "Confirm",
-        "Do you want to save changes?",
-        SDL_arraysize(buttons),
-        buttons,
-        nullptr                // color scheme
-    };
-
-    int buttonid = -1;
-
-    if (m_sourceFile->m_modified)
-    {
-        if (SDL_ShowMessageBox(&data, &buttonid))
-        {
-            switch (buttonid)
-            {
-                case 2:
-                    break;
-
-                case 1:
-                    SourceFileManager::Instance().SaveFile(m_sourceFile);
-                    SourceFileManager::Instance().CloseFile(m_sourceFile);
-                    break;
-
-                case 0:
-                    SourceFileManager::Instance().CloseFile(m_sourceFile);
-                    break;
-            }
-        }
-    }
-    else
-    {
-        SourceFileManager::Instance().CloseFile(m_sourceFile);
-    }
+    InitKeywords(s_keywords_asm, SourceType::Asm, false);
+    InitKeywords(s_keywords_c, SourceType::C, true);
 }
 
 bool SourceFileManager::RenameFile(SourceFile* file, const std::string& path)
@@ -122,7 +49,6 @@ bool SourceFileManager::RenameFile(SourceFile* file, const std::string& path)
     WindowManager::Instance().LayoutWindows();
     return true;
 }
-
 
 bool SourceFileManager::NewFile(const std::string& path)
 {
@@ -148,41 +74,59 @@ SourceFile* SourceFileManager::GetFileFromWindow(WindowBase* window)
     return nullptr;
 }
 
-
-bool SourceFileManager::LoadFile(const std::string& path)
+void SourceFileManager::RequestLoadFiles(std::vector<std::string> paths)
 {
-    std::ifstream file(path);
+    m_lock.lock();
+    m_filesToLoad.insert(m_filesToLoad.end(), paths.begin(), paths.end());
+    m_lock.unlock();
+}
 
-    if (!file)
-    {
-        return false;
-    }
+void SourceFileManager::Tick()
+{
+    LoadRequestedFiles();
+}
 
-    std::string line;
-    auto sourceFile = new SourceFile(path);
-    Vec2i size{ 0,0 };
-    while (std::getline(file, line))
+void SourceFileManager::LoadRequestedFiles()
+{
+    std::vector<std::string> paths;
+    m_lock.lock();
+    paths = std::move(m_filesToLoad);
+    m_lock.unlock();
+    if (paths.empty())
+        return;
+
+    bool success = false;
+    auto& wm = WindowManager::Instance();
+    for (auto& path : paths)
     {
-        // Strip trailing CR if reading a Windows file on Linux/macOS.
-        if (!line.empty() && line.back() == '\r')
+        std::ifstream file(path);
+        if (!file)
+            continue;
+
+        success = true;
+        Log("Load %s\n", path.c_str());
+
+        std::string line;
+        auto sourceFile = new SourceFile(path);
+        while (std::getline(file, line))
         {
-            line.pop_back();
+            // Strip trailing CR if reading a Windows file on Linux/macOS.
+            if (!line.empty() && line.back() == '\r')
+            {
+                line.pop_back();
+            }
+            SourceLine* sl = new SourceLine;
+            sl->m_chars = std::move(line);
+            sourceFile->m_lines.push_back(sl);
         }
-        SourceLine* sl = new SourceLine;
-        sl->m_chars = std::move(line);
-        size.x = Max(size.x, (int)(sl->m_chars.size() * 16));
-        sourceFile->m_lines.push_back(sl);
+        m_sourceFiles.push_back(sourceFile);
+
+        auto sourceFileRenderer = new SourceFileRenderer(sourceFile);
+        m_sourceFileRenderers.push_back(sourceFileRenderer);
+        wm.AddWindow(sourceFileRenderer);
     }
-    size.y = (int)(sourceFile->m_lines.size() * 16);
-    m_sourceFiles.push_back(sourceFile);
-
-    auto sourceFileRenderer = new SourceFileRenderer(sourceFile);
-    sourceFileRenderer->m_clientContentSize = size;
-    m_sourceFileRenderers.push_back(sourceFileRenderer);
-    WindowManager::Instance().GetActiveWindowLayout()->AddWindow(sourceFileRenderer);
-    WindowManager::Instance().GetActiveWindowTree()->LayoutWindows();
-
-    return true;
+    if (success)
+        WindowManager::Instance().GetActiveWindowTree()->LayoutWindows();
 }
 
 bool SourceFileManager::SaveFile(SourceFile* file)

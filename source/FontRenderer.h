@@ -116,15 +116,20 @@ private:
 };
 
 
+enum class FontType
+{
+    UI,
+    Text,
+    MAX
+};
+constexpr size_t NumFonts = static_cast<size_t>(FontType::MAX);
+
 
 class FontRenderer : public Singleton<FontRenderer>
 {
 public:
-    enum FontIDX
-    {
-        UIFont,
-        TextFont
-    };
+    FontRenderer();
+    ~FontRenderer();
 
     struct CachedString
     {
@@ -136,20 +141,25 @@ public:
         int w, h;
     };
 
-    void RenderText(SDL_Renderer *renderer, const std::string& str, const SDL_Color& col, int x, int y, FontIDX fontIdx, SDL_Rect *outputQuad, bool bCalcSizeOnly);
-    void CalcTextArea(SDL_Renderer* renderer, const std::string& str, const Vec2i &pos, FontIDX fontIdx, Recti& area);
+    void RenderText(SDL_Renderer *renderer, const std::string& str, const SDL_Color& col, int x, int y, FontType fontIdx);
+    void CalcTextArea(SDL_Renderer* renderer, const std::string& str, const Vec2i &pos, FontType fontIdx, Recti& area);
 
     // split render into 2 phases, allowing you to do other things with the render rectangle
     // do not retain the cached string over long periods as it could be reused eventually (after 256 renders)
-    struct CachedString *PrepareRender(SDL_Renderer* renderer, const std::string& str, int x, int y, FontIDX fontIdx);
+    struct CachedString *PrepareRender(SDL_Renderer* renderer, const std::string& str, int x, int y, FontType fontIdx);
     void Render(CachedString *cs, const SDL_Color& col);
     void RenderAt(CachedString* cs, const SDL_Color& col, int x, int y);
 
     // flush any cached strings for this renderer as we will be destroying the renderer
     void FlushRenderer(SDL_Renderer *renderer);
 
+    // get width of char
+    int GetCharactorWidth(FontType fontIdx, u32 ch);
+
 protected:
-    size_t Hash(SDL_Renderer* renderer, const std::string& str, FontIDX fontIdx);
+    struct TTF_Font* m_fonts[NumFonts];
+
+    size_t Hash(SDL_Renderer* renderer, const std::string& str, FontType fontIdx);
     TLRUList<CachedString> m_lru;
     std::unordered_map<size_t, CachedString*> m_map;
 };

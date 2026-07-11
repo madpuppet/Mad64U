@@ -22,23 +22,44 @@ typedef unsigned short u16;
 typedef signed short i16;
 typedef unsigned int u32;
 typedef signed int i32;
-typedef unsigned long long  u64;
-typedef long long           i64;
+typedef unsigned long long u64;
+typedef long long i64;
 
+#define WINDOW_TICK_MS 100
+extern u32 TimerEventType;
 extern void Log(const char* pFormat, ...);
+
+#define Assert(cond, ...)  if (!(cond)) { Log("ASSERTION FAILURE:\n"); __VA_OPT__(Log(__VA_ARGS__);) __debugbreak(); };
 
 inline int Max(int x, int y) { return x > y ? x : y; }
 inline int Min(int x, int y) { return x < y ? x : y; }
 inline int Abs(int x) { return x < 0 ? -x : x; }
 inline float Clamp(float val, float min, float max) { return val < min ? min : (val > max ? max : val); }
+inline int Clamp(int val, int min, int max) { return val < min ? min : (val > max ? max : val); }
 
 inline size_t HashU16(size_t old, u16 value)
 {
-    return (old * 0x1234567 + value);
+    return (0x5357913 + old * 0x1234567 + value);
 }
 inline size_t HashU8(size_t old, u8 value)
 {
-    return (old * 0x1234567 + value * 0x7654321);
+    return (0x535791 + old * 0x1234567 + value * 0x7654321);
+}
+inline size_t HashU8(size_t hash, const char* str)
+{
+    while (*str)
+    {
+        hash = HashU8(hash, *str++);
+    }
+    return hash;
+}
+inline size_t HashU8NoCase(size_t hash, const char* str)
+{
+    while (*str)
+    {
+        hash = HashU8(hash, toupper(*str++));
+    }
+    return hash;
 }
 
 struct Rect

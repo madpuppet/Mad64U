@@ -8,7 +8,7 @@ void WindowMenu::Paint(SDL_Renderer* renderer, int highlightItemIdx)
     SDL_Color col{ 255,255,255,128 };
     SDL_FRect area{ (float)m_area.x, (float)m_area.y, (float)m_area.w, (float)m_area.h };
     auto& fr = FontRenderer::Instance();
-    fr.RenderText(renderer, m_name, col, m_area.x, m_area.y, FontRenderer::UIFont, nullptr, false);
+    fr.RenderText(renderer, m_name, col, m_area.x, m_area.y, FontType::UI);
 
     if (m_open)
     {
@@ -31,8 +31,7 @@ void WindowMenu::Paint(SDL_Renderer* renderer, int highlightItemIdx)
                 SDL_FRect itemBody{ (float)m_dropDownArea.x, (float)item->m_area.y, (float)m_dropDownArea.w, (float)item->m_area.h };
                 SDL_RenderFillRect(renderer, &itemBody);
             }
-
-            fr.RenderText(renderer, item->m_name, itemCol, item->m_area.x, item->m_area.y, FontRenderer::UIFont, nullptr, false);
+            fr.RenderText(renderer, item->m_name, itemCol, item->m_area.x, item->m_area.y, FontType::UI);
         }
     }
 }
@@ -40,7 +39,7 @@ void WindowMenu::Paint(SDL_Renderer* renderer, int highlightItemIdx)
 void WindowMenu::Layout(SDL_Renderer* renderer, const Vec2i& pos)
 {
     auto& fr = FontRenderer::Instance();
-    fr.CalcTextArea(renderer, m_name, pos, FontRenderer::UIFont, m_area);
+    fr.CalcTextArea(renderer, m_name, pos, FontType::UI, m_area);
     m_dropDownArea = m_area;
     int dx = m_dropDownArea.x + m_dropDownArea.w;
     int dy = m_dropDownArea.y + m_dropDownArea.h;
@@ -49,7 +48,7 @@ void WindowMenu::Layout(SDL_Renderer* renderer, const Vec2i& pos)
     p.y = m_area.y + m_area.h + 8;
     for (auto item : m_items)
     {
-        fr.CalcTextArea(renderer, item->m_name, p, FontRenderer::UIFont, item->m_area);
+        fr.CalcTextArea(renderer, item->m_name, p, FontType::UI, item->m_area);
 
         int x2 = item->m_area.x + item->m_area.w;
         int y2 = item->m_area.y + item->m_area.h;
@@ -74,7 +73,6 @@ void WindowMenuList::Paint(const WindowMenuQuery& highlight)
         {
             auto menu = m_menus[m];
             menu->Paint(m_tree->m_renderer, highlight.m_menuIdx == m ? highlight.m_menuItemIdx : -1);
-
         }
     }
 }

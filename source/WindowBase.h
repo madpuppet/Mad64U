@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include "WindowQueries.h"
 
 class WindowBase
 {
@@ -22,8 +23,14 @@ public:
 
     void LayoutScrollbars();                 // layout scrollbars based on content size
     void PaintScrollbars(SDL_Renderer* renderer);        // paint scrollbars if visible
+    bool CheckForScrollBar(int x, int y, WindowScrollBarQuery& query);
+    void UpdateScrollBar(int offset, WindowScrollBarQuery& query);
 
     virtual void Paint(SDL_Renderer* renderer, const Recti& dirtyArea) = 0;
     virtual void Close() = 0;
+    virtual bool Tick() { return false; }
+    virtual bool HandleEvent(SDL_Event* e) {
+        return false;
+    }
 };
 

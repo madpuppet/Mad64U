@@ -43,3 +43,11 @@ struct WindowMenuQuery
     int m_menuItemIdx = 0;
 };
 
+struct WindowScrollBarQuery
+{
+    struct WindowTree* m_tree = nullptr;
+    struct WindowLayout* m_layout = nullptr;
+    class WindowBase* m_window = nullptr;
+    bool m_vertical = false;
+    int m_grabOffset = 0;
+};

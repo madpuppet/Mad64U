@@ -30,11 +30,15 @@ enum class ThemeColor
     TabHighlight,
     SourceBackground,
     SourceBackgroundSelected,
-    SourceText,
-    SourceTextSelected,
     ScrollBarBackground,
     ScrollBar,
     ScrollBarSelected,
+    Cursor,
+
+    TextGeneral,
+    TextOperator,
+    TextComment,
+
     MAX
 };
 constexpr size_t NumThemeColor = static_cast<size_t>(ThemeColor::MAX);
@@ -56,9 +60,6 @@ class Application : public Singleton<Application>
 public:
     int Run();
 
-    TTF_Font* GetUIFont() { return m_uiFont; }
-    TTF_Font* GetTextFont() { return m_textFont; }
-
     void Quit() { m_quit = true; }
 
     void SelectTheme(Theme theme) { m_activeTheme = theme; }
@@ -67,10 +68,9 @@ public:
 protected:
     void CreateMenus();
     void CreateThemes();
-    TTF_Font* m_uiFont = nullptr;
-    TTF_Font* m_textFont = nullptr;
-    bool m_quit = false;
+    void AddTimerEvent();
 
+    bool m_quit = false;
     Theme m_activeTheme = Theme::Light;
     std::array<ThemeProperties, NumThemes> m_themes;
 };

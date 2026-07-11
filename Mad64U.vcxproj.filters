@@ -46,6 +46,9 @@
     <ClCompile Include="source\SourceFileManager.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="source\SourceFileRenderer.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\common.h">
@@ -336,13 +339,19 @@
     <ClInclude Include="source\WindowBase.h">
       <Filter>source</Filter>
     </ClInclude>
-    <ClInclude Include="source\Singleton.h">
-      <Filter>Resource Files</Filter>
-    </ClInclude>
     <ClInclude Include="source\WindowMenuList.h">
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="source\SourceFileManager.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Singleton.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="source\SourceFileRenderer.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="source\SourceFile.h">
       <Filter>source</Filter>
     </ClInclude>
   </ItemGroup>

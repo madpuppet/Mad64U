@@ -41,6 +41,10 @@ public:
     void SetActiveTree(WindowTree* tree);
     void LayoutWindows();
     void RemoveWindow(WindowBase* window);
+    void AddWindow(WindowBase* window);
+    void Tick();
+
+    void SetDefaultActiveWindow();
 
     // used for test data
     void AddWindowTree(WindowTree* tree) { m_windowTrees.push_back(tree); tree->LayoutWindows(); }
@@ -59,7 +63,8 @@ protected:
         MouseMode_ResizingWindow,
         MouseMode_SelectingTab,
         MouseMode_MovingSplit,
-        MouseMode_UsingMenu
+        MouseMode_UsingMenu,
+        MouseMode_ScrollBar
     } m_mouseMode = MouseMode_Idle;
     Vec2i m_mouseGrabPos;
     Vec2i m_mouseInitial;
@@ -67,8 +72,10 @@ protected:
     WindowTabQuery m_mouseTabQuery;
     WindowSplitQuery m_mouseSplitQuery;
     WindowMenuQuery m_mouseMenuQuery;
+    WindowScrollBarQuery m_mouseScrollBarQuery;
     WindowTree* m_mouseTree = nullptr;
     WindowTree* m_mouseOriginateTree = nullptr;
     WindowTree* m_activeTree = nullptr;
     WindowLayout* m_activeLayout = nullptr;
+    WindowBase* m_activeWindow = nullptr;
 };

@@ -116,6 +116,7 @@
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <UseStandardPreprocessor>true</UseStandardPreprocessor>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -132,11 +133,13 @@
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <UseStandardPreprocessor>true</UseStandardPreprocessor>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL3.lib;SDL3_ttf.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL3.lib;SDL3_ttf.lib;SDL3_image.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -145,6 +148,7 @@
     <ClCompile Include="source\IconRenderer.cpp" />
     <ClCompile Include="source\Mad64U.cpp" />
     <ClCompile Include="source\SourceFileManager.cpp" />
+    <ClCompile Include="source\SourceFileRenderer.cpp" />
     <ClCompile Include="source\WindowBase.cpp" />
     <ClCompile Include="source\WindowLayout.cpp" />
     <ClCompile Include="source\WindowManager.cpp" />
@@ -244,7 +248,9 @@
     <ClInclude Include="source\common.h" />
     <ClInclude Include="source\IconRenderer.h" />
     <ClInclude Include="source\Singleton.h" />
+    <ClInclude Include="source\SourceFile.h" />
     <ClInclude Include="source\SourceFileManager.h" />
+    <ClInclude Include="source\SourceFileRenderer.h" />
     <ClInclude Include="source\WindowLayout.h" />
     <ClInclude Include="source\WindowManager.h" />
     <ClInclude Include="source\WindowMenuList.h" />

@@ -18,8 +18,8 @@ void WindowLayout::Layout(SDL_Renderer* renderer, const Recti& area)
             for (auto t : m_tabs)
             {
                 t->m_area = clientArea;
-                SDL_Rect tabTextArea;
-                fr.RenderText(renderer, t->m_name, col, tabX, tabY, FontRenderer::UIFont, &tabTextArea, true);
+                Recti tabTextArea;
+                fr.CalcTextArea(renderer, t->m_name, { tabX, tabY }, FontType::UI, tabTextArea);
                 t->m_tabArea = { tabX, tabY, tabTextArea.w + TEXT_HBORDER * 2, tabTextArea.h };
                 tabX = tabTextArea.x + tabTextArea.w + TEXT_HBORDER * 3;
                 t->LayoutScrollbars();
@@ -54,6 +54,17 @@ void WindowLayout::AddWindow(WindowBase* window)
     }
 }
 
+bool WindowLayout::Tick()
+{
+    if (m_splitType == NoSplit)
+    {
+        return (m_tabs.size() > 0) ? m_tabs[m_activeTab]->Tick() : false;
+    }
+    else
+    {
+        return m_splits[0]->Tick() || m_splits[1]->Tick();
+    }
+}
 
 void WindowLayout::AddWindow(int x, int y, WindowBase* window)
 {
@@ -226,13 +237,10 @@ void WindowLayout::Paint(SDL_Renderer* renderer, const Recti& area)
                     SDL_FRect sdlTabInnerRect{ (float)w->m_tabArea.x, (float)(w->m_tabArea.y + 2), (float)w->m_tabArea.w, (float)WINDOW_TAB_BAR_HEIGHT - 2 };
                     tp.SetRenderDrawColor(renderer, ThemeColor::TabBackground);
                     SDL_RenderFillRect(renderer, &sdlTabInnerRect);
-
                     SDL_Color col = tp.m_colors[(int)ThemeColor::TabText];
                     if (m_activeTab != -1 && m_tabs[m_activeTab] == w)
                         col = tp.m_colors[(int)ThemeColor::TabTextSelected];
-
-                    fr.RenderText(renderer, w->m_name, col, w->m_tabArea.x + TEXT_HBORDER, w->m_tabArea.y + 4, FontRenderer::UIFont, nullptr, false);
-
+                    fr.RenderText(renderer, w->m_name, col, w->m_tabArea.x + TEXT_HBORDER, w->m_tabArea.y + 4, FontType::UI);
                     if (m_activeTab != -1 && m_tabs[m_activeTab] == w)
                     {
                         tp.SetRenderDrawColor(renderer, ThemeColor::TabHighlight);
@@ -533,4 +541,32 @@ bool WindowLayout::CheckForSplit(int x, int y, WindowSplitQuery& query)
     }
     return false;
 }
+
+bool WindowLayout::CheckForScrollBar(int x, int y, WindowScrollBarQuery& query)
+{
+    if (!m_area.Contains(x,y))
+        return false;
+    
+    query.m_layout = this;
+    if (m_splitType == NoSplit)
+    {
+        if (!m_tabs.empty())
+            return m_tabs[m_activeTab]->CheckForScrollBar(x, y, query);
+    }
+    else
+    {
+        if (m_splits[0]->CheckForScrollBar(x, y, query))
+            return true;
+        return m_splits[1]->CheckForScrollBar(x, y, query);
+    }
+    return false;
+}
+
+WindowBase* WindowLayout::GetActiveWindow()
+{
+    if (m_splitType == NoSplit && m_tabs.size() > 0)
+        return m_tabs[m_activeTab];
+    return nullptr;
+}
+
 

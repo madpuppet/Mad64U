@@ -2,69 +2,42 @@
 
 #include "Singleton.h"
 #include "WindowBase.h"
-
-enum class FragmentType
-{
-    General,
-    Operator,
-    Opcode,
-    Operand
-};
-
-struct SourceLineRenderFragment
-{
-    FragmentType m_fragType;
-    std::string m_chars;
-    Recti m_area;
-};
-
-class SourceLine
-{
-public:
-    std::string m_chars;
-    std::vector<SourceLineRenderFragment> m_fragments;
-};
-
-class SourceFile
-{
-public:
-    SourceFile(const std::string& path) : m_path(path) {}
-
-    std::vector<SourceLine*> m_lines;
-
-    std::string m_path;
-    Recti m_fragmentArea;
-    int m_cursorRow = 0;
-    int m_cursorColumn = 0;
-    bool m_modified = false;
-};
-
-class SourceFileRenderer : public WindowBase
-{
-public:
-    SourceFileRenderer(SourceFile* file);
-
-    void Paint(SDL_Renderer* renderer, const Recti& dirtyArea) override;
-    void Close() override;
-
-    int m_scrollX = 0;
-    int m_scrollY = 0;
-    SourceFile* m_sourceFile;
-};
+#include "SourceFile.h"
+#include <set>
+#include <mutex>
 
 class SourceFileManager : public Singleton<SourceFileManager>
 {
 public:
+    SourceFileManager();
+
     bool NewFile(const std::string &name);
-    bool LoadFile(const std::string& path);
     bool SaveFile(SourceFile* file);
     bool CloseFile(SourceFile* file);
     bool RenameFile(SourceFile* file, const std::string &path);
 
     SourceFile* GetFileFromWindow(WindowBase* window);
 
-    std::vector<SourceFile*> m_sourceFiles;
-    std::vector<SourceFileRenderer*> m_sourceFileRenderers;
+    std::vector<class SourceFile*> m_sourceFiles;
+    std::vector<class SourceFileRenderer*> m_sourceFileRenderers;
+
+    bool IsKeyword(SourceType sourceType, const char* keyword)
+    {
+        if (sourceType == SourceType::Asm)
+            return m_keywords[(int)SourceType::Asm].contains(HashU8NoCase(0,keyword));
+        else
+            return m_keywords[(int)sourceType].contains(HashU8(0, keyword));
+    }
+
+    void RequestLoadFiles(std::vector<std::string> paths);
+    void Tick();
+
+protected:
+    void LoadRequestedFiles();
+
+    std::mutex m_lock;
+    std::vector<std::string> m_filesToLoad;
+
+    void InitKeywords(const char** keywords, SourceType sourceType, bool caseSensitive);
+    std::set<size_t> m_keywords[NumSourceType];
 };
-
-

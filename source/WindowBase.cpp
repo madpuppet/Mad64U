@@ -19,10 +19,14 @@ void WindowBase::LayoutScrollbars()
         if (m_verticalScrollbarVisible)
             m_hsbBackgroundArea.w -= WINDOW_SCROLLBAR_SIZE;
 
+        int maxOffset = Max(m_clientContentSize.x - m_clientArea.w, 0);
+        float offsetPercent = (float)m_clientContentOffset.x / (float)maxOffset;
         int barSize = m_hsbBackgroundArea.w - WINDOW_SCROLLBAR_MARGIN * 2;
-        int barStart = m_hsbBackgroundArea.x + WINDOW_SCROLLBAR_MARGIN + (int)(((float)m_clientContentOffset.x / (float)(m_clientContentSize.x - m_clientArea.w)) * (float)barSize);
-        int barEnd = m_hsbBackgroundArea.x + (int)(((float)(m_clientContentOffset.x + m_clientArea.w) / (float)(m_clientContentSize.x)) * (float)barSize);
-        m_hsbBarArea = Recti(barStart, m_hsbBackgroundArea.y + WINDOW_SCROLLBAR_MARGIN, barEnd - barStart, m_hsbBackgroundArea.h - WINDOW_SCROLLBAR_MARGIN * 2);
+        int visibleBarSize = (int)((float)m_clientArea.w / (float)m_clientContentSize.x * (float)barSize);
+        int maxBarOffset = barSize - visibleBarSize;
+        int barOffset = (int)((float)maxBarOffset * offsetPercent);
+        int barStart = m_hsbBackgroundArea.x + WINDOW_SCROLLBAR_MARGIN + barOffset;
+        m_hsbBarArea = Recti(barStart, m_hsbBackgroundArea.y + WINDOW_SCROLLBAR_MARGIN, visibleBarSize, m_hsbBackgroundArea.h - WINDOW_SCROLLBAR_MARGIN * 2);
     }
     if (m_verticalScrollbarVisible)
     {
@@ -32,10 +36,14 @@ void WindowBase::LayoutScrollbars()
         if (m_horizontalScrollbarVisible)
             m_vsbBackgroundArea.h -= WINDOW_SCROLLBAR_SIZE;
 
+        int maxOffset = Max(m_clientContentSize.y - m_clientArea.h, 0);
+        float offsetPercent = (float)m_clientContentOffset.y / (float)maxOffset;
         int barSize = m_vsbBackgroundArea.h - WINDOW_SCROLLBAR_MARGIN * 2;
-        int barStart = m_vsbBackgroundArea.y + WINDOW_SCROLLBAR_MARGIN + (int)(((float)m_clientContentOffset.y / (float)(m_clientContentSize.y - m_clientArea.h)) * (float)barSize);
-        int barEnd = m_vsbBackgroundArea.y + (int)(((float)(m_clientContentOffset.y + m_clientArea.h) / (float)(m_clientContentSize.y)) * (float)barSize);
-        m_vsbBarArea = Recti(m_vsbBackgroundArea.x + WINDOW_SCROLLBAR_MARGIN, barStart, m_vsbBackgroundArea.w - WINDOW_SCROLLBAR_MARGIN * 2, barEnd-barStart);
+        int visibleBarSize = (int)((float)m_clientArea.h / (float)m_clientContentSize.y * (float)barSize);
+        int maxBarOffset = barSize - visibleBarSize;
+        int barOffset = (int)((float)maxBarOffset * offsetPercent);
+        int barStart = m_vsbBackgroundArea.y + WINDOW_SCROLLBAR_MARGIN + barOffset;
+        m_vsbBarArea = Recti(m_vsbBackgroundArea.x + WINDOW_SCROLLBAR_MARGIN, barStart, m_vsbBackgroundArea.w - WINDOW_SCROLLBAR_MARGIN * 2, visibleBarSize);
     }
 }
 
@@ -63,3 +71,50 @@ void WindowBase::PaintScrollbars(SDL_Renderer* renderer)
         SDL_RenderFillRect(renderer, &bararea);
     }
 }
+
+bool WindowBase::CheckForScrollBar(int x, int y, WindowScrollBarQuery& query)
+{
+    if (m_horizontalScrollbarVisible)
+    {
+        if (m_hsbBackgroundArea.Contains(x, y))
+        {
+            query.m_window = this;
+            query.m_grabOffset = x - m_hsbBackgroundArea.x;
+            query.m_vertical = false;
+            return true;
+        }
+    }
+    if (m_verticalScrollbarVisible)
+    {
+        if (m_vsbBackgroundArea.Contains(x, y))
+        {
+            query.m_window = this;
+            query.m_grabOffset = y - m_vsbBackgroundArea.y;
+            query.m_vertical = true;
+            return true;
+        }
+    }
+    return false;
+}
+
+void WindowBase::UpdateScrollBar(int offset, WindowScrollBarQuery& query)
+{
+    if (query.m_vertical)
+    {
+        float offsetPercent = Clamp((float)(offset - m_vsbBackgroundArea.y) / (float)(m_vsbBackgroundArea.h - WINDOW_SCROLLBAR_MARGIN * 2), 0.0f, 1.0f);
+        int contentOffset = (int)(offsetPercent * m_clientContentSize.y);
+        m_clientContentOffset.y = Clamp(contentOffset - m_clientArea.h / 2, 0, m_clientContentSize.y - m_clientArea.h);
+        LayoutScrollbars();
+        query.m_tree->m_dirty = true;
+    }
+    else
+    {
+        float offsetPercent = Clamp((float)(offset - m_hsbBackgroundArea.x) / (float)(m_hsbBackgroundArea.w - WINDOW_SCROLLBAR_MARGIN * 2), 0.0f, 1.0f);
+        int contentOffset = (int)(offsetPercent * m_clientContentSize.x);
+        m_clientContentOffset.x = Clamp(contentOffset - m_clientArea.w / 2, 0, m_clientContentSize.x - m_clientArea.w);
+        LayoutScrollbars();
+        query.m_tree->m_dirty = true;
+    }
+}
+
+

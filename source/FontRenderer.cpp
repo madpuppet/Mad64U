@@ -5,16 +5,18 @@
 #include "SDL3/SDL.h"
 #include "SDL3_ttf/SDL_ttf.h"
 
-#define MAX_ITEMS 1024
+#define MAX_ITEMS 8192
 
-size_t FontRenderer::Hash(SDL_Renderer* renderer, const std::string &str, FontIDX fontIdx)
+//FontRenderer* FontRenderer::s_instance = nullptr;
+
+size_t FontRenderer::Hash(SDL_Renderer* renderer, const std::string &str, FontType fontIdx)
 {
     size_t hash = (intptr_t)renderer;
     for (int i = 0; i < str.size(); i++)
     {
         hash = HashU8(hash, str[i]);
     }
-    hash = HashU8(hash, fontIdx);
+    hash = HashU8(hash, (u8)fontIdx);
     return hash;
 }
 
@@ -31,9 +33,9 @@ std::vector<u16>& StringToUnicode(const std::string& str)
 }
 
 // split render into 2 phases, allowing you to do other things with the render rectangle
-FontRenderer::CachedString *FontRenderer::PrepareRender(SDL_Renderer * renderer, const std::string & str, int x, int y, FontIDX fontIdx)
+FontRenderer::CachedString *FontRenderer::PrepareRender(SDL_Renderer * renderer, const std::string & str, int x, int y, FontType fontIdx)
 {
-    TTF_Font* font = (fontIdx == UIFont) ? Application::Instance().GetUIFont() : Application::Instance().GetTextFont();
+    TTF_Font* font = m_fonts[(int)fontIdx];
     CachedString* cs = nullptr;
     size_t hash = Hash(renderer, str, fontIdx);
 
@@ -88,6 +90,38 @@ FontRenderer::CachedString *FontRenderer::PrepareRender(SDL_Renderer * renderer,
     return cs;
 }
 
+FontRenderer::FontRenderer()
+{
+    TTF_Init();
+    m_fonts[(int)FontType::UI] = TTF_OpenFont("data/font.ttf", 16);
+    if (m_fonts[(int)FontType::UI] == nullptr)
+    {
+        Log("Unable to create ui font: font.ttf\n");
+        exit(0);
+    }
+    m_fonts[(int)FontType::Text] = TTF_OpenFont("data/font.ttf", 16);
+    if (m_fonts[(int)FontType::Text] == nullptr)
+    {
+        Log("Unable to create text font: font.ttf\n");
+        exit(0);
+    }
+}
+
+FontRenderer::~FontRenderer()
+{
+    TTF_CloseFont(m_fonts[(int)FontType::UI]);
+    TTF_CloseFont(m_fonts[(int)FontType::Text]);
+}
+
+int FontRenderer::GetCharactorWidth(FontType fontIdx, u32 ch)
+{
+    TTF_Font* font = m_fonts[(int)fontIdx];
+
+    int advance = 0;
+    TTF_GetGlyphMetrics(font, ch, nullptr, nullptr, nullptr, nullptr, &advance);
+    return advance;
+}
+
 void FontRenderer::FlushRenderer(SDL_Renderer* renderer)
 {
     // Remove all entries where the value is empty.
@@ -112,16 +146,13 @@ void FontRenderer::RenderAt(CachedString* cs, const SDL_Color& col, int x, int y
     SDL_RenderTexture(cs->renderer, cs->tex, NULL, &quad);
 }
 
-void FontRenderer::RenderText(SDL_Renderer* renderer, const std::string& str, const SDL_Color& col, int x, int y, FontIDX fontIdx, SDL_Rect* outputQuad, bool bCalcSizeOnly)
+void FontRenderer::RenderText(SDL_Renderer* renderer, const std::string& str, const SDL_Color& col, int x, int y, FontType fontIdx)
 {
     auto cs = PrepareRender(renderer, str, x, y, fontIdx);
-    if (!bCalcSizeOnly)
-        Render(cs, col);
-    if (outputQuad)
-        *outputQuad = SDL_Rect{ (int)cs->rect.x, (int)cs->rect.y, (int)cs->rect.w, (int)cs->rect.h };
+    Render(cs, col);
 }
 
-void FontRenderer::CalcTextArea(SDL_Renderer* renderer, const std::string& str, const Vec2i &pos, FontIDX fontIdx, Recti &area)
+void FontRenderer::CalcTextArea(SDL_Renderer* renderer, const std::string& str, const Vec2i &pos, FontType fontIdx, Recti &area)
 {
     auto cs = PrepareRender(renderer, str, pos.x, pos.y, fontIdx);
     area = Recti{ (int)cs->rect.x, (int)cs->rect.y, (int)cs->rect.w, (int)cs->rect.h };
