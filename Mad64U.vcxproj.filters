@@ -49,6 +49,12 @@
     <ClCompile Include="source\SourceFileRenderer.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="source\SourceFileCmdBuffer.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="source\SourceFile.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\common.h">
@@ -352,6 +358,9 @@
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="source\SourceFile.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="source\SourceFileCmdBuffer.h">
       <Filter>source</Filter>
     </ClInclude>
   </ItemGroup>

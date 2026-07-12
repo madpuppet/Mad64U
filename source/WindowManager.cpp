@@ -114,7 +114,7 @@ void WindowManager::HandleEvent(SDL_Event* e)
                         auto menu = m_menuList.m_menus[m_mouseMenuQuery.m_menuIdx];
                         menu->m_open = true;
                         m_mouseMode = MouseMode_UsingMenu;
-                        m_activeTree = tree;
+                        SetActiveTree(tree);
                         SDL_CaptureMouse(true);
                         return;
                     }
@@ -142,7 +142,7 @@ void WindowManager::HandleEvent(SDL_Event* e)
                     m_mouseTabQuery.m_tabIndex = -1;
                     if (tree->CheckForTab((int)e->button.x, (int)e->button.y, m_mouseTabQuery))
                     {
-                        m_activeTree = m_mouseTabQuery.m_tree;
+                        SetActiveTree(m_mouseTabQuery.m_tree);
                         m_activeLayout = m_mouseTabQuery.m_layout;
                         m_menuList.Layout(m_activeTree);
 
@@ -192,7 +192,7 @@ void WindowManager::HandleEvent(SDL_Event* e)
                     m_mouseScrollBarQuery.m_window = nullptr;
                     if (tree->CheckForScrollBar((int)e->button.x, (int)e->button.y, m_mouseScrollBarQuery))
                     {
-                        m_activeTree = tree;
+                        SetActiveTree(tree);
                         m_activeLayout = m_mouseScrollBarQuery.m_layout;
                         m_activeWindow = m_activeLayout->GetActiveWindow();
                         m_menuList.Layout(m_activeTree);
@@ -209,7 +209,7 @@ void WindowManager::HandleEvent(SDL_Event* e)
                     WindowLayout* layout;
                     if (tree->CheckForLayout((int)e->button.x, (int)e->button.y, layout))
                     {
-                        m_activeTree = tree;
+                        SetActiveTree(tree);
                         m_activeLayout = layout;
                         m_activeWindow = layout->GetActiveWindow();
                         m_menuList.Layout(m_activeTree);
@@ -268,7 +268,7 @@ void WindowManager::HandleEvent(SDL_Event* e)
                         m_mouseTree->m_dirty = true;
                         if (m_mouseDockQuery.m_foundDock)
                         {
-                            m_activeTree = nullptr;
+                            SetActiveTree(nullptr);
                             m_activeLayout = nullptr;
                             m_activeWindow = nullptr;
 
@@ -284,7 +284,7 @@ void WindowManager::HandleEvent(SDL_Event* e)
                                 for (auto vw : windows)
                                     m_mouseDockQuery.m_layout->m_tabs.push_back(vw);
 
-                                m_activeTree = m_mouseDockQuery.m_tree;
+                                SetActiveTree(m_mouseDockQuery.m_tree);
                                 m_activeLayout = m_mouseDockQuery.m_layout;
                                 m_menuList.Layout(m_activeTree);
                             }
@@ -318,7 +318,7 @@ void WindowManager::HandleEvent(SDL_Event* e)
                                     m_mouseDockQuery.m_layout->m_splits[1 - splitIdx]->m_tabs.push_back(vw);
                                 m_mouseDockQuery.m_layout->m_tabs.clear();
 
-                                m_activeTree = m_mouseDockQuery.m_tree;
+                                SetActiveTree(m_mouseDockQuery.m_tree);
                                 m_activeLayout = m_mouseDockQuery.m_layout->m_splits[splitIdx];
                                 m_activeWindow = m_activeLayout->GetActiveWindow();
                                 m_menuList.Layout(m_activeTree);
@@ -414,7 +414,7 @@ void WindowManager::HandleEvent(SDL_Event* e)
                                 tree->m_layout.m_splitType = WindowLayout::NoSplit;
                                 tree->m_layout.m_tabs.push_back(vw);
                                 tree->m_dirty = true;
-                                m_activeTree = tree;
+                                SetActiveTree(tree);
                                 m_activeLayout = &tree->m_layout;
                                 m_activeWindow = m_activeLayout->GetActiveWindow();
                                 m_windowTrees.push_back(tree);
@@ -534,10 +534,23 @@ void WindowManager::HandleEvent(SDL_Event* e)
 
 void WindowManager::SetActiveTree(WindowTree* tree)
 {
+    if (m_activeTree == tree)
+        return;
+
+    if (m_activeTree)
+    {
+        SDL_StopTextInput(m_activeTree->m_window);
+    }
+
     m_activeTree = tree;
     m_activeLayout = tree->FindFirstNonSplitLayout();
     m_activeWindow = m_activeLayout->GetActiveWindow();
     m_menuList.Layout(m_activeTree);
+
+    if (m_activeTree)
+    {
+        SDL_StartTextInput(m_activeTree->m_window);
+    }
 }
 
 

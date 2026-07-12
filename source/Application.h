@@ -34,6 +34,7 @@ enum class ThemeColor
     ScrollBar,
     ScrollBarSelected,
     Cursor,
+    TextHighlight,
 
     TextGeneral,
     TextOperator,

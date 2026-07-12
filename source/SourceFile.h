@@ -34,11 +34,15 @@ public:
 class SourceFile
 {
 public:
-    SourceFile(const std::string& path) : m_path(path) {}
+    SourceFile(const std::string& path);
+    ~SourceFile();
 
     std::vector<SourceLine*> m_lines;
     std::string m_path;
     SourceType m_sourceType = SourceType::Asm;
     Recti m_fragmentArea;
     bool m_modified = false;
+    class SourceFileCmdBuffer *m_cmdBuffer;
 };
+
+

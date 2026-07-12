@@ -211,6 +211,7 @@ void Application::CreateThemes()
         theme.m_colors[(int)ThemeColor::ScrollBar] = SDL_Color(128, 128, 0, 255);
         theme.m_colors[(int)ThemeColor::ScrollBarSelected] = SDL_Color(255, 255, 0, 255);
         theme.m_colors[(int)ThemeColor::Cursor] = SDL_Color(255, 255, 128, 255);
+        theme.m_colors[(int)ThemeColor::TextHighlight] = SDL_Color(128, 128, 128, 255);
         theme.m_colors[(int)ThemeColor::TextGeneral] = SDL_Color(230, 230, 230, 255);
         theme.m_colors[(int)ThemeColor::TextOperator] = SDL_Color(64, 255, 255, 255);
         theme.m_colors[(int)ThemeColor::TextComment] = SDL_Color(128, 255, 128, 255);
@@ -235,6 +236,7 @@ void Application::CreateThemes()
         theme.m_colors[(int)ThemeColor::ScrollBar] = SDL_Color(128, 128, 0, 255);
         theme.m_colors[(int)ThemeColor::ScrollBarSelected] = SDL_Color(255, 255, 0, 255);
         theme.m_colors[(int)ThemeColor::Cursor] = SDL_Color(64, 64, 0, 255);
+        theme.m_colors[(int)ThemeColor::TextHighlight] = SDL_Color(128, 128, 128, 255);
         theme.m_colors[(int)ThemeColor::TextGeneral] = SDL_Color(0, 0, 0, 255);
         theme.m_colors[(int)ThemeColor::TextOperator] = SDL_Color(0, 0, 255, 255);
         theme.m_colors[(int)ThemeColor::TextComment] = SDL_Color(0, 128, 0, 255);

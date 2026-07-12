@@ -147,6 +147,8 @@
     <ClCompile Include="source\FontRenderer.cpp" />
     <ClCompile Include="source\IconRenderer.cpp" />
     <ClCompile Include="source\Mad64U.cpp" />
+    <ClCompile Include="source\SourceFile.cpp" />
+    <ClCompile Include="source\SourceFileCmdBuffer.cpp" />
     <ClCompile Include="source\SourceFileManager.cpp" />
     <ClCompile Include="source\SourceFileRenderer.cpp" />
     <ClCompile Include="source\WindowBase.cpp" />
@@ -249,6 +251,7 @@
     <ClInclude Include="source\IconRenderer.h" />
     <ClInclude Include="source\Singleton.h" />
     <ClInclude Include="source\SourceFile.h" />
+    <ClInclude Include="source\SourceFileCmdBuffer.h" />
     <ClInclude Include="source\SourceFileManager.h" />
     <ClInclude Include="source\SourceFileRenderer.h" />
     <ClInclude Include="source\WindowLayout.h" />
