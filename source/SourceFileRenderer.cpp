@@ -333,6 +333,7 @@ bool SourceFileRenderer::HandleEvent(SDL_Event* e)
                     int row, col;
                     CalcXYFromClientPos((int)e->button.x, (int)e->button.y, col, row);
                     MoveCursorXY(col, row);
+                    return true;
                 }
             }
         }

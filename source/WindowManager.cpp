@@ -348,7 +348,7 @@ void WindowManager::HandleEvent(SDL_Event* e)
                     {
                         int offset = m_mouseScrollBarQuery.m_vertical ? (int)e->button.y : (int)e->button.x;
                         m_mouseScrollBarQuery.m_window->UpdateScrollBar(offset, m_mouseScrollBarQuery);
-                        m_mouseScrollBarQuery.m_tree->Paint(nullptr);
+                        m_mouseScrollBarQuery.m_tree->m_dirty = true;
                     }
                     break;
 
@@ -435,7 +435,6 @@ void WindowManager::HandleEvent(SDL_Event* e)
                         SDL_SyncWindow(m_mouseTree->m_window);
                         SDL_SetRenderViewport(m_mouseTree->m_renderer, nullptr);
                         m_mouseTree->LayoutWindows();
-                        m_mouseTree->Paint(nullptr);
                     }
                     break;
 
