@@ -8,6 +8,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include "Settings.h"
 
 const char* s_keywords_asm[] = { "tax", "eor", "dec", "pla", "rts", "rti", "bcc", "txa", "clc", "sec", "cpx", "cpy", "cmp", "bne", "beq", "bmi", "bpl", "ldx", "ldy", "stx", "sty", "jsr", "jmp", "tay", "tya", "pha", "dey", "dex", "inc", "inx", "iny", "lda", "sta", "adc", "lsr", "asr", "asl", "lsl", "and", "ora", "xor", "sei", "cli", 0};
 const char* s_keywords_c[] = { "void", "for", "if", "else", 0 };
@@ -127,6 +128,7 @@ void SourceFileManager::LoadRequestedFiles()
     }
     if (success)
         WindowManager::Instance().GetActiveWindowTree()->LayoutWindows();
+    SaveFilesToSettings();
 }
 
 bool SourceFileManager::SaveFile(SourceFile* file)
@@ -160,4 +162,21 @@ bool SourceFileManager::CloseFile(SourceFile* file)
 
     WindowManager::Instance().LayoutWindows();
     return true;
+}
+
+void SourceFileManager::RestoreFilesFromSettings()
+{
+    auto fileList = Settings::Instance().GetStringList(SETTING_FILES);
+    RequestLoadFiles(fileList);
+}
+
+void SourceFileManager::SaveFilesToSettings()
+{
+    std::vector<std::string> paths;
+    for (auto file : m_sourceFiles)
+    {
+        paths.push_back(file->m_path);
+    }
+    Settings::Instance().SetStringList(SETTING_FILES, paths);
+    Settings::Instance().Save();
 }

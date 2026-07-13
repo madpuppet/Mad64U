@@ -4,6 +4,7 @@
 #include "IconRenderer.h"
 #include "WindowBase.h"
 #include "WindowMenuList.h"
+#include "Settings.h"
 #include "SourceFileManager.h"
 #include <filesystem>
 
@@ -194,6 +195,7 @@ void Application::CreateThemes()
 {
     {
         auto &theme = m_themes[(int)Theme::Dark];
+        theme.m_name = "dark";
         theme.m_colors[(int)ThemeColor::TitleBar] = SDL_Color(64, 32, 16, 255);
         theme.m_colors[(int)ThemeColor::MenuText] = SDL_Color(255, 255, 255, 255);
         theme.m_colors[(int)ThemeColor::MenuItemText] = SDL_Color(255, 255, 255, 255);
@@ -219,6 +221,7 @@ void Application::CreateThemes()
 
     {
         auto& theme = m_themes[(int)Theme::Light];
+        theme.m_name = "light";
         theme.m_colors[(int)ThemeColor::TitleBar] = SDL_Color(64, 32, 16, 255);
         theme.m_colors[(int)ThemeColor::MenuText] = SDL_Color(255, 255, 255, 255);
         theme.m_colors[(int)ThemeColor::MenuItemText] = SDL_Color(255, 255, 255, 255);
@@ -240,6 +243,13 @@ void Application::CreateThemes()
         theme.m_colors[(int)ThemeColor::TextGeneral] = SDL_Color(0, 0, 0, 255);
         theme.m_colors[(int)ThemeColor::TextOperator] = SDL_Color(0, 0, 255, 255);
         theme.m_colors[(int)ThemeColor::TextComment] = SDL_Color(0, 128, 0, 255);
+    }
+
+    std::string activeTheme = Settings::Instance().GetString(SETTING_THEME);
+    for (int i = 0; i < NumThemes; i++)
+    {
+        if (m_themes[i].m_name == activeTheme)
+            m_activeTheme = (Theme)i;
     }
 }
 
@@ -275,6 +285,13 @@ void Application::AddTimerEvent()
     }
 }
 
+void Application::InitDefaultSettings()
+{
+    auto &settings = Settings::Instance();
+    settings.SetString(SETTING_THEME, "dark");
+    settings.SetString(SETTING_RENDERER, "direct3d11");
+}
+
 int Application::Run()
 {
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK))
@@ -282,6 +299,10 @@ int Application::Run()
         Log("SDL could not initialize! SDL Error: %s\n", SDL_GetError());
         exit(0);
     }
+
+    Settings::Startup();
+    InitDefaultSettings();
+    Settings::Instance().Load();
 
     // dump renderers
     for (int i = 0; i < SDL_GetNumRenderDrivers(); i++)
@@ -302,18 +323,14 @@ int Application::Run()
     SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
 
     auto win = new WindowTree(Recti{ 300,100,640,512 });
-    auto testr = new TestWindow("TEST_RED", SDL_Color{ 255,0,0,255 });
-    auto testg = new TestWindow("TEST_GREEN", SDL_Color{ 0,255,0,255 });
-    auto testb = new TestWindow("TEST_BLUE", SDL_Color{ 0,0,255,255 });
-    win->m_layout.m_tabs.push_back(testr);
-    win->m_layout.m_tabs.push_back(testg);
-    win->m_layout.m_tabs.push_back(testb);
     wm.AddWindowTree(win);
     wm.SetActiveTree(win);
 
     CreateThemes();
     CreateMenus();
     AddTimerEvent();
+
+    SourceFileManager::Instance().RestoreFilesFromSettings();
 
     SDL_Event e;
     while (!m_quit)
@@ -339,3 +356,8 @@ int Application::Run()
     return 1;
 }
 
+void Application::SelectTheme(Theme theme)
+{
+    m_activeTheme = theme;
+    Settings::Instance().SetString(SETTING_THEME, m_themes[(int)m_activeTheme].m_name);
+}

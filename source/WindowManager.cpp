@@ -2,6 +2,7 @@
 #include "WindowManager.h"
 #include "WindowTree.h"
 #include "Application.h"
+#include "Settings.h"
 
 WindowTree* WindowManager::FindWindowByID(int id)
 {
@@ -542,9 +543,17 @@ void WindowManager::SetActiveTree(WindowTree* tree)
     }
 
     m_activeTree = tree;
-    m_activeLayout = tree->FindFirstNonSplitLayout();
-    m_activeWindow = m_activeLayout->GetActiveWindow();
-    m_menuList.Layout(m_activeTree);
+    if (tree)
+    {
+        m_activeLayout = tree->FindFirstNonSplitLayout();
+        m_activeWindow = m_activeLayout->GetActiveWindow();
+        m_menuList.Layout(m_activeTree);
+    }
+    else
+    {
+        m_activeLayout = nullptr;
+        m_activeWindow = nullptr;
+    }
 
     if (m_activeTree)
     {

@@ -63,10 +63,11 @@ public:
 
     void Quit() { m_quit = true; }
 
-    void SelectTheme(Theme theme) { m_activeTheme = theme; }
+    void SelectTheme(Theme theme);
     ThemeProperties& GetThemeProperties() { return m_themes[(int)m_activeTheme]; }
 
 protected:
+    void InitDefaultSettings();
     void CreateMenus();
     void CreateThemes();
     void AddTimerEvent();

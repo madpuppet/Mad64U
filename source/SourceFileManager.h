@@ -32,6 +32,9 @@ public:
     void RequestLoadFiles(std::vector<std::string> paths);
     void Tick();
 
+    void RestoreFilesFromSettings();
+    void SaveFilesToSettings();
+
 protected:
     void LoadRequestedFiles();
 

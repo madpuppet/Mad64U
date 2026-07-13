@@ -1,5 +1,6 @@
 #include "common.h"
 #include "WindowTree.h"
+#include "Settings.h"
 #include <format>
 
 #include <dwmapi.h>
@@ -87,7 +88,7 @@ WindowTree::WindowTree(const Recti& area)
     SDL_SetWindowPosition(m_window, area.x, area.y);
     m_windowID = SDL_GetWindowID(m_window);
 
-    m_renderer = SDL_CreateRenderer(m_window, "direct3d11");
+    m_renderer = SDL_CreateRenderer(m_window, Settings::Instance().GetString(SETTING_RENDERER).c_str());
     if (m_renderer == NULL)
     {
         Log("Renderer could not be created! SDL_Error: %s\n", SDL_GetError());
