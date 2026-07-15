@@ -28,20 +28,16 @@ void Settings::Load()
     while (std::getline(file, line))
     {
         std::istringstream stream(line);
-        while (std::getline(file, line))
-        {
-            std::istringstream stream(line);
-            std::string token;
-            std::string name;
-            std::vector<std::string> vals;
+        std::string token;
+        std::string name;
+        std::vector<std::string> vals;
 
-            if (stream >> name)
-            {
-                auto item = FindOrCreate(name.c_str());
-                item->m_tokens.clear();
-                while (stream >> token)
-                    item->m_tokens.push_back(std::move(token));
-            }
+        if (stream >> name)
+        {
+            auto item = FindOrCreate(name.c_str());
+            item->m_tokens.clear();
+            while (stream >> token)
+                item->m_tokens.push_back(std::move(token));
         }
     }
 }
@@ -83,6 +79,12 @@ Settings::SettingItem* Settings::FindOrCreate(const char* name)
     auto item = new SettingItem(name);
     m_settings[hash] = item;
     return item;
+}
+
+bool Settings::Exists(const char* name)
+{
+    auto item = Find(name);
+    return item != nullptr;
 }
 
 bool Settings::GetBool(const char* name)
@@ -161,6 +163,18 @@ std::vector<std::string>Settings::GetStringList(const char* name)
     std::vector<std::string> emptyList;
     return emptyList;
 }
+
+std::vector<std::string> Settings::GetItemsStartWith(const char* name)
+{
+    std::vector<std::string> names;
+    for (auto &item : m_settings)
+    {
+        if (item.second->m_name.starts_with(name))
+            names.push_back(item.second->m_name);
+    }
+    return names;
+}
+
 
 void Settings::SetBool(const char* name, bool val)
 {

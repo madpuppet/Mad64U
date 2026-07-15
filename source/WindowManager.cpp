@@ -3,6 +3,42 @@
 #include "WindowTree.h"
 #include "Application.h"
 #include "Settings.h"
+#include "SourceFileManager.h"
+#include <filesystem>
+
+std::vector<std::string> GetSourceFiles(const std::string& pathStr)
+{
+    namespace fs = std::filesystem;
+
+    std::vector<std::string> files;
+    fs::path path(pathStr);
+
+    if (!fs::exists(path))
+        return files;
+
+    // Does it exist and is it a directory?
+    if (!fs::is_directory(path))
+    {
+        files.push_back(pathStr);
+        return files;
+    }
+
+    for (const auto& entry : fs::directory_iterator(path))
+    {
+        if (!entry.is_regular_file())
+            continue;
+
+        fs::path file = entry.path();
+        std::string ext = file.extension().string();
+
+        if (ext == ".asm" || ext == ".c")
+            files.push_back(file.string());
+    }
+
+    return files;
+}
+
+
 
 WindowTree* WindowManager::FindWindowByID(int id)
 {
@@ -56,25 +92,25 @@ void WindowManager::HandleEvent(SDL_Event* e)
                     tree->m_dirty = true;
 
                     auto icon = tree->FindIcon((int)e->button.x, (int)e->button.y);
-                    if (icon != Icon_None)
+                    if (icon != Icons::None)
                     {
                         switch (icon)
                         {
-                            case Icon_Fullscreen:
+                            case Icons::Fullscreen:
                             {
                                 tree->MakeFullscreen();
                                 return;
                             }
                             break;
 
-                            case Icon_Windowed:
+                            case Icons::Windowed:
                             {
                                 tree->MakeWindowed();
                                 return;
                             }
                             break;
 
-                            case Icon_Close:
+                            case Icons::Close:
                             {
                                 auto it = std::find(m_windowTrees.begin(), m_windowTrees.end(), tree);
                                 if (it != m_windowTrees.end()) {
@@ -87,7 +123,7 @@ void WindowManager::HandleEvent(SDL_Event* e)
                             }
                             break;
 
-                            case Icon_Resize:
+                            case Icons::Resize:
                             {
                                 int w, h;
                                 SDL_GetWindowSizeInPixels(tree->m_window, &w, &h);
@@ -241,7 +277,18 @@ void WindowManager::HandleEvent(SDL_Event* e)
                             if (m_mouseMenuQuery.m_menuItemIdx != -1)
                             {
                                 auto item = menu->m_items[m_mouseMenuQuery.m_menuItemIdx];
-                                item->m_activate();
+                                item->m_subMenuOpen = false;
+                                if (m_mouseMenuQuery.m_subMenuItemIdx != -1)
+                                {
+                                    auto subitem = item->m_subMenus[m_mouseMenuQuery.m_subMenuItemIdx];
+                                    if (subitem->m_activate)
+                                        subitem->m_activate();
+                                }
+                                else
+                                {
+                                    if (item->m_activate)
+                                        item->m_activate();
+                                }
                             }
                         }
                         m_mouseMode = MouseMode_Idle;
@@ -359,18 +406,26 @@ void WindowManager::HandleEvent(SDL_Event* e)
                             m_mouseMenuQuery.m_tree->m_dirty = true;
 
                         int oldMenuIdx = m_mouseMenuQuery.m_menuIdx;
+                        int oldMenuItemIdx = m_mouseMenuQuery.m_menuItemIdx;
                         m_menuList.CheckForMenu(m_activeTree, (int)e->button.x, (int)e->button.y, m_mouseMenuQuery);
-                        if (m_mouseMenuQuery.m_menuIdx != -1)
+
+                        // close the old menus
+                        if (oldMenuIdx != -1)
                         {
-                            if (oldMenuIdx != -1 && m_mouseMenuQuery.m_menuIdx != oldMenuIdx)
+                            m_menuList.m_menus[oldMenuIdx]->m_open = false;
+                            if (oldMenuItemIdx != -1)
                             {
-                                m_menuList.m_menus[oldMenuIdx]->m_open = false;
-                                m_menuList.m_menus[m_mouseMenuQuery.m_menuIdx]->m_open = true;
+                                m_menuList.m_menus[oldMenuIdx]->m_items[oldMenuItemIdx]->m_subMenuOpen = false;
                             }
                         }
-                        else
+                        // open the new menus
+                        if (m_mouseMenuQuery.m_menuIdx != -1)
                         {
-                            m_mouseMenuQuery.m_menuIdx = oldMenuIdx;
+                            m_menuList.m_menus[m_mouseMenuQuery.m_menuIdx]->m_open = true;
+                            if (m_mouseMenuQuery.m_menuItemIdx != -1)
+                            {
+                                m_menuList.m_menus[m_mouseMenuQuery.m_menuIdx]->m_items[m_mouseMenuQuery.m_menuItemIdx]->m_subMenuOpen = true;
+                            }
                         }
                     }
                     break;
@@ -510,6 +565,19 @@ void WindowManager::HandleEvent(SDL_Event* e)
             }
             break;
         }
+
+        case SDL_EVENT_DROP_FILE:
+        {
+            // This pointer is only valid while processing this event,
+            // so copy it if you need to retain the path.
+            std::vector<std::string> fileList;
+            fileList.push_back(e->drop.data);
+
+
+
+            SourceFileManager::Instance().RequestLoadFiles(fileList);
+        }
+        return;
 
         case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
         case SDL_EVENT_WINDOW_FOCUS_GAINED:

@@ -6,6 +6,7 @@
 #include "WindowMenuList.h"
 #include "Settings.h"
 #include "SourceFileManager.h"
+#include "ProjectListWindow.h"
 #include <filesystem>
 
 class TestWindow : public WindowBase
@@ -29,6 +30,31 @@ public:
 
 typedef void (SDLCALL* SDL_DialogFileCallback)(void* userdata, const char* const* filelist, int filter);
 
+
+static const char* s_themecolor_name[NumThemeColor] =
+{
+    "TitleBar",
+    "MenuText",
+    "MenuItemText",
+    "MenuItemBackground",
+    "MenuItemBackgroundSelected",
+    "WindowBackground",
+    "WindowClientEmpty",
+    "TabBackground",
+    "TabText",
+    "TabTextSelected",
+    "TabHighlight",
+    "SourceBackground",
+    "SourceBackgroundSelected",
+    "ScrollBarBackground",
+    "ScrollBar",
+    "ScrollBarSelected",
+    "Cursor",
+    "TextHighlight",
+    "TextGeneral",
+    "TextOperator",
+    "TextComment"
+};
 
 
 SDL_DialogFileFilter s_filters[] =
@@ -163,27 +189,43 @@ void Application::CreateMenus()
     fileMenu->m_items.push_back(new WindowMenuItem("Close", closeFile));
     wm.AddWindowMenu(fileMenu);
 
-    auto lightTheme = []()
-        {
-            Application::Instance().SelectTheme(Theme::Light);
-            WindowManager::Instance().PaintAll();
-        };
-
-    auto darkTheme = []()
-        {
-            Application::Instance().SelectTheme(Theme::Dark);
-            WindowManager::Instance().PaintAll();
-        };
-
     auto styleMenu = new WindowMenu;
     styleMenu->m_name = "Style";
-    styleMenu->m_items.push_back(new WindowMenuItem("Theme: Light", lightTheme));
-    styleMenu->m_items.push_back(new WindowMenuItem("Theme: Dark", darkTheme));
+
+    auto themeItem = new WindowMenuItem("Theme");
+    for (auto theme : m_themes)
+    {
+        auto activateTheme = [theme]()
+            {
+                Application::Instance().SelectTheme(theme->m_name.c_str());
+                WindowManager::Instance().PaintAll();
+            };
+        themeItem->m_subMenus.push_back(new WindowMenuItem(theme->m_name, activateTheme));
+    }
+    styleMenu->m_items.push_back(themeItem);
     wm.AddWindowMenu(styleMenu);
+
+    auto newWindowProjectList = []()
+        {
+            WindowManager::Instance().AddWindow(new ProjectListWindow);
+            WindowManager::Instance().LayoutWindows();
+        };
+
+    auto windowMenu = new WindowMenu;
+    windowMenu->m_name = "Windows";
+    windowMenu->m_items.push_back(new WindowMenuItem("Project Files", newWindowProjectList ));
+    wm.AddWindowMenu(windowMenu);
 
     auto buildMenu = new WindowMenu;
     buildMenu->m_name = "Build";
-    buildMenu->m_items.push_back(new WindowMenuItem("Build", []() {Log("Build\n"); }));
+
+    auto buildCB = []()
+        {
+            auto window = WindowManager::Instance().GetActiveWindowBase();
+            window->Compile();
+        };
+
+    buildMenu->m_items.push_back(new WindowMenuItem("Build", buildCB));
     buildMenu->m_items.push_back(new WindowMenuItem("Run", []() {Log("Run\n"); }));
     buildMenu->m_items.push_back(new WindowMenuItem("Launch on U64", []() {Log("Launch\n"); }));
     wm.AddWindowMenu(buildMenu);
@@ -191,66 +233,56 @@ void Application::CreateMenus()
     wm.LayoutMenu();
 }
 
-void Application::CreateThemes()
+ThemeProperties* Application::FindTheme(const char* name)
 {
+    for (auto theme : m_themes)
     {
-        auto &theme = m_themes[(int)Theme::Dark];
-        theme.m_name = "dark";
-        theme.m_colors[(int)ThemeColor::TitleBar] = SDL_Color(64, 32, 16, 255);
-        theme.m_colors[(int)ThemeColor::MenuText] = SDL_Color(255, 255, 255, 255);
-        theme.m_colors[(int)ThemeColor::MenuItemText] = SDL_Color(255, 255, 255, 255);
-        theme.m_colors[(int)ThemeColor::MenuItemBackground] = SDL_Color(255, 255, 255, 255);
-        theme.m_colors[(int)ThemeColor::MenuItemBackgroundSelected] = SDL_Color(255, 255, 255, 255);
-        theme.m_colors[(int)ThemeColor::WindowBackground] = SDL_Color(16, 16, 16, 255);
-        theme.m_colors[(int)ThemeColor::WindowClientEmpty] = SDL_Color(32, 32, 32, 255);
-        theme.m_colors[(int)ThemeColor::TabBackground] = SDL_Color(48, 48, 48, 255);
-        theme.m_colors[(int)ThemeColor::TabText] = SDL_Color(200, 200, 200, 255);
-        theme.m_colors[(int)ThemeColor::TabTextSelected] = SDL_Color(255, 255, 255, 255);
-        theme.m_colors[(int)ThemeColor::TabHighlight] = SDL_Color(255, 128, 255, 255);
-        theme.m_colors[(int)ThemeColor::SourceBackground] = SDL_Color(32, 32, 32, 255);
-        theme.m_colors[(int)ThemeColor::SourceBackgroundSelected] = SDL_Color(56, 60, 64, 255);
-        theme.m_colors[(int)ThemeColor::ScrollBarBackground] = SDL_Color(0, 0, 0, 255);
-        theme.m_colors[(int)ThemeColor::ScrollBar] = SDL_Color(128, 128, 0, 255);
-        theme.m_colors[(int)ThemeColor::ScrollBarSelected] = SDL_Color(255, 255, 0, 255);
-        theme.m_colors[(int)ThemeColor::Cursor] = SDL_Color(255, 255, 128, 255);
-        theme.m_colors[(int)ThemeColor::TextHighlight] = SDL_Color(128, 128, 128, 255);
-        theme.m_colors[(int)ThemeColor::TextGeneral] = SDL_Color(230, 230, 230, 255);
-        theme.m_colors[(int)ThemeColor::TextOperator] = SDL_Color(64, 255, 255, 255);
-        theme.m_colors[(int)ThemeColor::TextComment] = SDL_Color(128, 255, 128, 255);
+        if (theme->m_name == name)
+            return theme;
+    }
+    return nullptr;
+}
+
+void Application::LoadThemesFromSettings()
+{
+    auto& settings = Settings::Instance();
+    std::vector<std::string> themeList = settings.GetStringList(SETTING_THEMELIST);
+    for (auto themeName : themeList)
+    {
+        auto theme = FindTheme(themeName.c_str());
+        if (!theme)
+        {
+            theme = new ThemeProperties;
+            m_themes.push_back(theme);
+        }
+
+        for (int i = 0; i < NumThemeColor; i++)
+        {
+            std::string colorName = std::format("theme_{}_{}", themeName, s_themecolor_name[i]);
+            if (settings.Exists(colorName.c_str()))
+            {
+                theme->m_colors[i] = settings.GetColor(colorName.c_str());
+            }
+        }
     }
 
+    auto themeName = settings.GetString(SETTING_THEME);
+    SelectTheme(themeName.c_str());
+}
+void Application::SaveThemesToSettings()
+{
+    auto& settings = Settings::Instance();
+    std::vector<std::string> themeList;
+    for (auto theme : m_themes)
     {
-        auto& theme = m_themes[(int)Theme::Light];
-        theme.m_name = "light";
-        theme.m_colors[(int)ThemeColor::TitleBar] = SDL_Color(64, 32, 16, 255);
-        theme.m_colors[(int)ThemeColor::MenuText] = SDL_Color(255, 255, 255, 255);
-        theme.m_colors[(int)ThemeColor::MenuItemText] = SDL_Color(255, 255, 255, 255);
-        theme.m_colors[(int)ThemeColor::MenuItemBackground] = SDL_Color(255, 255, 255, 255);
-        theme.m_colors[(int)ThemeColor::MenuItemBackgroundSelected] = SDL_Color(255, 255, 255, 255);
-        theme.m_colors[(int)ThemeColor::WindowBackground] = SDL_Color(64, 64, 64, 255);
-        theme.m_colors[(int)ThemeColor::WindowClientEmpty] = SDL_Color(32, 32, 32, 255);
-        theme.m_colors[(int)ThemeColor::TabBackground] = SDL_Color(100, 100, 100, 255);
-        theme.m_colors[(int)ThemeColor::TabText] = SDL_Color(200, 200, 200, 255);
-        theme.m_colors[(int)ThemeColor::TabTextSelected] = SDL_Color(255, 255, 255, 255);
-        theme.m_colors[(int)ThemeColor::TabHighlight] = SDL_Color(255, 128, 255, 255);
-        theme.m_colors[(int)ThemeColor::SourceBackground] = SDL_Color(180, 170, 160, 255);
-        theme.m_colors[(int)ThemeColor::SourceBackgroundSelected] = SDL_Color(200, 180, 150, 255);
-        theme.m_colors[(int)ThemeColor::ScrollBarBackground] = SDL_Color(0, 0, 0, 255);
-        theme.m_colors[(int)ThemeColor::ScrollBar] = SDL_Color(128, 128, 0, 255);
-        theme.m_colors[(int)ThemeColor::ScrollBarSelected] = SDL_Color(255, 255, 0, 255);
-        theme.m_colors[(int)ThemeColor::Cursor] = SDL_Color(64, 64, 0, 255);
-        theme.m_colors[(int)ThemeColor::TextHighlight] = SDL_Color(128, 128, 128, 255);
-        theme.m_colors[(int)ThemeColor::TextGeneral] = SDL_Color(0, 0, 0, 255);
-        theme.m_colors[(int)ThemeColor::TextOperator] = SDL_Color(0, 0, 255, 255);
-        theme.m_colors[(int)ThemeColor::TextComment] = SDL_Color(0, 128, 0, 255);
+        themeList.push_back(std::format("{}", theme->m_name));
+        for (int i = 0; i < NumThemeColor; i++)
+        {
+            std::string colorName = std::format("theme_{}_{}", theme->m_name, s_themecolor_name[i]);
+            settings.SetColor(colorName.c_str(), theme->m_colors[i]);
+        }
     }
-
-    std::string activeTheme = Settings::Instance().GetString(SETTING_THEME);
-    for (int i = 0; i < NumThemes; i++)
-    {
-        if (m_themes[i].m_name == activeTheme)
-            m_activeTheme = (Theme)i;
-    }
+    settings.SetStringList(SETTING_THEMELIST, themeList);
 }
 
 Uint32 TimerEventType = 0;
@@ -285,11 +317,108 @@ void Application::AddTimerEvent()
     }
 }
 
-void Application::InitDefaultSettings()
+void Application::CreateSettings()
 {
+    Settings::Startup();
+
     auto &settings = Settings::Instance();
-    settings.SetString(SETTING_THEME, "dark");
+    settings.SetStringList(SETTING_THEMELIST, { "light","dark" });
     settings.SetString(SETTING_RENDERER, "direct3d11");
+    settings.SetString(SETTING_THEME, "light" );
+
+    // default themes
+    // these can be overriden by settings.txt
+    {
+        auto& theme = *(new ThemeProperties);
+        theme.m_name = "dark";
+        theme.m_colors[(int)ThemeColor::TitleBar] = SDL_Color(64, 32, 16, 255);
+        theme.m_colors[(int)ThemeColor::MenuText] = SDL_Color(255, 255, 255, 255);
+        theme.m_colors[(int)ThemeColor::MenuItemText] = SDL_Color(255, 255, 255, 255);
+        theme.m_colors[(int)ThemeColor::MenuItemBackground] = SDL_Color(255, 255, 255, 255);
+        theme.m_colors[(int)ThemeColor::MenuItemBackgroundSelected] = SDL_Color(255, 255, 255, 255);
+        theme.m_colors[(int)ThemeColor::WindowBackground] = SDL_Color(16, 16, 16, 255);
+        theme.m_colors[(int)ThemeColor::WindowClientEmpty] = SDL_Color(32, 32, 32, 255);
+        theme.m_colors[(int)ThemeColor::TabBackground] = SDL_Color(48, 48, 48, 255);
+        theme.m_colors[(int)ThemeColor::TabText] = SDL_Color(200, 200, 200, 255);
+        theme.m_colors[(int)ThemeColor::TabTextSelected] = SDL_Color(255, 255, 255, 255);
+        theme.m_colors[(int)ThemeColor::TabHighlight] = SDL_Color(255, 128, 255, 255);
+        theme.m_colors[(int)ThemeColor::SourceBackground] = SDL_Color(32, 32, 32, 255);
+        theme.m_colors[(int)ThemeColor::SourceBackgroundSelected] = SDL_Color(48, 48, 48, 255);
+        theme.m_colors[(int)ThemeColor::ScrollBarBackground] = SDL_Color(0, 0, 0, 255);
+        theme.m_colors[(int)ThemeColor::ScrollBar] = SDL_Color(128, 128, 0, 255);
+        theme.m_colors[(int)ThemeColor::ScrollBarSelected] = SDL_Color(255, 255, 0, 255);
+        theme.m_colors[(int)ThemeColor::Cursor] = SDL_Color(255, 255, 128, 255);
+        theme.m_colors[(int)ThemeColor::TextHighlight] = SDL_Color(128, 128, 128, 255);
+        theme.m_colors[(int)ThemeColor::TextGeneral] = SDL_Color(230, 230, 230, 255);
+        theme.m_colors[(int)ThemeColor::TextOperator] = SDL_Color(64, 255, 255, 255);
+        theme.m_colors[(int)ThemeColor::TextComment] = SDL_Color(128, 255, 128, 255);
+        m_themes.push_back(&theme);
+    }
+
+    {
+        auto& theme = *(new ThemeProperties);
+        theme.m_name = "c64blue";
+        theme.m_colors[(int)ThemeColor::TitleBar] = SDL_Color(64, 32, 16, 255);
+        theme.m_colors[(int)ThemeColor::MenuText] = SDL_Color(255, 255, 255, 255);
+        theme.m_colors[(int)ThemeColor::MenuItemText] = SDL_Color(255, 255, 255, 255);
+        theme.m_colors[(int)ThemeColor::MenuItemBackground] = SDL_Color(255, 255, 255, 255);
+        theme.m_colors[(int)ThemeColor::MenuItemBackgroundSelected] = SDL_Color(255, 255, 255, 255);
+        theme.m_colors[(int)ThemeColor::WindowBackground] = SDL_Color(0, 0, 64, 255);
+        theme.m_colors[(int)ThemeColor::WindowClientEmpty] = SDL_Color(8, 16, 48, 255);
+        theme.m_colors[(int)ThemeColor::TabBackground] = SDL_Color(48, 48, 48, 255);
+        theme.m_colors[(int)ThemeColor::TabText] = SDL_Color(200, 200, 200, 255);
+        theme.m_colors[(int)ThemeColor::TabTextSelected] = SDL_Color(255, 255, 255, 255);
+        theme.m_colors[(int)ThemeColor::TabHighlight] = SDL_Color(255, 128, 255, 255);
+        theme.m_colors[(int)ThemeColor::SourceBackground] = SDL_Color(0, 0, 64, 255);
+        theme.m_colors[(int)ThemeColor::SourceBackgroundSelected] = SDL_Color(0, 0, 78, 255);
+        theme.m_colors[(int)ThemeColor::ScrollBarBackground] = SDL_Color(0, 0, 0, 255);
+        theme.m_colors[(int)ThemeColor::ScrollBar] = SDL_Color(128, 128, 0, 255);
+        theme.m_colors[(int)ThemeColor::ScrollBarSelected] = SDL_Color(255, 255, 0, 255);
+        theme.m_colors[(int)ThemeColor::Cursor] = SDL_Color(255, 255, 128, 255);
+        theme.m_colors[(int)ThemeColor::TextHighlight] = SDL_Color(128, 128, 128, 255);
+        theme.m_colors[(int)ThemeColor::TextGeneral] = SDL_Color(0, 200, 255, 255);
+        theme.m_colors[(int)ThemeColor::TextOperator] = SDL_Color(255, 128, 64, 255);
+        theme.m_colors[(int)ThemeColor::TextComment] = SDL_Color(128, 255, 128, 255);
+        m_themes.push_back(&theme);
+    }
+
+    {
+        auto& theme = *(new ThemeProperties);
+        theme.m_name = "light";
+        theme.m_colors[(int)ThemeColor::TitleBar] = SDL_Color(64, 32, 16, 255);
+        theme.m_colors[(int)ThemeColor::MenuText] = SDL_Color(255, 255, 255, 255);
+        theme.m_colors[(int)ThemeColor::MenuItemText] = SDL_Color(255, 255, 255, 255);
+        theme.m_colors[(int)ThemeColor::MenuItemBackground] = SDL_Color(255, 255, 255, 255);
+        theme.m_colors[(int)ThemeColor::MenuItemBackgroundSelected] = SDL_Color(255, 255, 255, 255);
+        theme.m_colors[(int)ThemeColor::WindowBackground] = SDL_Color(64, 64, 64, 255);
+        theme.m_colors[(int)ThemeColor::WindowClientEmpty] = SDL_Color(32, 32, 32, 255);
+        theme.m_colors[(int)ThemeColor::TabBackground] = SDL_Color(100, 100, 100, 255);
+        theme.m_colors[(int)ThemeColor::TabText] = SDL_Color(200, 200, 200, 255);
+        theme.m_colors[(int)ThemeColor::TabTextSelected] = SDL_Color(255, 255, 255, 255);
+        theme.m_colors[(int)ThemeColor::TabHighlight] = SDL_Color(255, 128, 255, 255);
+        theme.m_colors[(int)ThemeColor::SourceBackground] = SDL_Color(180, 170, 160, 255);
+        theme.m_colors[(int)ThemeColor::SourceBackgroundSelected] = SDL_Color(200, 180, 150, 255);
+        theme.m_colors[(int)ThemeColor::ScrollBarBackground] = SDL_Color(0, 0, 0, 255);
+        theme.m_colors[(int)ThemeColor::ScrollBar] = SDL_Color(128, 128, 0, 255);
+        theme.m_colors[(int)ThemeColor::ScrollBarSelected] = SDL_Color(255, 255, 0, 255);
+        theme.m_colors[(int)ThemeColor::Cursor] = SDL_Color(64, 64, 0, 255);
+        theme.m_colors[(int)ThemeColor::TextHighlight] = SDL_Color(128, 128, 128, 255);
+        theme.m_colors[(int)ThemeColor::TextGeneral] = SDL_Color(0, 0, 0, 255);
+        theme.m_colors[(int)ThemeColor::TextOperator] = SDL_Color(0, 0, 255, 255);
+        theme.m_colors[(int)ThemeColor::TextComment] = SDL_Color(0, 128, 0, 255);
+        m_themes.push_back(&theme);
+
+        m_activeTheme = &theme;
+    }
+
+    // push those themes to Settings()
+    SaveThemesToSettings();
+
+    // load settings from existing settings file
+    Settings::Instance().Load();
+
+    // pull any changed themes
+    LoadThemesFromSettings();
 }
 
 int Application::Run()
@@ -299,11 +428,6 @@ int Application::Run()
         Log("SDL could not initialize! SDL Error: %s\n", SDL_GetError());
         exit(0);
     }
-
-    Settings::Startup();
-    InitDefaultSettings();
-    Settings::Instance().Load();
-
     // dump renderers
     for (int i = 0; i < SDL_GetNumRenderDrivers(); i++)
     {
@@ -312,6 +436,7 @@ int Application::Run()
     }
 
     // create 
+    CreateSettings();
     FontRenderer::Startup();
     IconRenderer::Startup();
     WindowManager::Startup();
@@ -326,7 +451,6 @@ int Application::Run()
     wm.AddWindowTree(win);
     wm.SetActiveTree(win);
 
-    CreateThemes();
     CreateMenus();
     AddTimerEvent();
 
@@ -356,8 +480,13 @@ int Application::Run()
     return 1;
 }
 
-void Application::SelectTheme(Theme theme)
+void Application::SelectTheme(const char *themeName)
 {
-    m_activeTheme = theme;
-    Settings::Instance().SetString(SETTING_THEME, m_themes[(int)m_activeTheme].m_name);
+    auto theme = FindTheme(themeName);
+    if (theme)
+    {
+        m_activeTheme = theme;
+        Settings::Instance().SetString(SETTING_THEME, m_activeTheme->m_name);
+        Settings::Instance().Save();
+    }
 }

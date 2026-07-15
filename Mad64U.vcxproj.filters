@@ -58,6 +58,9 @@
     <ClCompile Include="source\Settings.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="source\ProjectListWIndow.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\common.h">
@@ -367,6 +370,9 @@
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="source\Settings.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="source\ProjectListWindow.h">
       <Filter>source</Filter>
     </ClInclude>
   </ItemGroup>

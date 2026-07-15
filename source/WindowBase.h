@@ -26,9 +26,11 @@ public:
     bool CheckForScrollBar(int x, int y, WindowScrollBarQuery& query);
     void UpdateScrollBar(int offset, WindowScrollBarQuery& query);
 
+    virtual ~WindowBase() {};
     virtual void Paint(SDL_Renderer* renderer, const Recti& dirtyArea) = 0;
     virtual void Close() = 0;
     virtual bool Tick() { return false; }
+    virtual void Compile() {};
     virtual bool HandleEvent(SDL_Event* e) {
         return false;
     }

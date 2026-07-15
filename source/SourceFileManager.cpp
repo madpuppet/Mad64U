@@ -100,6 +100,20 @@ void SourceFileManager::LoadRequestedFiles()
     auto& wm = WindowManager::Instance();
     for (auto& path : paths)
     {
+        // check if file is already loaded...
+        bool exists = false;
+        for (auto file : m_sourceFiles)
+        {
+            if (file->m_path == path)
+            {
+                exists = true;
+                break;
+            }
+        }
+
+        if (exists)
+            continue;
+
         std::ifstream file(path);
         if (!file)
             continue;
@@ -161,6 +175,7 @@ bool SourceFileManager::CloseFile(SourceFile* file)
     m_sourceFiles.erase(std::find(m_sourceFiles.begin(), m_sourceFiles.end(), file));
 
     WindowManager::Instance().LayoutWindows();
+    SaveFilesToSettings();
     return true;
 }
 

@@ -5,6 +5,7 @@
 #include "SourceFile.h"
 #include <set>
 #include <mutex>
+#include <map>
 
 class SourceFileManager : public Singleton<SourceFileManager>
 {

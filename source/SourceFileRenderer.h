@@ -13,6 +13,7 @@ public:
     bool HandleEvent(SDL_Event* e) override;
     void CalcXYFromClientPos(int x, int y, int& col, int& row);
     int CalcXPos(int x, int y);
+    void Compile() override;
 
     Vec2i m_cursor;
     int m_trackedColumn = 0;

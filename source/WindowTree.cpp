@@ -160,13 +160,13 @@ void WindowTree::Paint(Recti* area)
         SDL_RenderFillRect(m_renderer, &bodyArea);
     }
 
-    ir.DrawIcon(m_renderer, Icon_Close, windowArea.w - 12, WINDOW_TITLE_BAR_HEIGHT/2);
+    ir.DrawIcon(m_renderer, Icons::Close, windowArea.w - 12, WINDOW_TITLE_BAR_HEIGHT/2);
     if (m_fullscreen)
-        ir.DrawIcon(m_renderer, Icon_Windowed, windowArea.w - 30, WINDOW_TITLE_BAR_HEIGHT / 2);
+        ir.DrawIcon(m_renderer, Icons::Windowed, windowArea.w - 30, WINDOW_TITLE_BAR_HEIGHT / 2);
     else
     {
-        ir.DrawIcon(m_renderer, Icon_Fullscreen, windowArea.w - 30, WINDOW_TITLE_BAR_HEIGHT / 2);
-        ir.DrawIcon(m_renderer, Icon_Resize, windowArea.w - 8, windowArea.h - 8);
+        ir.DrawIcon(m_renderer, Icons::Fullscreen, windowArea.w - 30, WINDOW_TITLE_BAR_HEIGHT / 2);
+        ir.DrawIcon(m_renderer, Icons::Resize, windowArea.w - 8, windowArea.h - 8);
     }
 
     if (wm.GetActiveWindowTree() == this)
@@ -218,20 +218,20 @@ Icons WindowTree::FindIcon(int x, int y)
     Recti windowIcon{ w - 30 - 8, WINDOW_TITLE_BAR_HEIGHT / 2 - 8, 16, 16 };
     Recti resizeIcon{ w - 16, h - 16, 16, 16 };
     if (closeIcon.Contains(x, y))
-        return Icon_Close;
+        return Icons::Close;
     if (m_fullscreen)
     {
         if (windowIcon.Contains(x, y))
-            return Icon_Windowed;
+            return Icons::Windowed;
     }
     else
     {
         if (windowIcon.Contains(x, y))
-            return Icon_Fullscreen;
+            return Icons::Fullscreen;
         if (resizeIcon.Contains(x, y))
-            return Icon_Resize;
+            return Icons::Resize;
     }
-    return Icon_None;
+    return Icons::None;
 }
 
 SDL_DisplayID GetMouseDisplay()

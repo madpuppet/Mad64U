@@ -7,14 +7,6 @@
 #include "Singleton.h"
 #include <array>
 
-enum class Theme
-{
-    Dark,
-    Light,
-    MAX
-};
-constexpr size_t NumThemes = static_cast<size_t>(Theme::MAX);
-
 enum class ThemeColor
 {
     TitleBar,
@@ -63,17 +55,20 @@ public:
 
     void Quit() { m_quit = true; }
 
-    void SelectTheme(Theme theme);
-    ThemeProperties& GetThemeProperties() { return m_themes[(int)m_activeTheme]; }
+    void SelectTheme(const char *theme);
+    ThemeProperties& GetThemeProperties() { return *m_activeTheme; }
 
 protected:
-    void InitDefaultSettings();
+    void CreateSettings();
     void CreateMenus();
     void CreateThemes();
     void AddTimerEvent();
+    void LoadThemesFromSettings();
+    void SaveThemesToSettings();
+    ThemeProperties* FindTheme(const char* name);
 
     bool m_quit = false;
-    Theme m_activeTheme = Theme::Light;
-    std::array<ThemeProperties, NumThemes> m_themes;
+    ThemeProperties* m_activeTheme;
+    std::vector<ThemeProperties*> m_themes;
 };
 

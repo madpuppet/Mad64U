@@ -5,12 +5,18 @@
 struct WindowMenuItem
 {
     WindowMenuItem(const std::string& name, const std::function<void(void)> &activate) : m_name(name), m_activate(activate) {}
+    WindowMenuItem(const std::string& name) : m_name(name) {}
 
     std::string m_name;
+    std::vector<WindowMenuItem*> m_subMenus;
     std::function<void(void)> m_activate;
+    bool m_subMenuOpen = false;
 
     // dynamic
     Recti m_area;
+    Recti m_subArea;
+
+    void LayoutMenuItem(SDL_Renderer* renderer, Vec2i &pos, Vec2i &dpos);
 };
 
 

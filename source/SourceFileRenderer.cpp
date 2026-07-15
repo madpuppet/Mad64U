@@ -94,7 +94,7 @@ void SourceFileRenderer::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     auto& fr = FontRenderer::Instance();
 
     int firstLine = m_clientContentOffset.y / SOURCE_FILE_LINE_HEIGHT;
-    int lastLine = Min(firstLine + m_clientArea.h / SOURCE_FILE_LINE_HEIGHT, (int)m_sourceFile->m_lines.size());
+    int lastLine = Min(firstLine + m_clientArea.h / SOURCE_FILE_LINE_HEIGHT, (int)m_sourceFile->m_lines.size()-1);
     int x = 0;
     int y = firstLine * SOURCE_FILE_LINE_HEIGHT;
     int xBase = m_clientArea.x - m_clientContentOffset.x + BORDER_MARGIN;
@@ -986,6 +986,25 @@ void SourceFileRenderer::PasteSelected()
     }
     m_sourceFile->m_cmdBuffer->PushAndExecute(m_sourceFile, sfcGroup);
 }
+
+void SourceFileRenderer::Compile()
+{
+    const char* args[] =
+    {
+        "java", "-jar", "kickass\\kickass.jar", m_sourceFile->m_path.c_str(), ";", "pause", nullptr
+    };
+
+    SDL_Process* process = SDL_CreateProcess(args, false);
+
+    if (!process)
+    {
+        Log("Failed to start process: %s\n", SDL_GetError());
+    }
+
+    // The process continues running asynchronously.
+    SDL_DestroyProcess(process);
+}
+
 
 
 

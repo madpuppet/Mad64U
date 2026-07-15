@@ -37,10 +37,11 @@ struct WindowTabQuery
 
 struct WindowMenuQuery
 {
-    void Reset() { m_tree = nullptr; m_menuIdx = -1; m_menuItemIdx = -1; }
+    void Reset() { m_tree = nullptr; m_menuIdx = -1; m_menuItemIdx = -1; m_subMenuItemIdx = -1; }
     struct WindowTree* m_tree = nullptr;
-    int m_menuIdx = 0;
-    int m_menuItemIdx = 0;
+    int m_menuIdx = -1;
+    int m_menuItemIdx = -1;
+    int m_subMenuItemIdx = -1;
 };
 
 struct WindowScrollBarQuery

@@ -123,6 +123,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>SDL3.lib;SDL3_ttf.lib;SDL3_image.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>copy $(TargetPath) $(ProjectDir)\release\Mad64U_Debug.exe</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -141,12 +144,16 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>SDL3.lib;SDL3_ttf.lib;SDL3_image.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>copy $(TargetPath) $(ProjectDir)\release\Mad64U.exe</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="source\Application.cpp" />
     <ClCompile Include="source\FontRenderer.cpp" />
     <ClCompile Include="source\IconRenderer.cpp" />
     <ClCompile Include="source\Mad64U.cpp" />
+    <ClCompile Include="source\ProjectListWIndow.cpp" />
     <ClCompile Include="source\Settings.cpp" />
     <ClCompile Include="source\SourceFile.cpp" />
     <ClCompile Include="source\SourceFileCmdBuffer.cpp" />
@@ -250,6 +257,7 @@
     <ClInclude Include="source\FontRenderer.h" />
     <ClInclude Include="source\common.h" />
     <ClInclude Include="source\IconRenderer.h" />
+    <ClInclude Include="source\ProjectListWindow.h" />
     <ClInclude Include="source\Settings.h" />
     <ClInclude Include="source\Singleton.h" />
     <ClInclude Include="source\SourceFile.h" />

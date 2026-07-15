@@ -3,14 +3,15 @@
 #include <unordered_map>
 #include "Singleton.h"
 
-enum Icons
+enum class Icons
 {
-    Icon_None = -1,
+    None = -1,
 
-    Icon_Close,
-    Icon_Fullscreen,
-    Icon_Windowed,
-    Icon_Resize
+    Close,
+    Fullscreen,
+    Windowed,
+    Resize,
+    Submenu
 };
 
 class IconRenderer : public Singleton<IconRenderer>
@@ -25,7 +26,7 @@ public:
 private:
     struct CachedIcon
     {
-        int icon;
+        Icons icon;
         SDL_Renderer* renderer;
         SDL_Texture* texture;
     };

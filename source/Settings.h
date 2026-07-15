@@ -5,6 +5,7 @@
 #include <mutex>
 
 #define SETTING_FILES "files"
+#define SETTING_THEMELIST "themes"
 #define SETTING_THEME "theme"
 #define SETTING_RENDERER "renderer"
 
@@ -16,6 +17,8 @@ public:
 
 	void Load();
 	void Save();
+
+	bool Exists(const char* name);
 
 	bool GetBool(const char* name);
 	int GetInt(const char* name);
@@ -30,6 +33,8 @@ public:
 	void SetColor(const char* name, const SDL_Color &val);
 	void SetString(const char* name, const std::string &val);
 	void SetStringList(const char* name, const std::vector<std::string> &val);
+
+	std::vector<std::string> GetItemsStartWith(const char *name);
 
 private:
 	struct SettingItem

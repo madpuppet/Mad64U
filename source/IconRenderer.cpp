@@ -11,6 +11,7 @@ IconRenderer::IconRenderer()
     LoadImage("data/icon_fullscreen.png");
     LoadImage("data/icon_windowed.png");
     LoadImage("data/icon_resize.png");
+    LoadImage("data/icon_submenu.png");
 }
 
 IconRenderer::~IconRenderer()
@@ -48,7 +49,7 @@ void IconRenderer::DrawIcon(SDL_Renderer* renderer, Icons icon, int x, int y)
         ci = new CachedIcon;
         ci->icon = icon;
         ci->renderer = renderer;
-        ci->texture = SDL_CreateTextureFromSurface(renderer, m_iconSurfaces[icon]);
+        ci->texture = SDL_CreateTextureFromSurface(renderer, m_iconSurfaces[(int)icon]);
         m_map[hash] = ci;
     }
 
