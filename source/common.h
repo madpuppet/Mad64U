@@ -25,6 +25,9 @@ typedef signed int i32;
 typedef unsigned long long u64;
 typedef long long i64;
 
+#define LINE_HEIGHT 24
+#define BORDER_MARGIN 4
+
 #define WINDOW_TICK_MS 100
 extern u32 TimerEventType;
 extern void Log(const char* pFormat, ...);

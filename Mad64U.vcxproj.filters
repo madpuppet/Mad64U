@@ -46,7 +46,7 @@
     <ClCompile Include="source\SourceFileManager.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="source\SourceFileRenderer.cpp">
+    <ClCompile Include="source\SourceFileWindow.cpp">
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="source\SourceFileCmdBuffer.cpp">
@@ -59,6 +59,12 @@
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="source\ProjectListWIndow.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="source\OutputWindow.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="source\LogManager.cpp">
       <Filter>source</Filter>
     </ClCompile>
   </ItemGroup>
@@ -360,7 +366,7 @@
     <ClInclude Include="source\Singleton.h">
       <Filter>source</Filter>
     </ClInclude>
-    <ClInclude Include="source\SourceFileRenderer.h">
+    <ClInclude Include="source\SourceFileWindow.h">
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="source\SourceFile.h">
@@ -373,6 +379,12 @@
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="source\ProjectListWindow.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="source\OutputWIndow.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="source\LogManager.h">
       <Filter>source</Filter>
     </ClInclude>
   </ItemGroup>

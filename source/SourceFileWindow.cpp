@@ -1,17 +1,16 @@
 #include "common.h"
-#include "SourceFileRenderer.h"
+#include "SourceFileWindow.h"
 #include "SourceFileManager.h"
 #include "SourceFile.h"
 #include "Application.h"
 #include "SourceFileCmdBuffer.h"
+#include "LogManager.h"
 #include <filesystem>
 
-#define SOURCE_FILE_LINE_HEIGHT 16
-#define BORDER_MARGIN 4
 #define CHAR_WIDTH 12
 #define TAB_SIZE 4
 
-SourceFileRenderer::SourceFileRenderer(SourceFile* file) : m_sourceFile(file)
+SourceFileWindow::SourceFileWindow(SourceFile* file) : m_sourceFile(file)
 {
     if (file->m_path.empty())
     {
@@ -22,14 +21,14 @@ SourceFileRenderer::SourceFileRenderer(SourceFile* file) : m_sourceFile(file)
         std::filesystem::path path = file->m_path;
         m_name = path.filename().string();
         m_clientContentSize.x = 256;
-        m_clientContentSize.y = (int)file->m_lines.size() * SOURCE_FILE_LINE_HEIGHT;
+        m_clientContentSize.y = (int)file->m_lines.size() * LINE_HEIGHT;
     }
 }
 
-Recti SourceFileRenderer::CalcCursorArea()
+Recti SourceFileWindow::CalcCursorArea()
 {
     auto& fr = FontRenderer::Instance();
-    Recti rect = Recti{ 0,2,3,SOURCE_FILE_LINE_HEIGHT };
+    Recti rect = Recti{ 0,2,3,LINE_HEIGHT };
     if (!m_sourceFile->m_lines.empty())
     {
         auto line = m_sourceFile->m_lines[m_cursor.y];
@@ -44,7 +43,7 @@ Recti SourceFileRenderer::CalcCursorArea()
                 x += fr.GetCharactorWidth(FontType::Text, ch);
         }
         rect.x = x;
-        rect.y = m_cursor.y * SOURCE_FILE_LINE_HEIGHT + 2;
+        rect.y = m_cursor.y * LINE_HEIGHT + 2;
         if (m_overwrite)
         {
             if (cmax < line->m_chars.size())
@@ -56,12 +55,12 @@ Recti SourceFileRenderer::CalcCursorArea()
                     rect.w = fr.GetCharactorWidth(FontType::Text, ch);
             }
         }
-        rect.h = SOURCE_FILE_LINE_HEIGHT;
+        rect.h = LINE_HEIGHT;
     }
     return rect;
 }
 
-int SourceFileRenderer::CalcXPos(int x, int y)
+int SourceFileWindow::CalcXPos(int x, int y)
 {
     auto& fr = FontRenderer::Instance();
     auto line = m_sourceFile->m_lines[y];
@@ -79,7 +78,7 @@ int SourceFileRenderer::CalcXPos(int x, int y)
     return pos;
 }
 
-void SourceFileRenderer::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
+void SourceFileWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
 {
     auto& tp = Application::Instance().GetThemeProperties();
     auto window = WindowManager::Instance().GetActiveWindowBase();
@@ -93,10 +92,10 @@ void SourceFileRenderer::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
 
     auto& fr = FontRenderer::Instance();
 
-    int firstLine = m_clientContentOffset.y / SOURCE_FILE_LINE_HEIGHT;
-    int lastLine = Min(firstLine + m_clientArea.h / SOURCE_FILE_LINE_HEIGHT, (int)m_sourceFile->m_lines.size()-1);
+    int firstLine = Max(m_clientContentOffset.y / LINE_HEIGHT, 0);
+    int lastLine = Min(firstLine + m_clientArea.h / LINE_HEIGHT, (int)m_sourceFile->m_lines.size()-1);
     int x = 0;
-    int y = firstLine * SOURCE_FILE_LINE_HEIGHT;
+    int y = firstLine * LINE_HEIGHT;
     int xBase = m_clientArea.x - m_clientContentOffset.x + BORDER_MARGIN;
     int yBase = m_clientArea.y - m_clientContentOffset.y + BORDER_MARGIN;
 
@@ -123,7 +122,7 @@ void SourceFileRenderer::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
             {
                 xEnd = CalcXPos(bottomPos.x, bottomPos.y);
             }
-            SDL_FRect rect{(float)(xBase + xStart), (float)(yBase + i * SOURCE_FILE_LINE_HEIGHT + 2), (float)((xBase + xEnd) - (xBase + xStart)), (float)SOURCE_FILE_LINE_HEIGHT};
+            SDL_FRect rect{(float)(xBase + xStart), (float)(yBase + i * LINE_HEIGHT + 2), (float)((xBase + xEnd) - (xBase + xStart)), (float)LINE_HEIGHT};
             SDL_RenderFillRect(renderer, &rect);
         }
     }
@@ -139,7 +138,7 @@ void SourceFileRenderer::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
             fr.RenderText(renderer, fragment.m_chars, col, xBase + fragment.m_area.x, yBase + y, FontType::Text);
             maxWidth = Max(fragment.m_area.x + fragment.m_area.w, maxWidth);
         }
-        y += SOURCE_FILE_LINE_HEIGHT;
+        y += LINE_HEIGHT;
     }
     m_clientContentSize.x = maxWidth + 32;
 
@@ -158,7 +157,7 @@ const char* operators[] = {
     "lda", "sta", 0
 };
 
-void SourceFileRenderer::BuildFragments(SDL_Renderer* renderer, SourceLine* line)
+void SourceFileWindow::BuildFragments(SDL_Renderer* renderer, SourceLine* line)
 {
     int x = 0;
     int y = 0;
@@ -221,7 +220,7 @@ void SourceFileRenderer::BuildFragments(SDL_Renderer* renderer, SourceLine* line
     }
 }
 
-void SourceFileRenderer::Close()
+void SourceFileWindow::Close()
 {
     SDL_MessageBoxButtonData buttons[] =
     {
@@ -269,7 +268,7 @@ void SourceFileRenderer::Close()
     }
 }
 
-bool SourceFileRenderer::Tick()
+bool SourceFileWindow::Tick()
 {
     m_animTime += WINDOW_TICK_MS * (1.0f / 1000.0f);
     if (m_animTime > 1.0f)
@@ -277,12 +276,12 @@ bool SourceFileRenderer::Tick()
     return true;
 }
 
-void SourceFileRenderer::CalcXYFromClientPos(int x, int y, int& col, int& row)
+void SourceFileWindow::CalcXYFromClientPos(int x, int y, int& col, int& row)
 {
     auto &fr = FontRenderer::Instance();
     int xBase = m_clientArea.x - m_clientContentOffset.x + BORDER_MARGIN;
     int yBase = m_clientArea.y - m_clientContentOffset.y + BORDER_MARGIN;
-    row = Clamp((y - yBase) / SOURCE_FILE_LINE_HEIGHT, 0, (int)m_sourceFile->m_lines.size() - 1);
+    row = Clamp((y - yBase) / LINE_HEIGHT, 0, (int)m_sourceFile->m_lines.size() - 1);
 
     auto line = m_sourceFile->m_lines[row];
     int x1 = 0;
@@ -302,7 +301,7 @@ void SourceFileRenderer::CalcXYFromClientPos(int x, int y, int& col, int& row)
     }
 }
 
-bool SourceFileRenderer::HandleEvent(SDL_Event* e)
+bool SourceFileWindow::HandleEvent(SDL_Event* e)
 {
     switch (e->type)
     {
@@ -345,18 +344,6 @@ bool SourceFileRenderer::HandleEvent(SDL_Event* e)
             {
                 m_mouseLeftDown = false;
             }
-        }
-        break;
-
-        case SDL_EVENT_MOUSE_WHEEL:
-        {
-            int scroll = e->wheel.integer_y * SOURCE_FILE_LINE_HEIGHT * 4;
-            m_clientContentOffset.y -= scroll;
-            m_clientContentOffset.y = Clamp(m_clientContentOffset.y, 0, (int)(m_sourceFile->m_lines.size()+1) * SOURCE_FILE_LINE_HEIGHT - m_clientArea.h);
-            if (m_clientContentSize.x < m_clientArea.w)
-                m_clientContentOffset.x = 0;
-            LayoutScrollbars();
-            return true;
         }
         break;
 
@@ -483,11 +470,11 @@ bool SourceFileRenderer::HandleEvent(SDL_Event* e)
             InsertTextAtCursor(e->text.text);
             break;
     }
-    return false;
+    return WindowBase::HandleEvent(e);
 }
 
 
-void SourceFileRenderer::MoveCursorLeft()
+void SourceFileWindow::MoveCursorLeft()
 {
     Assert(!m_sourceFile->m_lines.empty(), "Source File Can't be Empty!");
 
@@ -508,7 +495,7 @@ void SourceFileRenderer::MoveCursorLeft()
     }
 }
 
-void SourceFileRenderer::MoveCursorRight()
+void SourceFileWindow::MoveCursorRight()
 {
     Assert(!m_sourceFile->m_lines.empty(), "Source File Can't be Empty!");
 
@@ -529,7 +516,7 @@ void SourceFileRenderer::MoveCursorRight()
     }
 }
 
-void SourceFileRenderer::MoveCursorUp()
+void SourceFileWindow::MoveCursorUp()
 {
     Assert(!m_sourceFile->m_lines.empty(), "Source File Can't be Empty!");
 
@@ -542,7 +529,7 @@ void SourceFileRenderer::MoveCursorUp()
     }
 }
 
-void SourceFileRenderer::MoveCursorDown()
+void SourceFileWindow::MoveCursorDown()
 {
     Assert(!m_sourceFile->m_lines.empty(), "Source File Can't be Empty!");
 
@@ -555,20 +542,20 @@ void SourceFileRenderer::MoveCursorDown()
     }
 }
 
-void SourceFileRenderer::MoveCursorPageUp()
+void SourceFileWindow::MoveCursorPageUp()
 {
     Assert(!m_sourceFile->m_lines.empty(), "Source File Can't be Empty!");
 
     if (m_cursor.y > 0)
     {
-        m_cursor.y = Max(m_cursor.y - m_clientArea.h / SOURCE_FILE_LINE_HEIGHT, 0);
+        m_cursor.y = Max(m_cursor.y - m_clientArea.h / LINE_HEIGHT, 0);
         m_cursor.x = Min(m_trackedColumn, (int)m_sourceFile->m_lines[m_cursor.y]->m_chars.size());
         m_animTime = 0.0f;
         MakeCursorVisible();
     }
 }
 
-void SourceFileRenderer::MoveCursorXY(int x, int y)
+void SourceFileWindow::MoveCursorXY(int x, int y)
 {
     m_cursor.x = x;
     m_cursor.y = y;
@@ -577,20 +564,20 @@ void SourceFileRenderer::MoveCursorXY(int x, int y)
     MakeCursorVisible();
 }
 
-void SourceFileRenderer::MoveCursorPageDown()
+void SourceFileWindow::MoveCursorPageDown()
 {
     Assert(!m_sourceFile->m_lines.empty(), "Source File Can't be Empty!");
 
     if (m_cursor.y < m_sourceFile->m_lines.size() - 1)
     {
-        m_cursor.y = Min(m_cursor.y + m_clientArea.h / SOURCE_FILE_LINE_HEIGHT, (int)m_sourceFile->m_lines.size()-1);
+        m_cursor.y = Min(m_cursor.y + m_clientArea.h / LINE_HEIGHT, (int)m_sourceFile->m_lines.size()-1);
         m_cursor.x = Min(m_trackedColumn, (int)m_sourceFile->m_lines[m_cursor.y]->m_chars.size());
         m_animTime = 0.0f;
         MakeCursorVisible();
     }
 }
 
-void SourceFileRenderer::MoveCursorStartOfFile()
+void SourceFileWindow::MoveCursorStartOfFile()
 {
     Assert(!m_sourceFile->m_lines.empty(), "Source File Can't be Empty!");
 
@@ -601,7 +588,7 @@ void SourceFileRenderer::MoveCursorStartOfFile()
     MakeCursorVisible();
 }
 
-void SourceFileRenderer::MoveCursorEndOfFile()
+void SourceFileWindow::MoveCursorEndOfFile()
 {
     Assert(!m_sourceFile->m_lines.empty(), "Source File Can't be Empty!");
 
@@ -612,7 +599,7 @@ void SourceFileRenderer::MoveCursorEndOfFile()
     MakeCursorVisible();
 }
 
-void SourceFileRenderer::MoveCursorStartOfLine()
+void SourceFileWindow::MoveCursorStartOfLine()
 {
     Assert(!m_sourceFile->m_lines.empty(), "Source File Can't be Empty!");
 
@@ -622,7 +609,7 @@ void SourceFileRenderer::MoveCursorStartOfLine()
     MakeCursorVisible();
 }
 
-void SourceFileRenderer::MoveCursorEndOfLine()
+void SourceFileWindow::MoveCursorEndOfLine()
 {
     Assert(!m_sourceFile->m_lines.empty(), "Source File Can't be Empty!");
 
@@ -632,13 +619,13 @@ void SourceFileRenderer::MoveCursorEndOfLine()
     MakeCursorVisible();
 }
 
-void SourceFileRenderer::MakeCursorVisible()
+void SourceFileWindow::MakeCursorVisible()
 {
-    int yOffset = m_cursor.y * SOURCE_FILE_LINE_HEIGHT;
+    int yOffset = m_cursor.y * LINE_HEIGHT;
     if (yOffset < m_clientContentOffset.y)
         m_clientContentOffset.y = yOffset;
-    if (yOffset > (m_clientContentOffset.y + m_clientArea.h - SOURCE_FILE_LINE_HEIGHT * 2))
-        m_clientContentOffset.y = yOffset - m_clientArea.h + SOURCE_FILE_LINE_HEIGHT * 2;
+    if (yOffset > (m_clientContentOffset.y + m_clientArea.h - LINE_HEIGHT * 2))
+        m_clientContentOffset.y = yOffset - m_clientArea.h + LINE_HEIGHT * 2;
 
     if (m_clientContentSize.x < m_clientArea.w)
         m_clientContentOffset.x = 0;
@@ -727,7 +714,7 @@ public:
 };
 
 
-void SourceFileRenderer::DeleteCharBeforeCursor()
+void SourceFileWindow::DeleteCharBeforeCursor()
 {
     Assert(!m_sourceFile->m_lines.empty(), "Source File Can't be Empty!");
 
@@ -763,7 +750,7 @@ void SourceFileRenderer::DeleteCharBeforeCursor()
     }
 }
 
-void SourceFileRenderer::DeleteCharAfterCursor()
+void SourceFileWindow::DeleteCharAfterCursor()
 {
     Assert(!m_sourceFile->m_lines.empty(), "Source File Can't be Empty!");
 
@@ -797,7 +784,7 @@ void SourceFileRenderer::DeleteCharAfterCursor()
     }
 }
 
-void SourceFileRenderer::InsertNewLineAtCursor()
+void SourceFileWindow::InsertNewLineAtCursor()
 {
     Assert(!m_sourceFile->m_lines.empty(), "Source File Can't be Empty!");
 
@@ -833,7 +820,7 @@ void SourceFileRenderer::InsertNewLineAtCursor()
     }
 }
 
-void SourceFileRenderer::InsertTextAtCursor(const char *text)
+void SourceFileWindow::InsertTextAtCursor(const char *text)
 {
     std::string stext(text);
     std::string& lineStr = m_sourceFile->m_lines[m_cursor.y]->m_chars;
@@ -845,7 +832,7 @@ void SourceFileRenderer::InsertTextAtCursor(const char *text)
     m_trackedColumn = m_cursor.x;
 }
 
-void SourceFileRenderer::DeleteSelected()
+void SourceFileWindow::DeleteSelected()
 {
     if (m_marked && (m_cursor.x != m_markStart.x || m_cursor.y != m_markStart.y))
     {
@@ -892,7 +879,7 @@ void SourceFileRenderer::DeleteSelected()
     m_marking = false;
 }
 
-void SourceFileRenderer::CopySelected()
+void SourceFileWindow::CopySelected()
 {
     if (m_marked && (m_cursor.x != m_markStart.x || m_cursor.y != m_markStart.y))
     {
@@ -931,7 +918,7 @@ void SourceFileRenderer::CopySelected()
     }
 }
 
-void SourceFileRenderer::PasteSelected()
+void SourceFileWindow::PasteSelected()
 {
     auto text = SDL_GetClipboardText();
     std::vector<std::string> paste;
@@ -987,25 +974,76 @@ void SourceFileRenderer::PasteSelected()
     m_sourceFile->m_cmdBuffer->PushAndExecute(m_sourceFile, sfcGroup);
 }
 
-void SourceFileRenderer::Compile()
+void SourceFileWindow::Compile()
 {
-    const char* args[] =
-    {
-        "java", "-jar", "kickass\\kickass.jar", m_sourceFile->m_path.c_str(), ";", "pause", nullptr
-    };
+    SourceFileManager::Instance().SaveAll();
 
-    SDL_Process* process = SDL_CreateProcess(args, false);
+    auto compile = [file = m_sourceFile]()
+        {
+            LogManager::Instance().Clear(LogGroup::Build);
 
-    if (!process)
-    {
-        Log("Failed to start process: %s\n", SDL_GetError());
-    }
+            const char* args[] =
+            {
+                "java", "-jar", "kickass\\kickass.jar", file->m_path.c_str(), nullptr
+            };
 
-    // The process continues running asynchronously.
-    SDL_DestroyProcess(process);
+            SDL_Process* process = SDL_CreateProcess(args, true);
+            if (!process)
+            {
+                Log(LogGroup::Build, "Failed to start process: {}\n", SDL_GetError());
+            }
+
+            size_t outputSize = 0;
+            int exitCode = -1;
+            void* outputData = SDL_ReadProcess(process, &outputSize, &exitCode);
+            if (!outputData)
+            {
+                Log(LogGroup::Build, "SDL_ReadProcess failed: {}", SDL_GetError());
+                SDL_DestroyProcess(process);
+                return;
+            }
+
+            const std::string output( static_cast<const char*>(outputData), outputSize);
+            SDL_free(outputData);
+            SDL_DestroyProcess(process);
+
+            std::istringstream stream(output);
+            std::string line;
+            while (std::getline(stream, line))
+            {
+                while (!line.empty() && (line.back() == '\n' || line.back() == '\r'))
+                    line.pop_back();
+
+                Log(LogGroup::Build, line);
+            }
+        };
+
+    std::thread(compile).detach();
 }
 
+void SourceFileWindow::SaveTokens(std::vector<std::string>& layoutTokens)
+{
+    layoutTokens.push_back("SOURCE");
+    layoutTokens.push_back(m_sourceFile->m_path);
+}
 
+bool SourceFileWindow::CreateFromLayoutTokens(WindowLayout* layout, const std::vector<std::string>& layoutTokens, size_t& idx)
+{
+    if (layoutTokens[idx] != "SOURCE")
+        return false;
 
+    auto& sfm = SourceFileManager::Instance();
 
+    idx++;
+    std::string path = layoutTokens[idx++];
+    std::vector<std::string> fileList;
+    fileList.push_back(path);
+    sfm.RequestLoadFiles(fileList);
+    sfm.LoadRequestedFiles(false);
+    auto file = sfm.FindFile(path);
+    Assert(file != nullptr, "Unable to load {}", path);
+    auto win = new SourceFileWindow(file);
+    layout->m_tabs.push_back(win);
+    return true;
+}
 

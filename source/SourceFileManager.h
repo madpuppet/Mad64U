@@ -12,6 +12,7 @@ class SourceFileManager : public Singleton<SourceFileManager>
 public:
     SourceFileManager();
 
+    void SaveAll();
     bool NewFile(const std::string &name);
     bool SaveFile(SourceFile* file);
     bool CloseFile(SourceFile* file);
@@ -20,7 +21,7 @@ public:
     SourceFile* GetFileFromWindow(WindowBase* window);
 
     std::vector<class SourceFile*> m_sourceFiles;
-    std::vector<class SourceFileRenderer*> m_sourceFileRenderers;
+    std::vector<class SourceFileWindow*> m_sourceFileRenderers;
 
     bool IsKeyword(SourceType sourceType, const char* keyword)
     {
@@ -36,9 +37,10 @@ public:
     void RestoreFilesFromSettings();
     void SaveFilesToSettings();
 
-protected:
-    void LoadRequestedFiles();
+    void LoadRequestedFiles(bool addWindow);
+    SourceFile* FindFile(const std::string& path);
 
+protected:
     std::mutex m_lock;
     std::vector<std::string> m_filesToLoad;
 

@@ -1,22 +1,17 @@
-
-#pragma once
-
 #pragma once
 
 #include "WindowBase.h"
+#include "LogManager.h"
 
-class ProjectListWindow : public WindowBase
+class OutputWindow : public WindowBase
 {
 public:
-    ProjectListWindow();
-    ~ProjectListWindow();
-
+    OutputWindow();
     void Paint(SDL_Renderer* renderer, const Recti& dirtyArea) override;
     bool HandleEvent(SDL_Event* e) override;
-    bool Tick() override;
     void SaveTokens(std::vector<std::string>& layoutTokens) override;
     static bool CreateFromLayoutTokens(WindowLayout* layout, const std::vector<std::string>& layoutTokens, size_t& idx);
 
 protected:
+    LogGroup m_activeGroup;
 };
-

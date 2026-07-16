@@ -3,7 +3,7 @@
 #include "WindowManager.h"
 #include "FontRenderer.h"
 #include "Application.h"
-#include "SourceFileRenderer.h"
+#include "SourceFileWindow.h"
 #include <filesystem>
 #include <fstream>
 #include <string>
@@ -56,7 +56,7 @@ bool SourceFileManager::NewFile(const std::string& path)
     auto sourceFile = new SourceFile(path);
     m_sourceFiles.push_back(sourceFile);
 
-    auto sourceFileRenderer = new SourceFileRenderer(sourceFile);
+    auto sourceFileRenderer = new SourceFileWindow(sourceFile);
     m_sourceFileRenderers.push_back(sourceFileRenderer);
     WindowManager::Instance().GetActiveWindowLayout()->AddWindow(sourceFileRenderer);
     WindowManager::Instance().GetActiveWindowTree()->LayoutWindows();
@@ -84,10 +84,32 @@ void SourceFileManager::RequestLoadFiles(std::vector<std::string> paths)
 
 void SourceFileManager::Tick()
 {
-    LoadRequestedFiles();
+    LoadRequestedFiles(true);
 }
 
-void SourceFileManager::LoadRequestedFiles()
+void SourceFileManager::SaveAll()
+{
+    for (auto file : m_sourceFiles)
+    {
+        if (!file->m_path.empty())
+        {
+            SaveFile(file);
+        }
+    }
+}
+
+SourceFile* SourceFileManager::FindFile(const std::string& path)
+{
+    for (auto file : m_sourceFiles)
+    {
+        if (file->m_path == path)
+            return file;
+    }
+    return nullptr;
+}
+
+
+void SourceFileManager::LoadRequestedFiles(bool addWindow)
 {
     std::vector<std::string> paths;
     m_lock.lock();
@@ -136,24 +158,49 @@ void SourceFileManager::LoadRequestedFiles()
         }
         m_sourceFiles.push_back(sourceFile);
 
-        auto sourceFileRenderer = new SourceFileRenderer(sourceFile);
-        m_sourceFileRenderers.push_back(sourceFileRenderer);
-        wm.AddWindow(sourceFileRenderer);
+        if (addWindow)
+        {
+            auto sourceFileRenderer = new SourceFileWindow(sourceFile);
+            m_sourceFileRenderers.push_back(sourceFileRenderer);
+            wm.AddWindow(sourceFileRenderer);
+        }
     }
-    if (success)
-        WindowManager::Instance().GetActiveWindowTree()->LayoutWindows();
-    SaveFilesToSettings();
+
+    if (addWindow)
+    {
+        if (success)
+            WindowManager::Instance().GetActiveWindowTree()->LayoutWindows();
+        WindowManager::Instance().SaveWindowLayout();
+    }
 }
 
 bool SourceFileManager::SaveFile(SourceFile* file)
 {
-    return true;
+    if (file->m_path.empty())
+        return false;
+
+    std::error_code ec;
+
+    // Create parent directories if they don't exist.
+    std::filesystem::path path = file->m_path;
+    std::filesystem::create_directories(path.parent_path(), ec);
+
+    std::ofstream fh(path, std::ios::binary);
+
+    if (!fh)
+        return false;
+
+    for (const auto &line : file->m_lines)
+    {
+        fh << line->m_chars << '\n';
+    }
+    return fh.good();
 }
 
 bool SourceFileManager::CloseFile(SourceFile* file)
 {
     // delete all renderers
-    std::vector<SourceFileRenderer*> removed;
+    std::vector<SourceFileWindow*> removed;
 
     for (auto fr : m_sourceFileRenderers)
     {
@@ -175,23 +222,7 @@ bool SourceFileManager::CloseFile(SourceFile* file)
     m_sourceFiles.erase(std::find(m_sourceFiles.begin(), m_sourceFiles.end(), file));
 
     WindowManager::Instance().LayoutWindows();
-    SaveFilesToSettings();
+    WindowManager::Instance().SaveWindowLayout();
     return true;
 }
 
-void SourceFileManager::RestoreFilesFromSettings()
-{
-    auto fileList = Settings::Instance().GetStringList(SETTING_FILES);
-    RequestLoadFiles(fileList);
-}
-
-void SourceFileManager::SaveFilesToSettings()
-{
-    std::vector<std::string> paths;
-    for (auto file : m_sourceFiles)
-    {
-        paths.push_back(file->m_path);
-    }
-    Settings::Instance().SetStringList(SETTING_FILES, paths);
-    Settings::Instance().Save();
-}

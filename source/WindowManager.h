@@ -52,6 +52,9 @@ public:
 
     ~WindowManager();
 
+    void SaveWindowLayout();
+    void LoadWindowLayout();
+
 protected:
     std::vector<WindowTree*> m_windowTrees;
     WindowMenuList m_menuList;

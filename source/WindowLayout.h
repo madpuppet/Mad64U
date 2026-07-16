@@ -38,5 +38,8 @@ struct WindowLayout
 
     WindowLayout* FindFirstNonSplitLayout();
     WindowLayout* FindLayoutFromWindow(WindowBase* window, int& tabIdx);
+
+    void SaveLayout(std::vector<std::string> &layoutTokens);
+    void LoadLayout(const std::vector<std::string>& layoutTokens, size_t& idx);
 };
 

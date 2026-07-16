@@ -6,7 +6,9 @@
 #include "WindowMenuList.h"
 #include "Settings.h"
 #include "SourceFileManager.h"
+#include "LogManager.h"
 #include "ProjectListWindow.h"
+#include "OutputWindow.h"
 #include <filesystem>
 
 class TestWindow : public WindowBase
@@ -211,9 +213,18 @@ void Application::CreateMenus()
             WindowManager::Instance().LayoutWindows();
         };
 
+    auto newWindowOutput = []()
+        {
+            WindowManager::Instance().AddWindow(new OutputWindow);
+            WindowManager::Instance().LayoutWindows();
+        };
+
     auto windowMenu = new WindowMenu;
     windowMenu->m_name = "Windows";
     windowMenu->m_items.push_back(new WindowMenuItem("Project Files", newWindowProjectList ));
+    windowMenu->m_items.push_back(new WindowMenuItem("Output", newWindowOutput));
+    windowMenu->m_items.push_back(new WindowMenuItem("- - - - - - - - - -", []() {}));
+    windowMenu->m_items.push_back(new WindowMenuItem("Save Window Layout", []() { WindowManager::Instance().SaveWindowLayout(); }));
     wm.AddWindowMenu(windowMenu);
 
     auto buildMenu = new WindowMenu;
@@ -375,7 +386,7 @@ void Application::CreateSettings()
         theme.m_colors[(int)ThemeColor::ScrollBar] = SDL_Color(128, 128, 0, 255);
         theme.m_colors[(int)ThemeColor::ScrollBarSelected] = SDL_Color(255, 255, 0, 255);
         theme.m_colors[(int)ThemeColor::Cursor] = SDL_Color(255, 255, 128, 255);
-        theme.m_colors[(int)ThemeColor::TextHighlight] = SDL_Color(128, 128, 128, 255);
+        theme.m_colors[(int)ThemeColor::TextHighlight] = SDL_Color(128, 128, 128, 128);
         theme.m_colors[(int)ThemeColor::TextGeneral] = SDL_Color(0, 200, 255, 255);
         theme.m_colors[(int)ThemeColor::TextOperator] = SDL_Color(255, 128, 64, 255);
         theme.m_colors[(int)ThemeColor::TextComment] = SDL_Color(128, 255, 128, 255);
@@ -423,6 +434,8 @@ void Application::CreateSettings()
 
 int Application::Run()
 {
+    LogManager::Startup();
+
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK))
     {
         Log("SDL could not initialize! SDL Error: %s\n", SDL_GetError());
@@ -454,7 +467,7 @@ int Application::Run()
     CreateMenus();
     AddTimerEvent();
 
-    SourceFileManager::Instance().RestoreFilesFromSettings();
+    wm.LoadWindowLayout();
 
     SDL_Event e;
     while (!m_quit)

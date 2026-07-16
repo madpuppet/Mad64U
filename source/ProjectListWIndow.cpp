@@ -7,8 +7,6 @@
 #include <unordered_map>
 #include <vector>
 
-#define LINE_HEIGHT 24
-
 struct FolderContents
 {
     std::filesystem::path folder;
@@ -57,7 +55,9 @@ void ProjectListWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     int y = m_clientArea.y;
     for (auto contents : folders)
     {
-        fr.RenderText(renderer, contents->folder.string(), tp.m_colors[(int)ThemeColor::TextOperator], x, y, FontType::Text);
+        std::string stem = contents->folder.stem().string();
+        fr.RenderText(renderer, stem, tp.m_colors[(int)ThemeColor::TextOperator], x, y, FontType::Text);
+        fr.RenderText(renderer, contents->folder.string(), tp.m_colors[(int)ThemeColor::TextComment], x+200, y, FontType::Text);
         y += LINE_HEIGHT;
 
         for (const auto &file : contents->files)
@@ -81,20 +81,30 @@ ProjectListWindow::~ProjectListWindow()
 {
 }
 
-void ProjectListWindow::Close()
-{
-    WindowManager::Instance().RemoveWindow(this);
-    delete this;
-}
-
 bool ProjectListWindow::HandleEvent(SDL_Event* e)
 {
-    return true;
+    return WindowBase::HandleEvent(e);
 }
 
 bool ProjectListWindow::Tick()
 {
     return false;
+}
+
+void ProjectListWindow::SaveTokens(std::vector<std::string>& layoutTokens)
+{
+    layoutTokens.push_back("PROJECT");
+}
+
+bool ProjectListWindow::CreateFromLayoutTokens(WindowLayout* layout, const std::vector<std::string>& layoutTokens, size_t& idx)
+{
+    if (layoutTokens[idx] != "PROJECT")
+        return false;
+
+    idx++;
+    auto win = new ProjectListWindow;
+    layout->m_tabs.push_back(win);
+    return true;
 }
 
 

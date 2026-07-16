@@ -1,6 +1,11 @@
 #include "common.h"
 #include "WindowLayout.h"
 #include "Application.h"
+#include "LogManager.h"
+#include "SourceFileWindow.h"
+#include "OutputWindow.h"
+#include "ProjectListWindow.h"
+#include <format>
 
 void WindowLayout::Layout(SDL_Renderer* renderer, const Recti& area)
 {
@@ -569,6 +574,78 @@ WindowBase* WindowLayout::GetActiveWindow()
     if (m_splitType == NoSplit && m_tabs.size() > 0)
         return m_tabs[m_activeTab];
     return nullptr;
+}
+
+void WindowLayout::SaveLayout(std::vector<std::string>& layoutTokens)
+{
+    switch (m_splitType)
+    {
+        case NoSplit:
+        {
+            layoutTokens.push_back("N");
+            layoutTokens.push_back(std::format("{}", m_tabs.size()));
+            layoutTokens.push_back(std::format("{}", m_activeTab));
+            for (auto file : m_tabs)
+            {
+                file->SaveTokens(layoutTokens);
+            }
+        }
+        break;
+
+        case Horizontal:
+        case Vertical:
+            layoutTokens.push_back(m_splitType == Horizontal ? "H" : "V");
+            layoutTokens.push_back(std::format("{}", m_splitPercentage));
+            m_splits[0]->SaveLayout(layoutTokens);
+            m_splits[1]->SaveLayout(layoutTokens);
+            break;
+    }
+}
+
+void WindowLayout::LoadLayout(const std::vector<std::string>& layoutTokens, size_t& idx)
+{
+    std::string typeStr = layoutTokens[idx++];
+    if (typeStr == "N")
+    {
+        m_splitType == NoSplit;
+        int tabCount = std::stoi(layoutTokens[idx++]);
+        m_activeTab = std::stoi(layoutTokens[idx++]);
+        for (int i = 0; i < tabCount; i++)
+        {
+            if (!SourceFileWindow::CreateFromLayoutTokens(this, layoutTokens, idx))
+            {
+                if (!OutputWindow::CreateFromLayoutTokens(this, layoutTokens, idx))
+                {
+                    if (!ProjectListWindow::CreateFromLayoutTokens(this, layoutTokens, idx))
+                    {
+                        Log(LogGroup::System, "Unknown window token: {}", layoutTokens[idx]);
+                    }
+                }
+            }
+        }
+    }
+    else if (typeStr == "V")
+    {
+        m_splitType = Vertical;
+        m_splitPercentage = std::stof(layoutTokens[idx++]);
+        m_splits[0] = new WindowLayout;
+        m_splits[1] = new WindowLayout;
+        m_splits[0]->LoadLayout(layoutTokens, idx);
+        m_splits[1]->LoadLayout(layoutTokens, idx);
+    }
+    else if (typeStr == "H")
+    {
+        m_splitType = Horizontal;
+        m_splitPercentage = std::stof(layoutTokens[idx++]);
+        m_splits[0] = new WindowLayout;
+        m_splits[1] = new WindowLayout;
+        m_splits[0]->LoadLayout(layoutTokens, idx);
+        m_splits[1]->LoadLayout(layoutTokens, idx);
+    }
+    else
+    {
+        Assert(false, "Expected N,V,H");
+    }
 }
 
 

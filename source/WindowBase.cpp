@@ -97,6 +97,12 @@ bool WindowBase::CheckForScrollBar(int x, int y, WindowScrollBarQuery& query)
     return false;
 }
 
+void WindowBase::Close()
+{
+    WindowManager::Instance().RemoveWindow(this);
+    delete this;
+}
+
 void WindowBase::UpdateScrollBar(int offset, WindowScrollBarQuery& query)
 {
     if (query.m_vertical)
@@ -116,5 +122,26 @@ void WindowBase::UpdateScrollBar(int offset, WindowScrollBarQuery& query)
         query.m_tree->m_dirty = true;
     }
 }
+
+bool WindowBase::HandleEvent(SDL_Event* e)
+{
+    switch (e->type)
+    {
+        case SDL_EVENT_MOUSE_WHEEL:
+        {
+            int scroll = e->wheel.integer_y * LINE_HEIGHT * 4;
+            m_clientContentOffset.y -= scroll;
+            m_clientContentOffset.y = Clamp(m_clientContentOffset.y, 0, Max(m_clientContentSize.y - m_clientArea.h, 0));
+            if (m_clientContentSize.x < m_clientArea.w)
+                m_clientContentOffset.x = 0;
+            LayoutScrollbars();
+            return true;
+        }
+        break;
+    }
+
+    return false;
+}
+
 
 

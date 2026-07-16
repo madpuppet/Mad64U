@@ -724,5 +724,74 @@ void WindowManager::AddWindow(WindowBase* window)
     m_activeWindow = m_activeLayout->GetActiveWindow();
 }
 
+#define WINDOW_LAYOUT_VERSION "v000"
+
+void WindowManager::SaveWindowLayout()
+{
+    std::vector<std::string> layoutTokens;
+    layoutTokens.push_back(WINDOW_LAYOUT_VERSION);
+
+    for (auto tree : m_windowTrees)
+    {
+        int x, y, w, h;
+        bool isFullscreen = tree->m_fullscreen;
+        if (isFullscreen)
+        {
+            x = tree->m_windowedRect.x;
+            y = tree->m_windowedRect.y;
+            w = tree->m_windowedRect.w;
+            h = tree->m_windowedRect.h;
+        }
+        else
+        {
+            SDL_GetWindowPosition(tree->m_window, &x, &y);
+            SDL_GetWindowSize(tree->m_window, &w, &h);
+        }
+
+        layoutTokens.push_back("T");
+        layoutTokens.push_back(std::format("{}", (isFullscreen ? 1 : 0)));
+        layoutTokens.push_back(std::format("{}", x));
+        layoutTokens.push_back(std::format("{}", y));
+        layoutTokens.push_back(std::format("{}", w));
+        layoutTokens.push_back(std::format("{}", h));
+
+        tree->m_layout.SaveLayout(layoutTokens);
+    }
+    Settings::Instance().SetStringList(SETTING_WINDOWS, layoutTokens);
+    Settings::Instance().Save();
+}
+
+void WindowManager::LoadWindowLayout()
+{
+    std::vector<std::string> layoutTokens = Settings::Instance().GetStringList(SETTING_WINDOWS);
+    if (layoutTokens.empty() || layoutTokens[0] != WINDOW_LAYOUT_VERSION)
+        return;
+
+    // close all the windows because we'll want to recreate new ones
+    for (auto tree : m_windowTrees)
+        delete tree;
+    m_windowTrees.clear();
+
+    // create new layout from tokens   
+    size_t idx = 1;
+    while (idx < layoutTokens.size())
+    {
+        Assert(layoutTokens[idx++] == "T", "Expected TREE token");
+        int isFullscreen = std::stoi(layoutTokens[idx++]);
+        int x = std::stoi(layoutTokens[idx++]);
+        int y = std::stoi(layoutTokens[idx++]);
+        int w = std::stoi(layoutTokens[idx++]);
+        int h = std::stoi(layoutTokens[idx++]);
+
+        auto tree = new WindowTree(Recti{ x,y,w,h });
+        m_activeTree = tree;
+        tree->m_fullscreen = isFullscreen;
+        m_windowTrees.push_back(tree);
+
+        tree->m_layout.LoadLayout(layoutTokens, idx);
+        tree->LayoutWindows();
+    }
+}
+
 
 

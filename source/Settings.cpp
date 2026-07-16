@@ -201,7 +201,10 @@ void Settings::SetColor(const char* name, const SDL_Color& val)
 {
     auto item = FindOrCreate(name);
     item->m_tokens.clear();
-    item->m_tokens.push_back(std::format("{} {} {} {}", val.r,val.g,val.b,val.a));
+    item->m_tokens.push_back(std::format("{}", val.r));
+    item->m_tokens.push_back(std::format("{}", val.g));
+    item->m_tokens.push_back(std::format("{}", val.b));
+    item->m_tokens.push_back(std::format("{}", val.a));
 }
 
 void Settings::SetString(const char* name, const std::string& val)

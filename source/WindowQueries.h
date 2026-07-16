@@ -52,3 +52,47 @@ struct WindowScrollBarQuery
     bool m_vertical = false;
     int m_grabOffset = 0;
 };
+
+enum class WindowHighlightType
+{
+    None,
+    Menu,
+    Tab,
+    Icon,
+    ScrollBar,
+    Local
+};
+
+struct WindowHighlightQuery
+{
+    WindowHighlightType m_highlight = WindowHighlightType::None;
+    struct WindowTree* m_tree = nullptr;
+    struct WindowLayout* m_layout = nullptr;
+    class WindowBase* m_window = nullptr;
+    int m_localID = 0;
+    union
+    {
+        struct
+        {
+            int m_menuIdx;
+            int m_itemIdx;
+            int m_subItemIdx;
+            int m_prefixIcon;
+        } m_menu;
+        struct
+        {
+            int m_tabIdx;
+        } m_tab;
+        struct
+        {
+            int m_iconIdx;
+        } m_icon;
+        struct
+        {
+            bool m_vertical;
+            bool m_bar;
+        } m_scrollbar;
+    };
+};
+
+

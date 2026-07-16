@@ -28,11 +28,12 @@ public:
 
     virtual ~WindowBase() {};
     virtual void Paint(SDL_Renderer* renderer, const Recti& dirtyArea) = 0;
-    virtual void Close() = 0;
+    virtual void Close();
     virtual bool Tick() { return false; }
     virtual void Compile() {};
-    virtual bool HandleEvent(SDL_Event* e) {
-        return false;
-    }
+    virtual bool HandleEvent(SDL_Event* e);
+
+    // enough info to recreate the window from static CreateFromTokens() function each window type should have
+    virtual void SaveTokens(std::vector<std::string>& layoutTokens) = 0;
 };
 

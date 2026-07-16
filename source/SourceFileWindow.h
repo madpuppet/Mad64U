@@ -2,11 +2,13 @@
 
 #include "WindowBase.h"
 
-class SourceFileRenderer : public WindowBase
+class SourceFileWindow : public WindowBase
 {
 public:
-    SourceFileRenderer(class SourceFile* file);
+    SourceFileWindow(class SourceFile* file);
 
+    static bool CreateFromLayoutTokens(WindowLayout *layout, const std::vector<std::string>& layoutTokens, size_t& idx);
+    void SaveTokens(std::vector<std::string>& layoutTokens) override;
     void Paint(SDL_Renderer* renderer, const Recti& dirtyArea) override;
     void Close() override;
     void BuildFragments(SDL_Renderer* renderer, class SourceLine* line);
