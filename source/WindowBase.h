@@ -25,6 +25,7 @@ public:
     void PaintScrollbars(SDL_Renderer* renderer);        // paint scrollbars if visible
     bool CheckForScrollBar(int x, int y, WindowScrollBarQuery& query);
     void UpdateScrollBar(int offset, WindowScrollBarQuery& query);
+    void MakeRowVisible(int row);
 
     virtual ~WindowBase() {};
     virtual void Paint(SDL_Renderer* renderer, const Recti& dirtyArea) = 0;
@@ -32,6 +33,8 @@ public:
     virtual bool Tick() { return false; }
     virtual void Compile() {};
     virtual bool HandleEvent(SDL_Event* e);
+    virtual bool IsModified() { return false; }
+    virtual class SourceFile* GetSourceFile() { return nullptr; }
 
     // enough info to recreate the window from static CreateFromTokens() function each window type should have
     virtual void SaveTokens(std::vector<std::string>& layoutTokens) = 0;

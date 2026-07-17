@@ -67,6 +67,9 @@
     <ClCompile Include="source\LogManager.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="source\UndoBufferWindow.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\common.h">
@@ -385,6 +388,9 @@
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="source\LogManager.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="source\UndoBufferWindow.h">
       <Filter>source</Filter>
     </ClInclude>
   </ItemGroup>

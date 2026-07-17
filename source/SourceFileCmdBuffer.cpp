@@ -15,25 +15,37 @@ void SourceFileCmdBuffer::PushAndExecute(class SourceFile* file, SourceFileCmd* 
     cmd->Execute(file);
 }
 
-void SourceFileCmdBuffer::Execute(class SourceFile* file)
+bool SourceFileCmdBuffer::Execute(class SourceFile* file, Vec2i& cursor)
 {
     if (m_cmdIndex < (int)m_commandList.size())
     {
-        m_commandList[m_cmdIndex++]->Execute(file);
+        cursor = m_commandList[m_cmdIndex++]->Execute(file);
+        return true;
     }
+    return false;
 }
 
-void SourceFileCmdBuffer::Revert(class SourceFile* file)
+bool SourceFileCmdBuffer::Revert(class SourceFile* file, Vec2i& cursor)
 {
     if (m_cmdIndex > 0)
     {
-        m_commandList[--m_cmdIndex]->Execute(file);
+        cursor = m_commandList[--m_cmdIndex]->Revert(file);
+        return true;
     }
+    return false;
 }
 
 SourceFileCmdBuffer::~SourceFileCmdBuffer()
 {
     for (auto cmd : m_commandList)
         delete cmd;
+}
+
+void SourceFileCmdBuffer::Clear()
+{
+    for (auto cmd : m_commandList)
+        delete cmd;
+    m_commandList.clear();
+    m_cmdIndex = 0;
 }
 

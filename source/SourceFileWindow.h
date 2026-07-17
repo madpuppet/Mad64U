@@ -10,7 +10,9 @@ public:
     static bool CreateFromLayoutTokens(WindowLayout *layout, const std::vector<std::string>& layoutTokens, size_t& idx);
     void SaveTokens(std::vector<std::string>& layoutTokens) override;
     void Paint(SDL_Renderer* renderer, const Recti& dirtyArea) override;
+    class SourceFile* GetSourceFile() { return m_sourceFile; }
     void Close() override;
+    bool IsModified() override;
     void BuildFragments(SDL_Renderer* renderer, class SourceLine* line);
     bool HandleEvent(SDL_Event* e) override;
     void CalcXYFromClientPos(int x, int y, int& col, int& row);
@@ -21,6 +23,7 @@ public:
     int m_trackedColumn = 0;
     bool m_overwrite;
     SourceFile* m_sourceFile;
+    int m_charWidth = 24;
 
     bool Tick() override;
 
@@ -68,6 +71,7 @@ public:
         m_marked = false;
     }
 protected:
+    void ClampCursor();
     Recti CalcCursorArea();
     float m_animTime = 0.0f;
     bool m_marking = false;

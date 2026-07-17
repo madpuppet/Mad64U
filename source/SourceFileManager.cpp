@@ -4,6 +4,7 @@
 #include "FontRenderer.h"
 #include "Application.h"
 #include "SourceFileWindow.h"
+#include "SourceFileCmdBuffer.h"
 #include <filesystem>
 #include <fstream>
 #include <string>
@@ -194,11 +195,18 @@ bool SourceFileManager::SaveFile(SourceFile* file)
     {
         fh << line->m_chars << '\n';
     }
+
+    if (fh.good())
+        file->m_cmdBuffer->Clear();
+
     return fh.good();
 }
 
 bool SourceFileManager::CloseFile(SourceFile* file)
 {
+    if (m_activeSourceFile == file)
+        m_activeSourceFile = nullptr;
+
     // delete all renderers
     std::vector<SourceFileWindow*> removed;
 

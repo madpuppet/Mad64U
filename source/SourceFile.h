@@ -41,7 +41,6 @@ public:
     std::string m_path;
     SourceType m_sourceType = SourceType::Asm;
     Recti m_fragmentArea;
-    bool m_modified = false;
     class SourceFileCmdBuffer *m_cmdBuffer;
 };
 

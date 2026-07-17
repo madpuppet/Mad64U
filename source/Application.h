@@ -18,6 +18,7 @@ enum class ThemeColor
     WindowClientEmpty,
     TabBackground,
     TabText,
+    TabTextModified,
     TabTextSelected,
     TabHighlight,
     SourceBackground,
@@ -38,6 +39,7 @@ constexpr size_t NumThemeColor = static_cast<size_t>(ThemeColor::MAX);
 
 struct ThemeProperties
 {
+    bool m_system = false;      // system themes don't get written to properties
     std::string m_name;
     std::array<SDL_Color, NumThemeColor> m_colors;
 

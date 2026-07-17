@@ -4,8 +4,8 @@
 #include <unordered_map>
 #include <mutex>
 
-#define SETTING_THEMELIST "themes"
-#define SETTING_THEME "theme"
+#define SETTING_THEME_PREFIX "theme_"
+#define SETTING_ACTIVE_THEME "theme"
 #define SETTING_RENDERER "renderer"
 #define SETTING_WINDOWS "windows"
 

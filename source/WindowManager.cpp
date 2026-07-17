@@ -205,6 +205,13 @@ void WindowManager::HandleEvent(SDL_Event* e)
                         m_mouseTabQuery.m_layout->m_activeTab = m_mouseTabQuery.m_tabIndex;
                         m_activeWindow = m_activeLayout->GetActiveWindow();
 
+                        if (m_activeWindow)
+                        {
+                            auto file = m_activeWindow->GetSourceFile();
+                            if (file)
+                                SourceFileManager::Instance().SetActiveSourceFile(file);
+                        }
+
                         float mx, my;
                         SDL_GetGlobalMouseState(&mx, &my);
                         m_mouseGrabPos.x = (int)mx;
@@ -615,6 +622,14 @@ void WindowManager::SetActiveTree(WindowTree* tree)
     {
         m_activeLayout = tree->FindFirstNonSplitLayout();
         m_activeWindow = m_activeLayout->GetActiveWindow();
+
+        if (m_activeWindow)
+        {
+            auto sourceFile = m_activeWindow->GetSourceFile();
+            if (sourceFile)
+                SourceFileManager::Instance().SetActiveSourceFile(sourceFile);
+        }
+
         m_menuList.Layout(m_activeTree);
     }
     else
@@ -784,11 +799,12 @@ void WindowManager::LoadWindowLayout()
         int h = std::stoi(layoutTokens[idx++]);
 
         auto tree = new WindowTree(Recti{ x,y,w,h });
-        m_activeTree = tree;
         tree->m_fullscreen = isFullscreen;
         m_windowTrees.push_back(tree);
 
         tree->m_layout.LoadLayout(layoutTokens, idx);
+
+        SetActiveTree(tree);
         tree->LayoutWindows();
     }
 }

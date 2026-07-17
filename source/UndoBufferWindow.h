@@ -2,11 +2,11 @@
 
 #include "WindowBase.h"
 
-class ProjectListWindow : public WindowBase
+class UndoBufferWindow : public WindowBase
 {
 public:
-    ProjectListWindow();
-    ~ProjectListWindow();
+    UndoBufferWindow();
+    ~UndoBufferWindow();
 
     void Paint(SDL_Renderer* renderer, const Recti& dirtyArea) override;
     bool HandleEvent(SDL_Event* e) override;

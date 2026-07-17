@@ -4,6 +4,7 @@
 #include "LogManager.h"
 #include "SourceFileWindow.h"
 #include "OutputWindow.h"
+#include "UndoBufferWindow.h"
 #include "ProjectListWindow.h"
 #include <format>
 
@@ -245,7 +246,9 @@ void WindowLayout::Paint(SDL_Renderer* renderer, const Recti& area)
                     tp.SetRenderDrawColor(renderer, ThemeColor::TabBackground);
                     SDL_RenderFillRect(renderer, &sdlTabInnerRect);
                     SDL_Color col = tp.m_colors[(int)ThemeColor::TabText];
-                    if (m_activeTab != -1 && m_tabs[m_activeTab] == w)
+                    if (w->IsModified())
+                        col = tp.m_colors[(int)ThemeColor::TabTextModified];
+                    else if (m_activeTab != -1 && m_tabs[m_activeTab] == w)
                         col = tp.m_colors[(int)ThemeColor::TabTextSelected];
                     fr.RenderText(renderer, w->m_name, col, w->m_tabArea.x + TEXT_HBORDER, w->m_tabArea.y + 4, FontType::UI);
                     if (m_activeTab != -1 && m_tabs[m_activeTab] == w)
@@ -607,7 +610,7 @@ void WindowLayout::LoadLayout(const std::vector<std::string>& layoutTokens, size
     std::string typeStr = layoutTokens[idx++];
     if (typeStr == "N")
     {
-        m_splitType == NoSplit;
+        m_splitType = NoSplit;
         int tabCount = std::stoi(layoutTokens[idx++]);
         m_activeTab = std::stoi(layoutTokens[idx++]);
         for (int i = 0; i < tabCount; i++)
@@ -616,9 +619,12 @@ void WindowLayout::LoadLayout(const std::vector<std::string>& layoutTokens, size
             {
                 if (!OutputWindow::CreateFromLayoutTokens(this, layoutTokens, idx))
                 {
-                    if (!ProjectListWindow::CreateFromLayoutTokens(this, layoutTokens, idx))
+                    if (!UndoBufferWindow::CreateFromLayoutTokens(this, layoutTokens, idx))
                     {
-                        Log(LogGroup::System, "Unknown window token: {}", layoutTokens[idx]);
+                        if (!ProjectListWindow::CreateFromLayoutTokens(this, layoutTokens, idx))
+                        {
+                            Log(LogGroup::System, "Unknown window token: {}", layoutTokens[idx]);
+                        }
                     }
                 }
             }

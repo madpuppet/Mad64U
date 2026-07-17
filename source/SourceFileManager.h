@@ -40,9 +40,13 @@ public:
     void LoadRequestedFiles(bool addWindow);
     SourceFile* FindFile(const std::string& path);
 
+    void SetActiveSourceFile(class SourceFile* file) { m_activeSourceFile = file; }
+    class SourceFile* GetActiveSourceFile() { return m_activeSourceFile; }
+
 protected:
     std::mutex m_lock;
     std::vector<std::string> m_filesToLoad;
+    class SourceFile* m_activeSourceFile = nullptr;
 
     void InitKeywords(const char** keywords, SourceType sourceType, bool caseSensitive);
     std::set<size_t> m_keywords[NumSourceType];

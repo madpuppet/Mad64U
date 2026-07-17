@@ -9,6 +9,7 @@
 #include "LogManager.h"
 #include "ProjectListWindow.h"
 #include "OutputWindow.h"
+#include "UndoBufferWindow.h"
 #include <filesystem>
 
 class TestWindow : public WindowBase
@@ -44,6 +45,7 @@ static const char* s_themecolor_name[NumThemeColor] =
     "WindowClientEmpty",
     "TabBackground",
     "TabText",
+    "TabTextModified",
     "TabTextSelected",
     "TabHighlight",
     "SourceBackground",
@@ -219,10 +221,17 @@ void Application::CreateMenus()
             WindowManager::Instance().LayoutWindows();
         };
 
+    auto newWindowUndoBuffer = []()
+        {
+            WindowManager::Instance().AddWindow(new UndoBufferWindow);
+            WindowManager::Instance().LayoutWindows();
+        };
+
     auto windowMenu = new WindowMenu;
     windowMenu->m_name = "Windows";
     windowMenu->m_items.push_back(new WindowMenuItem("Project Files", newWindowProjectList ));
     windowMenu->m_items.push_back(new WindowMenuItem("Output", newWindowOutput));
+    windowMenu->m_items.push_back(new WindowMenuItem("Undo Buffer", newWindowUndoBuffer));
     windowMenu->m_items.push_back(new WindowMenuItem("- - - - - - - - - -", []() {}));
     windowMenu->m_items.push_back(new WindowMenuItem("Save Window Layout", []() { WindowManager::Instance().SaveWindowLayout(); }));
     wm.AddWindowMenu(windowMenu);
@@ -254,46 +263,63 @@ ThemeProperties* Application::FindTheme(const char* name)
     return nullptr;
 }
 
+std::pair<std::string, std::string> SplitNameItem(std::string_view text)
+{
+    const size_t separator = text.find('_');
+
+    if (separator == std::string_view::npos)
+        return { std::string(text), {} };
+
+    return {
+        std::string(text.substr(0, separator)),
+        std::string(text.substr(separator + 1))
+    };
+}
+
 void Application::LoadThemesFromSettings()
 {
     auto& settings = Settings::Instance();
-    std::vector<std::string> themeList = settings.GetStringList(SETTING_THEMELIST);
-    for (auto themeName : themeList)
+    std::vector<std::string> themeItems = settings.GetItemsStartWith(SETTING_THEME_PREFIX);
+    for (auto themeItem : themeItems)
     {
-        auto theme = FindTheme(themeName.c_str());
+        std::string itemStr = themeItem.substr(6);
+        auto split = SplitNameItem(itemStr);
+
+        auto theme = FindTheme(split.first.c_str());
         if (!theme)
         {
             theme = new ThemeProperties;
+            theme->m_name = split.first;
             m_themes.push_back(theme);
         }
 
         for (int i = 0; i < NumThemeColor; i++)
         {
-            std::string colorName = std::format("theme_{}_{}", themeName, s_themecolor_name[i]);
-            if (settings.Exists(colorName.c_str()))
+            if (split.second.c_str() == s_themecolor_name[i])
             {
-                theme->m_colors[i] = settings.GetColor(colorName.c_str());
+                theme->m_colors[i] = settings.GetColor(themeItem.c_str());
+                break;
             }
         }
     }
 
-    auto themeName = settings.GetString(SETTING_THEME);
+    auto themeName = settings.GetString(SETTING_ACTIVE_THEME);
     SelectTheme(themeName.c_str());
 }
 void Application::SaveThemesToSettings()
 {
     auto& settings = Settings::Instance();
-    std::vector<std::string> themeList;
     for (auto theme : m_themes)
     {
-        themeList.push_back(std::format("{}", theme->m_name));
+        if (theme->m_system)
+            continue;
+
         for (int i = 0; i < NumThemeColor; i++)
         {
             std::string colorName = std::format("theme_{}_{}", theme->m_name, s_themecolor_name[i]);
             settings.SetColor(colorName.c_str(), theme->m_colors[i]);
         }
     }
-    settings.SetStringList(SETTING_THEMELIST, themeList);
 }
 
 Uint32 TimerEventType = 0;
@@ -333,14 +359,14 @@ void Application::CreateSettings()
     Settings::Startup();
 
     auto &settings = Settings::Instance();
-    settings.SetStringList(SETTING_THEMELIST, { "light","dark" });
     settings.SetString(SETTING_RENDERER, "direct3d11");
-    settings.SetString(SETTING_THEME, "light" );
+    settings.SetString(SETTING_ACTIVE_THEME, "light" );
 
     // default themes
     // these can be overriden by settings.txt
     {
         auto& theme = *(new ThemeProperties);
+        theme.m_system = true;
         theme.m_name = "dark";
         theme.m_colors[(int)ThemeColor::TitleBar] = SDL_Color(64, 32, 16, 255);
         theme.m_colors[(int)ThemeColor::MenuText] = SDL_Color(255, 255, 255, 255);
@@ -351,6 +377,7 @@ void Application::CreateSettings()
         theme.m_colors[(int)ThemeColor::WindowClientEmpty] = SDL_Color(32, 32, 32, 255);
         theme.m_colors[(int)ThemeColor::TabBackground] = SDL_Color(48, 48, 48, 255);
         theme.m_colors[(int)ThemeColor::TabText] = SDL_Color(200, 200, 200, 255);
+        theme.m_colors[(int)ThemeColor::TabTextModified] = SDL_Color(255, 0, 0, 255);
         theme.m_colors[(int)ThemeColor::TabTextSelected] = SDL_Color(255, 255, 255, 255);
         theme.m_colors[(int)ThemeColor::TabHighlight] = SDL_Color(255, 128, 255, 255);
         theme.m_colors[(int)ThemeColor::SourceBackground] = SDL_Color(32, 32, 32, 255);
@@ -368,16 +395,18 @@ void Application::CreateSettings()
 
     {
         auto& theme = *(new ThemeProperties);
+        theme.m_system = true;
         theme.m_name = "c64blue";
         theme.m_colors[(int)ThemeColor::TitleBar] = SDL_Color(64, 32, 16, 255);
         theme.m_colors[(int)ThemeColor::MenuText] = SDL_Color(255, 255, 255, 255);
         theme.m_colors[(int)ThemeColor::MenuItemText] = SDL_Color(255, 255, 255, 255);
         theme.m_colors[(int)ThemeColor::MenuItemBackground] = SDL_Color(255, 255, 255, 255);
         theme.m_colors[(int)ThemeColor::MenuItemBackgroundSelected] = SDL_Color(255, 255, 255, 255);
-        theme.m_colors[(int)ThemeColor::WindowBackground] = SDL_Color(0, 0, 64, 255);
+        theme.m_colors[(int)ThemeColor::WindowBackground] = SDL_Color(0, 0, 32, 255);
         theme.m_colors[(int)ThemeColor::WindowClientEmpty] = SDL_Color(8, 16, 48, 255);
         theme.m_colors[(int)ThemeColor::TabBackground] = SDL_Color(48, 48, 48, 255);
         theme.m_colors[(int)ThemeColor::TabText] = SDL_Color(200, 200, 200, 255);
+        theme.m_colors[(int)ThemeColor::TabTextModified] = SDL_Color(255, 0, 0, 255);
         theme.m_colors[(int)ThemeColor::TabTextSelected] = SDL_Color(255, 255, 255, 255);
         theme.m_colors[(int)ThemeColor::TabHighlight] = SDL_Color(255, 128, 255, 255);
         theme.m_colors[(int)ThemeColor::SourceBackground] = SDL_Color(0, 0, 64, 255);
@@ -395,6 +424,7 @@ void Application::CreateSettings()
 
     {
         auto& theme = *(new ThemeProperties);
+        theme.m_system = true;
         theme.m_name = "light";
         theme.m_colors[(int)ThemeColor::TitleBar] = SDL_Color(64, 32, 16, 255);
         theme.m_colors[(int)ThemeColor::MenuText] = SDL_Color(255, 255, 255, 255);
@@ -406,6 +436,7 @@ void Application::CreateSettings()
         theme.m_colors[(int)ThemeColor::TabBackground] = SDL_Color(100, 100, 100, 255);
         theme.m_colors[(int)ThemeColor::TabText] = SDL_Color(200, 200, 200, 255);
         theme.m_colors[(int)ThemeColor::TabTextSelected] = SDL_Color(255, 255, 255, 255);
+        theme.m_colors[(int)ThemeColor::TabTextModified] = SDL_Color(255, 0, 0, 255);
         theme.m_colors[(int)ThemeColor::TabHighlight] = SDL_Color(255, 128, 255, 255);
         theme.m_colors[(int)ThemeColor::SourceBackground] = SDL_Color(180, 170, 160, 255);
         theme.m_colors[(int)ThemeColor::SourceBackgroundSelected] = SDL_Color(200, 180, 150, 255);
@@ -421,9 +452,6 @@ void Application::CreateSettings()
 
         m_activeTheme = &theme;
     }
-
-    // push those themes to Settings()
-    SaveThemesToSettings();
 
     // load settings from existing settings file
     Settings::Instance().Load();
@@ -499,7 +527,7 @@ void Application::SelectTheme(const char *themeName)
     if (theme)
     {
         m_activeTheme = theme;
-        Settings::Instance().SetString(SETTING_THEME, m_activeTheme->m_name);
+        Settings::Instance().SetString(SETTING_ACTIVE_THEME, m_activeTheme->m_name);
         Settings::Instance().Save();
     }
 }

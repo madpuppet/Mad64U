@@ -7,7 +7,6 @@
 #include "LogManager.h"
 #include <filesystem>
 
-#define CHAR_WIDTH 12
 #define TAB_SIZE 4
 
 SourceFileWindow::SourceFileWindow(SourceFile* file) : m_sourceFile(file)
@@ -23,6 +22,14 @@ SourceFileWindow::SourceFileWindow(SourceFile* file) : m_sourceFile(file)
         m_clientContentSize.x = 256;
         m_clientContentSize.y = (int)file->m_lines.size() * LINE_HEIGHT;
     }
+
+    m_charWidth = FontRenderer::Instance().GetCharactorWidth(FontType::Text, (u32)' ');
+}
+
+void SourceFileWindow::ClampCursor()
+{
+    m_cursor.y = Min(m_cursor.y, (int)m_sourceFile->m_lines.size() - 1);
+    m_cursor.x = Min(m_cursor.x, (int)m_sourceFile->m_lines[m_cursor.y]->m_chars.size());
 }
 
 Recti SourceFileWindow::CalcCursorArea()
@@ -31,29 +38,38 @@ Recti SourceFileWindow::CalcCursorArea()
     Recti rect = Recti{ 0,2,3,LINE_HEIGHT };
     if (!m_sourceFile->m_lines.empty())
     {
+        ClampCursor();
         auto line = m_sourceFile->m_lines[m_cursor.y];
         int cmax = Min(m_cursor.x, (int)line->m_chars.size());
         int x = 0;
+        int chIdx = 0;
         for (int i = 0; i < cmax; i++)
         {
             u32 ch = line->m_chars[i];
             if (ch == (u32)'\t')
-                x += CHAR_WIDTH * TAB_SIZE;
+            {
+                chIdx = ((chIdx / TAB_SIZE) + 1) * TAB_SIZE;
+            }
             else
-                x += fr.GetCharactorWidth(FontType::Text, ch);
+            {
+                chIdx++;
+            }
+            x = chIdx * m_charWidth;
         }
         rect.x = x;
         rect.y = m_cursor.y * LINE_HEIGHT + 2;
         if (m_overwrite)
         {
+            int cindex = 0;
             if (cmax < line->m_chars.size())
             {
                 u32 ch = line->m_chars[cmax];
                 if (ch == (u32)'\t')
-                    rect.w = CHAR_WIDTH * TAB_SIZE;
+                    cindex = ((cindex / TAB_SIZE) + 1) * TAB_SIZE;
                 else
-                    rect.w = fr.GetCharactorWidth(FontType::Text, ch);
+                    cindex++;
             }
+            rect.w = chIdx * m_charWidth - cindex * m_charWidth;
         }
         rect.h = LINE_HEIGHT;
     }
@@ -65,17 +81,18 @@ int SourceFileWindow::CalcXPos(int x, int y)
     auto& fr = FontRenderer::Instance();
     auto line = m_sourceFile->m_lines[y];
 
-    int pos = 0;
     x = Min(x, (int)line->m_chars.size());
+
+    int chIdx = 0;
     for (int i = 0; i < x; i++)
     {
         u32 ch = line->m_chars[i];
         if (ch == (u32)'\t')
-            pos += CHAR_WIDTH * TAB_SIZE;
+            chIdx = ((chIdx / TAB_SIZE) + 1) * TAB_SIZE;
         else
-            pos += fr.GetCharactorWidth(FontType::Text, ch);
+            chIdx++;
     }
-    return pos;
+    return chIdx * m_charWidth;
 }
 
 void SourceFileWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
@@ -93,7 +110,7 @@ void SourceFileWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     auto& fr = FontRenderer::Instance();
 
     int firstLine = Max(m_clientContentOffset.y / LINE_HEIGHT, 0);
-    int lastLine = Min(firstLine + m_clientArea.h / LINE_HEIGHT, (int)m_sourceFile->m_lines.size()-1);
+    int lastLine = Min(firstLine + m_clientArea.h / LINE_HEIGHT, (int)m_sourceFile->m_lines.size());
     int x = 0;
     int y = firstLine * LINE_HEIGHT;
     int xBase = m_clientArea.x - m_clientContentOffset.x + BORDER_MARGIN;
@@ -170,6 +187,7 @@ void SourceFileWindow::BuildFragments(SDL_Renderer* renderer, SourceLine* line)
     int i = 0;
     int charCount = (int)line->m_chars.size();
     FragmentType ft = FragmentType::General;
+    int chIdx = 0;
     while (i < charCount)
     {
         // skip white space
@@ -178,12 +196,12 @@ void SourceFileWindow::BuildFragments(SDL_Renderer* renderer, SourceLine* line)
             u32 ch = (u32)line->m_chars[i];     //TODO: UTF8 process
             if (ch == '\t')
             {
-                x += CHAR_WIDTH * TAB_SIZE;
+                chIdx = ((chIdx / TAB_SIZE) + 1) * TAB_SIZE;
                 i++;
             }
             else if (ch == ' ')
             {
-                x += fr.GetCharactorWidth(FontType::Text, ch);
+                chIdx++;
                 i++;
             }
             else break;
@@ -191,6 +209,7 @@ void SourceFileWindow::BuildFragments(SDL_Renderer* renderer, SourceLine* line)
 
         // gather a fragment
         int c = 0;
+        int wordChIdx = 0;
         while (i < charCount)
         {
             u32 ch = (u32)line->m_chars[i];     //TODO: UTF8 process
@@ -200,6 +219,7 @@ void SourceFileWindow::BuildFragments(SDL_Renderer* renderer, SourceLine* line)
                 break;
             frag[c++] = (u8)ch;
             i++;
+            wordChIdx++;
         }
         frag[c++] = 0;
 
@@ -214,9 +234,11 @@ void SourceFileWindow::BuildFragments(SDL_Renderer* renderer, SourceLine* line)
         SourceLineRenderFragment fragment;
         fragment.m_fragType = ft;
         fragment.m_chars = frag;
+        x = chIdx * m_charWidth;
         fr.CalcTextArea(renderer, fragment.m_chars, Vec2i(x, y), FontType::Text, fragment.m_area);
         x = fragment.m_area.x + fragment.m_area.w;
         line->m_fragments.emplace_back(fragment);
+        chIdx += wordChIdx;
     }
 }
 
@@ -242,7 +264,7 @@ void SourceFileWindow::Close()
 
     int buttonid = -1;
 
-    if (m_sourceFile->m_modified)
+    if (m_sourceFile->m_cmdBuffer->m_cmdIndex > 0)
     {
         if (SDL_ShowMessageBox(&data, &buttonid))
         {
@@ -288,12 +310,18 @@ void SourceFileWindow::CalcXYFromClientPos(int x, int y, int& col, int& row)
     int x2 = 0;
     x -= xBase;
     col = 0;
+    int chIdx = 0;
     for (auto ch : line->m_chars)
     {
         if (ch == (u32)'\t')
-            x2 = x1 + CHAR_WIDTH * TAB_SIZE;
+        {
+            chIdx = ((chIdx / TAB_SIZE) + 1) * TAB_SIZE;
+        }
         else
-            x2 = x1 + fr.GetCharactorWidth(FontType::Text, ch);
+        {
+            chIdx++;
+        }
+        x2 = chIdx * m_charWidth;
         if (x < x2-3)
             break;
         col++;
@@ -351,6 +379,16 @@ bool SourceFileWindow::HandleEvent(SDL_Event* e)
             m_shiftDown = (e->key.mod & SDL_KMOD_SHIFT);
             switch (e->key.key)
             {
+                case SDLK_S:
+                    if (e->key.mod & SDL_KMOD_CTRL)
+                    {
+                        SourceFileManager::Instance().SaveFile(m_sourceFile);
+                    }
+                    break;
+
+                case SDLK_TAB:
+                    InsertTextAtCursor("\t");
+                    break;
                 case SDLK_LEFT:
                     if (e->key.mod & SDL_KMOD_SHIFT)
                         StartMarking();
@@ -458,6 +496,31 @@ bool SourceFileWindow::HandleEvent(SDL_Event* e)
                         PasteSelected();
                     }
                     return true;
+                case SDLK_Z:
+                    if (e->key.mod & SDL_KMOD_CTRL)
+                    {
+                        if (e->key.mod & SDL_KMOD_SHIFT)
+                        {
+                            Vec2i cursor;
+                            if (m_sourceFile->m_cmdBuffer->Execute(m_sourceFile, cursor))
+                            {
+                                m_cursor = cursor;
+                                WindowManager::Instance().GetActiveWindowTree()->m_dirty = true;
+                                
+                            }
+                        }
+                        else
+                        {
+                            Vec2i cursor;
+                            if (m_sourceFile->m_cmdBuffer->Revert(m_sourceFile, cursor))
+                            {
+                                m_cursor = cursor;
+                                WindowManager::Instance().GetActiveWindowTree()->m_dirty = true;
+                            }
+                        }
+                        m_marked = false;
+                        m_marking = false;
+                    }
             }
             break;
 
@@ -609,6 +672,11 @@ void SourceFileWindow::MoveCursorStartOfLine()
     MakeCursorVisible();
 }
 
+bool SourceFileWindow::IsModified()
+{
+    return m_sourceFile->m_cmdBuffer->m_cmdIndex > 0;
+}
+
 void SourceFileWindow::MoveCursorEndOfLine()
 {
     Assert(!m_sourceFile->m_lines.empty(), "Source File Can't be Empty!");
@@ -643,21 +711,26 @@ void SourceFileWindow::MakeCursorVisible()
 class SFC_DeleteLine : public SourceFileCmd
 {
 public:
-    SFC_DeleteLine(int lineNmbr, const std::string& chars) : m_lineNmbr(lineNmbr), m_oldChars(chars) {}
+    SFC_DeleteLine(int lineNmbr, const std::string& chars, const Vec2i& oldCursor, const Vec2i& newCursor) : m_lineNmbr(lineNmbr), m_oldChars(chars), SourceFileCmd(oldCursor, newCursor) {}
 
-    void Execute(SourceFile* file)
+    void DoExecute(SourceFile* file) override
     {
         file->m_lines.erase(file->m_lines.begin() + m_lineNmbr, file->m_lines.begin() + m_lineNmbr + 1);
     }
 
-    void Revert(SourceFile* file)
+    void DoRevert(SourceFile* file) override
     {
         auto line = new SourceLine;
         line->m_chars = m_oldChars;
         file->m_lines.insert(file->m_lines.begin() + m_lineNmbr, line);
     }
 
-    std::string Desc() { return "Delete Line"; }
+    std::string Desc() 
+    {
+        std::string desc = std::format("Delete Line {}: {}", m_lineNmbr, m_oldChars);
+        std::ranges::replace(desc, '\t', ' ');
+        return desc;
+    }
 
     int m_lineNmbr = -1;
     std::string m_oldChars;
@@ -666,51 +739,60 @@ public:
 class SFC_ReplaceLine : public SourceFileCmd
 {
 public:
-    SFC_ReplaceLine(int lineNmbr, const std::string& chars, const std::string& oldChars) : m_lineNmbr(lineNmbr), m_chars(chars) {}
+    SFC_ReplaceLine(int lineNmbr, const std::string& oldChars, const std::string& chars, const Vec2i& oldCursor, const Vec2i& newCursor) : m_lineNmbr(lineNmbr), m_chars(chars), m_oldChars(oldChars), SourceFileCmd(oldCursor, newCursor) {}
 
-    void Execute(SourceFile* file)
+    void DoExecute(SourceFile* file) override
     {
         auto line = file->m_lines[m_lineNmbr];
         line->m_chars = m_chars;
         line->m_fragmentsDirty = true;
     }
 
-    void Revert(SourceFile* file)
+    void DoRevert(SourceFile* file) override
     {
         auto line = file->m_lines[m_lineNmbr];
         line->m_chars = m_oldChars;
         line->m_fragmentsDirty = true;
     }
 
-    std::string Desc() { return "Edit Line"; }
+    std::string Desc()
+    {
+        std::string desc = std::format("{}: {}", m_lineNmbr, m_chars);
+        std::ranges::replace(desc, '\t', ' ');
+        return desc;
+    }
 
     int m_lineNmbr = -1;
-    std::string m_chars;
     std::string m_oldChars;
+    std::string m_chars;
 };
 
 class SFC_InsertLine : public SourceFileCmd
 {
 public:
-    SFC_InsertLine(int lineNmbr, const std::string& chars) : m_lineNmbr(lineNmbr), m_chars(chars) {}
+    SFC_InsertLine(int lineNmbr, const std::string& chars, const Vec2i& oldCursor, const Vec2i& newCursor) : m_lineNmbr(lineNmbr), m_chars(chars), SourceFileCmd(oldCursor, newCursor) {}
 
-    void Execute(SourceFile* file)
+    void DoExecute(SourceFile* file) override
     {
         auto line = new SourceLine;
         line->m_chars = m_chars;
         file->m_lines.insert(file->m_lines.begin() + m_lineNmbr, line);
     }
 
-    void Revert(SourceFile* file)
+    void DoRevert(SourceFile* file) override
     {
         file->m_lines.erase(file->m_lines.begin() + m_lineNmbr);
     }
 
-    std::string Desc() { return "Insert Line"; }
+    std::string Desc()
+    {
+        std::string desc = std::format("Insert Line {}: {}", m_lineNmbr, m_chars);
+        std::ranges::replace(desc, '\t', ' ');
+        return desc;
+    }
 
     int m_lineNmbr = -1;
     std::string m_chars;
-    std::string m_oldChars;
 };
 
 
@@ -722,20 +804,22 @@ void SourceFileWindow::DeleteCharBeforeCursor()
     {
         // append line to end of previous line
         std::string removedLine = m_sourceFile->m_lines[m_cursor.y]->m_chars;
-        auto sfcDelete = new SFC_DeleteLine(m_cursor.y, removedLine);
-
         std::string oldLine = m_sourceFile->m_lines[m_cursor.y - 1]->m_chars;
         std::string newLine = oldLine;
         newLine.insert(newLine.end(), removedLine.begin(), removedLine.end());
-        auto sfcReplace = new SFC_ReplaceLine(m_cursor.y - 1, newLine, oldLine);
 
-        auto sfcGroup = new SFC_Group("Collapse Lines");
+        Vec2i oldCursor = m_cursor;
+        Vec2i newCursor = { (int)oldLine.size(), m_cursor.y - 1};
+
+        auto sfcDelete = new SFC_DeleteLine(m_cursor.y, removedLine, oldCursor, newCursor);
+        auto sfcReplace = new SFC_ReplaceLine(m_cursor.y - 1, newLine, oldLine, oldCursor, newCursor);
+        auto sfcGroup = new SFC_Group("Collapse Lines", oldCursor, newCursor);
         sfcGroup->m_cmds.push_back(sfcDelete);
         sfcGroup->m_cmds.push_back(sfcReplace);
+
         m_sourceFile->m_cmdBuffer->PushAndExecute(m_sourceFile, sfcGroup);
 
-        m_cursor.y--;
-        m_cursor.x = (int)oldLine.size();
+        m_cursor = newCursor;
         m_trackedColumn = m_cursor.x;
     }
     else
@@ -743,9 +827,14 @@ void SourceFileWindow::DeleteCharBeforeCursor()
         auto oldLine = m_sourceFile->m_lines[m_cursor.y]->m_chars;
         auto newLine = oldLine;
         newLine.erase(newLine.begin() + m_cursor.x-1, newLine.begin() + m_cursor.x);
-        auto sfcReplace = new SFC_ReplaceLine(m_cursor.y, newLine, oldLine);
+
+        Vec2i oldCursor = m_cursor;
+        Vec2i newCursor = { m_cursor.x-1, m_cursor.y };
+
+        auto sfcReplace = new SFC_ReplaceLine(m_cursor.y, oldLine, newLine, oldCursor, newCursor);
         m_sourceFile->m_cmdBuffer->PushAndExecute(m_sourceFile, sfcReplace);
-        m_cursor.x--;
+
+        m_cursor = newCursor;
         m_trackedColumn = m_cursor.x;
     }
 }
@@ -757,6 +846,9 @@ void SourceFileWindow::DeleteCharAfterCursor()
     if ((m_cursor.y == (m_sourceFile->m_lines.size() - 1)) && (m_cursor.x == m_sourceFile->m_lines[m_cursor.y]->m_chars.size()))
         return;
 
+    Vec2i oldCursor = m_cursor;
+    Vec2i newCursor = m_cursor;
+
     if (m_cursor.x == m_sourceFile->m_lines[m_cursor.y]->m_chars.size())
     {
         // append next line to end of this line, and remove the next line
@@ -767,9 +859,9 @@ void SourceFileWindow::DeleteCharAfterCursor()
         std::string newText = oldText;
         newText.insert(newText.end(), nextLine->m_chars.begin(), nextLine->m_chars.end());
 
-        auto sfcReplace = new SFC_ReplaceLine(m_cursor.y, newText, oldText);
-        auto sfcDelete = new SFC_DeleteLine(m_cursor.y + 1, nextLine->m_chars);
-        auto sfcGroup = new SFC_Group("Collapse Lines");
+        auto sfcReplace = new SFC_ReplaceLine(m_cursor.y, oldText, newText, oldCursor, newCursor);
+        auto sfcDelete = new SFC_DeleteLine(m_cursor.y + 1, nextLine->m_chars, oldCursor, newCursor);
+        auto sfcGroup = new SFC_Group("Collapse Lines", oldCursor, newCursor);
         sfcGroup->m_cmds.push_back(sfcReplace);
         sfcGroup->m_cmds.push_back(sfcDelete);
         m_sourceFile->m_cmdBuffer->PushAndExecute(m_sourceFile, sfcGroup);
@@ -779,7 +871,7 @@ void SourceFileWindow::DeleteCharAfterCursor()
         auto oldLine = m_sourceFile->m_lines[m_cursor.y]->m_chars;
         auto newLine = oldLine;
         newLine.erase(newLine.begin() + m_cursor.x, newLine.begin() + m_cursor.x + 1);
-        auto sfcReplace = new SFC_ReplaceLine(m_cursor.y, newLine, oldLine);
+        auto sfcReplace = new SFC_ReplaceLine(m_cursor.y, oldLine, newLine, oldCursor, newCursor);
         m_sourceFile->m_cmdBuffer->PushAndExecute(m_sourceFile, sfcReplace);
     }
 }
@@ -790,32 +882,39 @@ void SourceFileWindow::InsertNewLineAtCursor()
 
     if (m_cursor.x == 0)
     {
-        auto sfcInsertLine = new SFC_InsertLine(m_cursor.y, "");
+        Vec2i oldCursor = m_cursor;
+        Vec2i newCursor{ m_cursor.x, m_cursor.y+1 };
+
+        auto sfcInsertLine = new SFC_InsertLine(m_cursor.y, "", oldCursor, newCursor);
         m_sourceFile->m_cmdBuffer->PushAndExecute(m_sourceFile, sfcInsertLine);
-        m_cursor.y++;
+        m_cursor = newCursor;
     }
     else if (m_cursor.x == m_sourceFile->m_lines[m_cursor.y]->m_chars.size())
     {
-        auto sfcInsertLine = new SFC_InsertLine(m_cursor.y+1, "");
+        Vec2i oldCursor = m_cursor;
+        Vec2i newCursor{ 0, m_cursor.y + 1 };
+
+        auto sfcInsertLine = new SFC_InsertLine(m_cursor.y+1, "", oldCursor, newCursor);
         m_sourceFile->m_cmdBuffer->PushAndExecute(m_sourceFile, sfcInsertLine);
-        m_cursor.y++;
-        m_cursor.x = 0;
+        m_cursor = newCursor;
         m_trackedColumn = m_cursor.x;
     }
     else
     {
+        Vec2i oldCursor = m_cursor;
+        Vec2i newCursor{ 0, m_cursor.y + 1 };
+
         // split current line and insert second part as a new line
         std::string &lineStr = m_sourceFile->m_lines[m_cursor.y]->m_chars;
         std::string firstPart = lineStr.substr(0, m_cursor.x);
         std::string secondPart = lineStr.substr(m_cursor.x);
-        auto sfcReplaceLine = new SFC_ReplaceLine(m_cursor.y, firstPart, lineStr);
-        auto sfcInsertLine = new SFC_InsertLine(m_cursor.y + 1, secondPart);
-        auto sfcGroup = new SFC_Group("Split Line");
+        auto sfcReplaceLine = new SFC_ReplaceLine(m_cursor.y, lineStr, firstPart, oldCursor, newCursor);
+        auto sfcInsertLine = new SFC_InsertLine(m_cursor.y + 1, secondPart, oldCursor, newCursor);
+        auto sfcGroup = new SFC_Group("Split Line", oldCursor, newCursor);
         sfcGroup->m_cmds.push_back(sfcReplaceLine);
         sfcGroup->m_cmds.push_back(sfcInsertLine);
         m_sourceFile->m_cmdBuffer->PushAndExecute(m_sourceFile, sfcGroup);
-        m_cursor.y++;
-        m_cursor.x = 0;
+        m_cursor = newCursor;
         m_trackedColumn = m_cursor.x;
     }
 }
@@ -825,10 +924,14 @@ void SourceFileWindow::InsertTextAtCursor(const char *text)
     std::string stext(text);
     std::string& lineStr = m_sourceFile->m_lines[m_cursor.y]->m_chars;
     std::string outtext = lineStr;
+
+    Vec2i oldCursor = m_cursor;
+    Vec2i newCursor{ m_cursor.x + (int)stext.size(), m_cursor.y };
+
     outtext.insert(outtext.begin() + m_cursor.x, stext.begin(), stext.end());
-    auto sfcReplaceLine = new SFC_ReplaceLine(m_cursor.y, outtext, lineStr);
+    auto sfcReplaceLine = new SFC_ReplaceLine(m_cursor.y, lineStr, outtext, oldCursor, newCursor);
     m_sourceFile->m_cmdBuffer->PushAndExecute(m_sourceFile, sfcReplaceLine);
-    m_cursor.x += (int)stext.size();
+    m_cursor = newCursor;
     m_trackedColumn = m_cursor.x;
 }
 
@@ -839,7 +942,10 @@ void SourceFileWindow::DeleteSelected()
         Vec2i topPos = (m_cursor.y < m_markStart.y || (m_cursor.y == m_markStart.y && m_cursor.x < m_markStart.x)) ? m_cursor : m_markStart;
         Vec2i bottomPos = (m_cursor.y < m_markStart.y || (m_cursor.y == m_markStart.y && m_cursor.x < m_markStart.x)) ? m_markStart : m_cursor;
 
-        auto sfcGroup = new SFC_Group("Delete Marked");
+        Vec2i oldCursor = m_cursor;
+        Vec2i newCursor = topPos;
+
+        auto sfcGroup = new SFC_Group("Delete Marked", oldCursor, newCursor);
 
         if (topPos.y == bottomPos.y)
         {
@@ -847,7 +953,7 @@ void SourceFileWindow::DeleteSelected()
             auto& lineStr = m_sourceFile->m_lines[topPos.y]->m_chars;
             std::string newLineStr = lineStr;
             newLineStr.erase(newLineStr.begin() + topPos.x, newLineStr.begin() + bottomPos.x);
-            auto sfcReplace = new SFC_ReplaceLine(topPos.y, newLineStr, lineStr);
+            auto sfcReplace = new SFC_ReplaceLine(topPos.y, lineStr, newLineStr, m_cursor, m_cursor);
             sfcGroup->m_cmds.push_back(sfcReplace);
         }
         else
@@ -858,25 +964,26 @@ void SourceFileWindow::DeleteSelected()
             std::string joinedLine = topLine.substr(0, topPos.x);
             std::string cutBottomLine = bottomLine.substr(bottomPos.x);
             joinedLine.insert(joinedLine.end(), cutBottomLine.begin(), cutBottomLine.end());
-            auto sfcReplace = new SFC_ReplaceLine(topPos.y, joinedLine, topLine);
+            auto sfcReplace = new SFC_ReplaceLine(topPos.y, topLine, joinedLine, m_cursor, m_cursor);
             sfcGroup->m_cmds.push_back(sfcReplace);
 
             // now delete all the other lines
             for (int i = bottomPos.y; i > topPos.y; i--)
             {
                 auto& lineStr = m_sourceFile->m_lines[i]->m_chars;
-                auto sfcDeleteLine = new SFC_DeleteLine(i, lineStr);
+                auto sfcDeleteLine = new SFC_DeleteLine(i, lineStr, m_cursor, m_cursor);
                 sfcGroup->m_cmds.push_back(sfcDeleteLine);
             }
         }
 
         m_sourceFile->m_cmdBuffer->PushAndExecute(m_sourceFile, sfcGroup);
 
-        m_cursor = topPos;
+        m_cursor = newCursor;
         m_trackedColumn = m_cursor.x;
     }
     m_marked = false;
     m_marking = false;
+    WindowManager::Instance().GetActiveWindowTree()->m_dirty = true;
 }
 
 void SourceFileWindow::CopySelected()
@@ -890,7 +997,7 @@ void SourceFileWindow::CopySelected()
         if (topPos.y == bottomPos.y)
         {
             std::string& lineStr = m_sourceFile->m_lines[topPos.y]->m_chars;
-            buffer = lineStr.substr(topPos.x, bottomPos.x);
+            buffer = lineStr.substr(topPos.x, bottomPos.x - topPos.x);
         }
         else
         {
@@ -938,17 +1045,22 @@ void SourceFileWindow::PasteSelected()
     }
     paste.push_back(std::move(buffer));
 
-    auto sfcGroup = new SFC_Group("Paste Clipboard");
     if (paste.size() == 1)
     {
         auto& lineStr = m_sourceFile->m_lines[m_cursor.y]->m_chars;
         std::string newLineStr = lineStr;
         newLineStr.insert(newLineStr.begin() + m_cursor.x, paste[0].begin(), paste[0].end());
 
-        auto sfcReplace = new SFC_ReplaceLine(m_cursor.y, newLineStr, lineStr);
-        sfcGroup->m_cmds.push_back(sfcReplace);
+        Vec2i oldCursor = m_cursor;
+        Vec2i newCursor = { m_cursor.x + (int)paste[0].size(), m_cursor.y };
 
-        m_cursor.x = m_cursor.x + (int)paste[0].size();
+        auto sfcGroup = new SFC_Group("Paste Clipboard", oldCursor, newCursor);
+        auto sfcReplace = new SFC_ReplaceLine(m_cursor.y, lineStr, newLineStr, oldCursor, newCursor);
+        sfcGroup->m_cmds.push_back(sfcReplace);
+        m_sourceFile->m_cmdBuffer->PushAndExecute(m_sourceFile, sfcGroup);
+
+        m_cursor = newCursor;
+        m_trackedColumn = m_cursor.x;
     }
     else
     {
@@ -959,19 +1071,27 @@ void SourceFileWindow::PasteSelected()
         paste[0].insert(paste[0].begin(), firstLineStart.begin(), firstLineStart.end());
         paste.back().insert(paste.back().end(), firstLineEnd.begin(), firstLineEnd.end());
 
-        auto sfcReplace = new SFC_ReplaceLine(m_cursor.y, paste[0], firstLine);
+        Vec2i oldCursor = m_cursor;
+        Vec2i newCursor = { endx, m_cursor.y + (int)paste.size() - 1 };
+
+        auto sfcGroup = new SFC_Group("Paste Clipboard", oldCursor, newCursor);
+        auto sfcReplace = new SFC_ReplaceLine(m_cursor.y, firstLine, paste[0], oldCursor, newCursor);
         sfcGroup->m_cmds.push_back(sfcReplace);
 
         for (int i = 1; i < paste.size(); i++)
         {
-            auto sfcInsertLine = new SFC_InsertLine(m_cursor.y + i, paste[i]);
+            auto sfcInsertLine = new SFC_InsertLine(m_cursor.y + i, paste[i], oldCursor, newCursor);
             sfcGroup->m_cmds.push_back(sfcInsertLine);
         }
+        m_sourceFile->m_cmdBuffer->PushAndExecute(m_sourceFile, sfcGroup);
 
-        m_cursor.y += (int)paste.size()-1;
-        m_cursor.x = endx;
+        m_cursor = newCursor;
+        m_trackedColumn = m_cursor.x;
     }
-    m_sourceFile->m_cmdBuffer->PushAndExecute(m_sourceFile, sfcGroup);
+
+    m_marked = false;
+    m_marking = false;
+    WindowManager::Instance().GetActiveWindowTree()->m_dirty = true;
 }
 
 void SourceFileWindow::Compile()
@@ -982,9 +1102,21 @@ void SourceFileWindow::Compile()
         {
             LogManager::Instance().Clear(LogGroup::Build);
 
+            std::filesystem::path workingDir = std::filesystem::path(file->m_path).parent_path() / "out";
+            std::error_code ec;
+            if (!std::filesystem::create_directories(workingDir, ec) && ec)
+            {
+                Log(LogGroup::Build,
+                    "Failed to create directory '{}': {}\n",
+                    workingDir.string(),
+                    ec.message());
+                return;
+            }
+
+            std::string wd = workingDir.string();
             const char* args[] =
             {
-                "java", "-jar", "kickass\\kickass.jar", file->m_path.c_str(), nullptr
+                "java", "-jar", "kickass\\kickass.jar", file->m_path.c_str(), "-bytedump", "-debugdump", "-odir", wd.c_str(), nullptr
             };
 
             SDL_Process* process = SDL_CreateProcess(args, true);
@@ -1043,6 +1175,7 @@ bool SourceFileWindow::CreateFromLayoutTokens(WindowLayout* layout, const std::v
     auto file = sfm.FindFile(path);
     Assert(file != nullptr, "Unable to load {}", path);
     auto win = new SourceFileWindow(file);
+    SourceFileManager::Instance().m_sourceFileRenderers.push_back(win);
     layout->m_tabs.push_back(win);
     return true;
 }

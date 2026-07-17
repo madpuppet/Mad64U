@@ -161,6 +161,7 @@
     <ClCompile Include="source\SourceFileCmdBuffer.cpp" />
     <ClCompile Include="source\SourceFileManager.cpp" />
     <ClCompile Include="source\SourceFileWindow.cpp" />
+    <ClCompile Include="source\UndoBufferWindow.cpp" />
     <ClCompile Include="source\WindowBase.cpp" />
     <ClCompile Include="source\WindowLayout.cpp" />
     <ClCompile Include="source\WindowManager.cpp" />
@@ -268,6 +269,7 @@
     <ClInclude Include="source\SourceFileCmdBuffer.h" />
     <ClInclude Include="source\SourceFileManager.h" />
     <ClInclude Include="source\SourceFileWindow.h" />
+    <ClInclude Include="source\UndoBufferWindow.h" />
     <ClInclude Include="source\WindowLayout.h" />
     <ClInclude Include="source\WindowManager.h" />
     <ClInclude Include="source\WindowMenuList.h" />

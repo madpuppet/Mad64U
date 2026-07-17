@@ -143,5 +143,15 @@ bool WindowBase::HandleEvent(SDL_Event* e)
     return false;
 }
 
+void WindowBase::MakeRowVisible(int row)
+{
+    int yOffset = row * LINE_HEIGHT;
+    if (yOffset < m_clientContentOffset.y)
+        m_clientContentOffset.y = yOffset;
+    if (yOffset > (m_clientContentOffset.y + m_clientArea.h - LINE_HEIGHT * 2))
+        m_clientContentOffset.y = yOffset - m_clientArea.h + LINE_HEIGHT * 2;
+
+    LayoutScrollbars();
+}
 
 
