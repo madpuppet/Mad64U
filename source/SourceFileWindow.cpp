@@ -1175,8 +1175,34 @@ bool SourceFileWindow::CreateFromLayoutTokens(WindowLayout* layout, const std::v
     auto file = sfm.FindFile(path);
     Assert(file != nullptr, "Unable to load {}", path);
     auto win = new SourceFileWindow(file);
-    SourceFileManager::Instance().m_sourceFileRenderers.push_back(win);
     layout->m_tabs.push_back(win);
     return true;
 }
+
+void SourceFileWindow::Message(struct WindowMessageStruct& msg)
+{
+    switch (msg.m_type)
+    {
+        case WindowMessage::File_Deleted:
+            if (m_sourceFile == msg.m_sourceFile)
+            {
+                WindowManager::Instance().QueueRemoveWindow(this);
+            }
+            break;
+        case WindowMessage::File_Renamed:
+            if (m_sourceFile == msg.m_sourceFile)
+            {
+                std::filesystem::path p = m_sourceFile->m_path;
+                m_name = p.filename().string();
+            }
+            break;
+        case WindowMessage::File_Count:
+            if (m_sourceFile == msg.m_sourceFile)
+            {
+                msg.m_count++;
+            }
+            break;
+    }
+}
+
 

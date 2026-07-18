@@ -647,9 +647,16 @@ void WindowManager::SetActiveTree(WindowTree* tree)
 
 void WindowManager::Paint()
 {
+    // todo: dirty system is ANYTHING-DIRTY - just redraw all.
+    // might as well just do WindowManager dirty flag...
+    // or do a dirty system per renderer & per file, with a paint ID if we really need a smart dirty system
+    bool anyDirty = false;
     for (auto tree : m_windowTrees)
+        anyDirty |= tree->m_dirty;
+
+    if (anyDirty)
     {
-        if (tree->m_dirty)
+        for (auto tree : m_windowTrees)
         {
             tree->Paint(nullptr);
             tree->m_dirty = false;
@@ -808,6 +815,14 @@ void WindowManager::LoadWindowLayout()
         tree->LayoutWindows();
     }
 }
+
+void WindowManager::MessageAllWindows(WindowMessageStruct& msg)
+{
+    for (auto tree : m_windowTrees)
+        tree->m_layout.Message(msg);
+}
+
+
 
 
 

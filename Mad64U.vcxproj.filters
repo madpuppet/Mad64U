@@ -58,7 +58,7 @@
     <ClCompile Include="source\Settings.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="source\ProjectListWIndow.cpp">
+    <ClCompile Include="source\ProjectListWindow.cpp">
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="source\OutputWindow.cpp">

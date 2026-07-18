@@ -12,24 +12,7 @@
 #include "UndoBufferWindow.h"
 #include <filesystem>
 
-class TestWindow : public WindowBase
-{
-public:
-    TestWindow(const std::string& name, const SDL_Color& col) : m_bgCol(col) { m_name = name; }
-    void Paint(SDL_Renderer* renderer, const Recti& dirtyArea) override
-    {
-        SDL_SetRenderDrawColor(renderer, m_bgCol.r, m_bgCol.g, m_bgCol.b, m_bgCol.a);
-        SDL_FRect body = m_clientArea.AsSDLFRect();
-        SDL_RenderFillRect(renderer, &body);
-    }
-    void Close()
-    {
-        WindowManager::Instance().RemoveWindow(this);
-        delete this;
-    }
-    SDL_Color m_bgCol;
-};
-
+u32 CustomEvent_Timer = 0;
 
 typedef void (SDLCALL* SDL_DialogFileCallback)(void* userdata, const char* const* filelist, int filter);
 
@@ -128,40 +111,11 @@ void Application::CreateMenus()
 
     auto saveFile = []()
         {
-            auto window = WindowManager::Instance().GetActiveWindowBase();
-            if (window)
+            auto& sm = SourceFileManager::Instance();
+            auto file = sm.GetActiveSourceFile();
+            if (file)
             {
-                auto file = SourceFileManager::Instance().GetFileFromWindow(window);
-                if (file)
-                {
-                    if (file->m_path.empty())
-                    {
-                        std::string cwd = std::filesystem::current_path().string();
-
-                        SDL_ShowSaveFileDialog(
-                            SaveFileCallback,
-                            file,
-                            nullptr,        // parent window
-                            s_filters,
-                            SDL_arraysize(s_filters),
-                            cwd.c_str()        // default location
-                        );
-                    }
-                    else
-                    {
-                        SourceFileManager::Instance().SaveFile(file);
-                    }
-                }
-            }
-        };
-
-    auto saveAsFile = []()
-        {
-            auto window = WindowManager::Instance().GetActiveWindowBase();
-            if (window)
-            {
-                auto file = SourceFileManager::Instance().GetFileFromWindow(window);
-                if (file)
+                if (file->m_path.empty())
                 {
                     std::string cwd = std::filesystem::current_path().string();
 
@@ -174,6 +128,29 @@ void Application::CreateMenus()
                         cwd.c_str()        // default location
                     );
                 }
+                else
+                {
+                    sm.SaveFile(file);
+                }
+            }
+        };
+
+    auto saveAsFile = []()
+        {
+            auto& sm = SourceFileManager::Instance();
+            auto file = sm.GetActiveSourceFile();
+            if (file)
+            {
+                std::string cwd = std::filesystem::current_path().string();
+
+                SDL_ShowSaveFileDialog(
+                    SaveFileCallback,
+                    file,
+                    nullptr,        // parent window
+                    s_filters,
+                    SDL_arraysize(s_filters),
+                    cwd.c_str()        // default location
+                );
             }
         };
 
@@ -322,11 +299,10 @@ void Application::SaveThemesToSettings()
     }
 }
 
-Uint32 TimerEventType = 0;
 static Uint32 SDLCALL TimerCallback(void* userdata, SDL_TimerID timerID, Uint32 interval)
 {
     SDL_Event event{};
-    event.type = TimerEventType;
+    event.type = CustomEvent_Timer;
     event.user.code = 123;
     event.user.data1 = userdata;
 
@@ -337,15 +313,15 @@ static Uint32 SDLCALL TimerCallback(void* userdata, SDL_TimerID timerID, Uint32 
     return interval;
 }
 
-void Application::AddTimerEvent()
+void Application::AddCustomEvents()
 {
-    TimerEventType = SDL_RegisterEvents(1);
-
-    if (TimerEventType == 0)
+    u32 eventRange = SDL_RegisterEvents(1);
+    if (eventRange == 0)
     {
         Log("SDL_RegisterEvents failed: %s\n", SDL_GetError());
         return;
     }
+    CustomEvent_Timer = eventRange;
 
     SDL_TimerID timer = SDL_AddTimer(WINDOW_TICK_MS, TimerCallback, nullptr);
     if (timer == 0)
@@ -493,7 +469,7 @@ int Application::Run()
     wm.SetActiveTree(win);
 
     CreateMenus();
-    AddTimerEvent();
+    AddCustomEvents();
 
     wm.LoadWindowLayout();
 
@@ -502,7 +478,7 @@ int Application::Run()
     {
         while (SDL_PollEvent(&e))
         {
-            if (e.type == TimerEventType)
+            if (e.type == CustomEvent_Timer)
             {
                 SourceFileManager::Instance().Tick();
                 WindowManager::Instance().Tick();

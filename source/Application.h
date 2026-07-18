@@ -64,7 +64,7 @@ protected:
     void CreateSettings();
     void CreateMenus();
     void CreateThemes();
-    void AddTimerEvent();
+    void AddCustomEvents();
     void LoadThemesFromSettings();
     void SaveThemesToSettings();
     ThemeProperties* FindTheme(const char* name);

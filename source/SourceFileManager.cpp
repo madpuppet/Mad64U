@@ -40,13 +40,10 @@ bool SourceFileManager::RenameFile(SourceFile* file, const std::string& path)
     std::filesystem::path fspath = path;
     std::string name = fspath.filename().string();
 
-    for (auto fr : m_sourceFileRenderers)
-    {
-        if (fr->m_sourceFile == file)
-        {
-            fr->m_name = name;
-        }
-    }
+    WindowMessageStruct msg;
+    msg.m_type = WindowMessage::File_Renamed;
+    msg.m_sourceFile = file;
+    WindowManager::Instance().MessageAllWindows(msg);
 
     WindowManager::Instance().LayoutWindows();
     return true;
@@ -58,22 +55,9 @@ bool SourceFileManager::NewFile(const std::string& path)
     m_sourceFiles.push_back(sourceFile);
 
     auto sourceFileRenderer = new SourceFileWindow(sourceFile);
-    m_sourceFileRenderers.push_back(sourceFileRenderer);
     WindowManager::Instance().GetActiveWindowLayout()->AddWindow(sourceFileRenderer);
     WindowManager::Instance().GetActiveWindowTree()->LayoutWindows();
     return true;
-}
-
-SourceFile* SourceFileManager::GetFileFromWindow(WindowBase* window)
-{
-    for (auto sfr : m_sourceFileRenderers)
-    {
-        if (sfr == window)
-        {
-            return sfr->m_sourceFile;
-        }
-    }
-    return nullptr;
 }
 
 void SourceFileManager::RequestLoadFiles(std::vector<std::string> paths)
@@ -125,14 +109,32 @@ void SourceFileManager::LoadRequestedFiles(bool addWindow)
     {
         // check if file is already loaded...
         bool exists = false;
+        bool needsLayout = false;
         for (auto file : m_sourceFiles)
         {
             if (file->m_path == path)
             {
+                // exists... do we need to reopen a window?
+                if (addWindow)
+                {
+                    WindowMessageStruct msg;
+                    msg.m_type = WindowMessage::File_Count;
+                    msg.m_sourceFile = file;
+                    WindowManager::Instance().MessageAllWindows(msg);
+                    if (msg.m_count == 0)
+                    {
+                        auto sourceFileRenderer = new SourceFileWindow(file);
+                        wm.AddWindow(sourceFileRenderer);
+                        needsLayout = true;
+                    }
+                }
                 exists = true;
                 break;
             }
         }
+
+        if (needsLayout)
+            wm.LayoutWindows();
 
         if (exists)
             continue;
@@ -162,7 +164,6 @@ void SourceFileManager::LoadRequestedFiles(bool addWindow)
         if (addWindow)
         {
             auto sourceFileRenderer = new SourceFileWindow(sourceFile);
-            m_sourceFileRenderers.push_back(sourceFileRenderer);
             wm.AddWindow(sourceFileRenderer);
         }
     }
@@ -207,23 +208,10 @@ bool SourceFileManager::CloseFile(SourceFile* file)
     if (m_activeSourceFile == file)
         m_activeSourceFile = nullptr;
 
-    // delete all renderers
-    std::vector<SourceFileWindow*> removed;
-
-    for (auto fr : m_sourceFileRenderers)
-    {
-        if (fr->m_sourceFile == file)
-        {
-            removed.push_back(fr);
-            WindowManager::Instance().RemoveWindow(fr);
-        }
-    }
-
-    auto condition = [&removed](const auto& fr) -> bool
-        {
-            return std::find(removed.begin(), removed.end(), fr) != removed.end();
-        };
-    std::erase_if(m_sourceFileRenderers, condition);
+    WindowMessageStruct msg;
+    msg.m_type = WindowMessage::File_Deleted;
+    msg.m_sourceFile = file;
+    WindowManager::Instance().MessageAllWindows(msg);
 
     // delete the file
     delete file;

@@ -654,4 +654,20 @@ void WindowLayout::LoadLayout(const std::vector<std::string>& layoutTokens, size
     }
 }
 
+void WindowLayout::Message(struct WindowMessageStruct& msg)
+{
+    if (m_splitType == NoSplit)
+    {
+        for (auto tab : m_tabs)
+        {
+            tab->Message(msg);
+        }
+    }
+    else
+    {
+        m_splits[0]->Message(msg);
+        m_splits[1]->Message(msg);
+    }
+}
+
 

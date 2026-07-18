@@ -41,5 +41,7 @@ struct WindowLayout
 
     void SaveLayout(std::vector<std::string> &layoutTokens);
     void LoadLayout(const std::vector<std::string>& layoutTokens, size_t& idx);
+
+    void Message(struct WindowMessageStruct& msg);
 };
 

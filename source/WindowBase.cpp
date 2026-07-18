@@ -154,4 +154,8 @@ void WindowBase::MakeRowVisible(int row)
     LayoutScrollbars();
 }
 
+WindowBase::~WindowBase()
+{
+    WindowManager::Instance().OnWindowDestruct(this);
+}
 

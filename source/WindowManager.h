@@ -18,12 +18,29 @@ struct WindowHighlightState
     Icons m_iconType;
 };
 
+// these go to ALL windows,  unlike SDL Events only go to active windows
+enum class WindowMessage
+{
+    File_Deleted,
+    File_Renamed,
+    File_Count
+};
+
+struct WindowMessageStruct
+{
+    WindowMessage m_type;
+    class SourceFile* m_sourceFile = nullptr;
+    int m_count = 0;
+};
+
 
 class WindowManager : public Singleton<WindowManager>
 {
 public:
     void HandleEvent(SDL_Event* e);
     WindowTree* FindWindowByID(int id);
+
+    void MessageAllWindows(WindowMessageStruct& msg);
 
     const WindowDockQuery& GetWindowDockQuery() { return m_mouseDockQuery; }
     const WindowSplitQuery& GetWindowSplitQuery() { return m_mouseSplitQuery; }
@@ -44,6 +61,23 @@ public:
     void AddWindow(WindowBase* window);
     void Tick();
 
+    // allow remove windows deferred (so we can remove from recursive WM call trees)
+    void QueueRemoveWindow(WindowBase* window)
+    {
+        m_windowsToRemove.push_back(window);
+    }
+    bool RemoveQueuedWindows()
+    {
+        bool removedAny = false;
+        for (auto win : m_windowsToRemove)
+        {
+            removedAny = true;
+            RemoveWindow(win);
+        }
+        m_windowsToRemove.clear();
+        return removedAny;
+    }
+
     void SetDefaultActiveWindow();
 
     // used for test data
@@ -55,8 +89,15 @@ public:
     void SaveWindowLayout();
     void LoadWindowLayout();
 
+    void OnWindowDestruct(WindowBase* win)
+    {
+        if (m_activeWindow == win)
+            m_activeWindow = nullptr;
+    }
+
 protected:
     std::vector<WindowTree*> m_windowTrees;
+    std::vector<WindowBase*> m_windowsToRemove;
     WindowMenuList m_menuList;
 
     enum MouseMode

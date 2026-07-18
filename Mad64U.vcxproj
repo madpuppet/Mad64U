@@ -155,7 +155,7 @@
     <ClCompile Include="source\LogManager.cpp" />
     <ClCompile Include="source\Mad64U.cpp" />
     <ClCompile Include="source\OutputWindow.cpp" />
-    <ClCompile Include="source\ProjectListWIndow.cpp" />
+    <ClCompile Include="source\ProjectListWindow.cpp" />
     <ClCompile Include="source\Settings.cpp" />
     <ClCompile Include="source\SourceFile.cpp" />
     <ClCompile Include="source\SourceFileCmdBuffer.cpp" />

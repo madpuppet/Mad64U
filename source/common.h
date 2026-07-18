@@ -29,7 +29,9 @@ typedef long long i64;
 #define BORDER_MARGIN 4
 
 #define WINDOW_TICK_MS 100
-extern u32 TimerEventType;
+
+extern u32 CustomEvent_Timer;
+
 extern void Log(const char* pFormat, ...);
 
 #define Assert(cond, ...)  if (!(cond)) { Log("ASSERTION FAILURE:\n"); __VA_OPT__(Log(__VA_ARGS__);) __debugbreak(); };

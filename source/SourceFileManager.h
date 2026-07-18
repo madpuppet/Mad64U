@@ -18,10 +18,7 @@ public:
     bool CloseFile(SourceFile* file);
     bool RenameFile(SourceFile* file, const std::string &path);
 
-    SourceFile* GetFileFromWindow(WindowBase* window);
-
     std::vector<class SourceFile*> m_sourceFiles;
-    std::vector<class SourceFileWindow*> m_sourceFileRenderers;
 
     bool IsKeyword(SourceType sourceType, const char* keyword)
     {

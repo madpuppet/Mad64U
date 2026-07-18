@@ -18,10 +18,11 @@ public:
     void CalcXYFromClientPos(int x, int y, int& col, int& row);
     int CalcXPos(int x, int y);
     void Compile() override;
+    void Message(struct WindowMessageStruct& msg) override;
 
-    Vec2i m_cursor;
+    Vec2i m_cursor{ 0,0 };
     int m_trackedColumn = 0;
-    bool m_overwrite;
+    bool m_overwrite = false;
     SourceFile* m_sourceFile;
     int m_charWidth = 24;
 

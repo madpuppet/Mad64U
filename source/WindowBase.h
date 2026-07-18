@@ -27,7 +27,7 @@ public:
     void UpdateScrollBar(int offset, WindowScrollBarQuery& query);
     void MakeRowVisible(int row);
 
-    virtual ~WindowBase() {};
+    virtual ~WindowBase();
     virtual void Paint(SDL_Renderer* renderer, const Recti& dirtyArea) = 0;
     virtual void Close();
     virtual bool Tick() { return false; }
@@ -35,6 +35,7 @@ public:
     virtual bool HandleEvent(SDL_Event* e);
     virtual bool IsModified() { return false; }
     virtual class SourceFile* GetSourceFile() { return nullptr; }
+    virtual void Message(struct WindowMessageStruct& msg) {}
 
     // enough info to recreate the window from static CreateFromTokens() function each window type should have
     virtual void SaveTokens(std::vector<std::string>& layoutTokens) = 0;
