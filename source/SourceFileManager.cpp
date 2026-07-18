@@ -212,6 +212,7 @@ bool SourceFileManager::CloseFile(SourceFile* file)
     msg.m_type = WindowMessage::File_Deleted;
     msg.m_sourceFile = file;
     WindowManager::Instance().MessageAllWindows(msg);
+    WindowManager::Instance().RemoveQueuedWindows();
 
     // delete the file
     delete file;

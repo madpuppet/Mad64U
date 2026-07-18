@@ -183,7 +183,11 @@ void WindowManager::HandleEvent(SDL_Event* e)
                         m_activeLayout = m_mouseTabQuery.m_layout;
                         m_menuList.Layout(m_activeTree);
 
-                        if (tree->CountWindows() == 1)
+                        WindowMessageStruct msg;
+                        msg.m_type = WindowMessage::Layout_LockCount;
+                        MessageAllWindows(msg);
+
+                        if (msg.m_count == 0 && tree->CountWindows() <= 1)
                         {
                             int x, y;
                             SDL_GetWindowPosition(tree->m_window, &x, &y);
@@ -445,8 +449,12 @@ void WindowManager::HandleEvent(SDL_Event* e)
                         if (dist > 15)
                         {
                             // if this isn't the only tab in the tree, then we can drag it out
+                            WindowMessageStruct msg;
+                            msg.m_type = WindowMessage::Layout_LockCount;
+                            MessageAllWindows(msg);
+
                             int count = m_mouseTabQuery.m_tree->CountWindows();
-                            if (count > 1)
+                            if (msg.m_count > 0 || count > 1)
                             {
                                 m_activeLayout = nullptr;
                                 m_activeWindow = nullptr;
@@ -746,7 +754,7 @@ void WindowManager::AddWindow(WindowBase* window)
     m_activeWindow = m_activeLayout->GetActiveWindow();
 }
 
-#define WINDOW_LAYOUT_VERSION "v000"
+#define WINDOW_LAYOUT_VERSION "v001"
 
 void WindowManager::SaveWindowLayout()
 {
@@ -821,8 +829,6 @@ void WindowManager::MessageAllWindows(WindowMessageStruct& msg)
     for (auto tree : m_windowTrees)
         tree->m_layout.Message(msg);
 }
-
-
 
 
 

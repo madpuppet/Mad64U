@@ -11,7 +11,9 @@ enum class Icons
     Fullscreen,
     Windowed,
     Resize,
-    Submenu
+    Submenu,
+    LayoutLocked,
+    LayoutFree
 };
 
 class IconRenderer : public Singleton<IconRenderer>

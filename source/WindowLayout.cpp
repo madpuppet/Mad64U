@@ -19,8 +19,9 @@ void WindowLayout::Layout(SDL_Renderer* renderer, const Recti& area)
             SDL_Color col{ 255,255,255,255 };
             Recti clientArea{ area.x + WINDOW_CLIENT_BORDER, area.y + WINDOW_TAB_BAR_HEIGHT + WINDOW_CLIENT_BORDER, area.w - WINDOW_CLIENT_BORDER * 2, area.h - WINDOW_CLIENT_BORDER * 2 - WINDOW_TAB_BAR_HEIGHT };
             Recti tabArea{ area.x, area.y + WINDOW_CLIENT_BORDER, area.w, WINDOW_TAB_BAR_HEIGHT - WINDOW_CLIENT_BORDER };
-            int tabX = area.x + WINDOW_CLIENT_BORDER;
+            int tabX = area.x + WINDOW_CLIENT_BORDER + 20;
             int tabY = area.y + WINDOW_CLIENT_BORDER;
+
             for (auto t : m_tabs)
             {
                 t->m_area = clientArea;
@@ -236,6 +237,10 @@ void WindowLayout::Paint(SDL_Renderer* renderer, const Recti& area)
         if (m_splitType == NoSplit)
         {
             Recti bodyRect{ m_area.x, m_area.y + WINDOW_TAB_BAR_HEIGHT + WINDOW_CLIENT_BORDER, m_area.w, m_area.h - WINDOW_TAB_BAR_HEIGHT - WINDOW_CLIENT_BORDER * 2 };
+
+            if (m_locked)
+                IconRenderer::Instance().DrawIcon(renderer, Icons::LayoutLocked, m_area.x + 14, m_area.y + 18);
+
             if (!m_tabs.empty())
             {
                 // render tabs
@@ -469,8 +474,8 @@ void WindowLayout::CollapseEmptyLayouts()
         m_splits[0]->CollapseEmptyLayouts();
         m_splits[1]->CollapseEmptyLayouts();
 
-        bool empty0 = (m_splits[0] == nullptr) || (m_splits[0]->m_splitType == NoSplit && m_splits[0]->m_tabs.empty());
-        bool empty1 = (m_splits[1] == nullptr) || (m_splits[1]->m_splitType == NoSplit && m_splits[1]->m_tabs.empty());
+        bool empty0 = (m_splits[0] == nullptr) || (m_splits[0]->m_splitType == NoSplit && (m_splits[0]->m_tabs.empty() && !m_splits[0]->m_locked));
+        bool empty1 = (m_splits[1] == nullptr) || (m_splits[1]->m_splitType == NoSplit && (m_splits[1]->m_tabs.empty() && !m_splits[1]->m_locked));
 
         if (empty0 && empty1)
         {
@@ -586,6 +591,7 @@ void WindowLayout::SaveLayout(std::vector<std::string>& layoutTokens)
         case NoSplit:
         {
             layoutTokens.push_back("N");
+            layoutTokens.push_back(m_locked ? "L" : "F");
             layoutTokens.push_back(std::format("{}", m_tabs.size()));
             layoutTokens.push_back(std::format("{}", m_activeTab));
             for (auto file : m_tabs)
@@ -611,6 +617,7 @@ void WindowLayout::LoadLayout(const std::vector<std::string>& layoutTokens, size
     if (typeStr == "N")
     {
         m_splitType = NoSplit;
+        m_locked = layoutTokens[idx++] == "L";
         int tabCount = std::stoi(layoutTokens[idx++]);
         m_activeTab = std::stoi(layoutTokens[idx++]);
         for (int i = 0; i < tabCount; i++)
@@ -656,6 +663,19 @@ void WindowLayout::LoadLayout(const std::vector<std::string>& layoutTokens, size
 
 void WindowLayout::Message(struct WindowMessageStruct& msg)
 {
+    if (msg.m_type == WindowMessage::Layout_LockCount)
+    {
+        if (m_locked)
+            msg.m_count++;
+
+        if (m_splitType != NoSplit)
+        {
+            m_splits[0]->Message(msg);
+            m_splits[1]->Message(msg);
+        }
+        return;
+    }
+
     if (m_splitType == NoSplit)
     {
         for (auto tab : m_tabs)

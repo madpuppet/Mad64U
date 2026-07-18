@@ -12,6 +12,8 @@ IconRenderer::IconRenderer()
     LoadImage("data/icon_windowed.png");
     LoadImage("data/icon_resize.png");
     LoadImage("data/icon_submenu.png");
+    LoadImage("data/icon_layoutLocked.png");
+    LoadImage("data/icon_layoutFree.png");
 }
 
 IconRenderer::~IconRenderer()

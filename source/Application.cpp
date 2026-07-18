@@ -161,6 +161,11 @@ void Application::CreateMenus()
                 window->Close();
         };
 
+    auto exitEditor = []()
+        {
+            Application::Instance().Quit();
+        };
+
     auto fileMenu = new WindowMenu;
     fileMenu->m_name = "File";
     fileMenu->m_items.push_back(new WindowMenuItem("New", newFile));
@@ -168,6 +173,7 @@ void Application::CreateMenus()
     fileMenu->m_items.push_back(new WindowMenuItem("Save", saveFile));
     fileMenu->m_items.push_back(new WindowMenuItem("SaveAs", saveAsFile));
     fileMenu->m_items.push_back(new WindowMenuItem("Close", closeFile));
+    fileMenu->m_items.push_back(new WindowMenuItem("Quit Mad64U", exitEditor));
     wm.AddWindowMenu(fileMenu);
 
     auto styleMenu = new WindowMenu;
@@ -204,12 +210,20 @@ void Application::CreateMenus()
             WindowManager::Instance().LayoutWindows();
         };
 
+    auto toggleFrameLock = []()
+        {
+            auto layout = WindowManager::Instance().GetActiveWindowLayout();
+            if (layout)
+                layout->m_locked = !layout->m_locked;
+        };
+
     auto windowMenu = new WindowMenu;
     windowMenu->m_name = "Windows";
     windowMenu->m_items.push_back(new WindowMenuItem("Project Files", newWindowProjectList ));
     windowMenu->m_items.push_back(new WindowMenuItem("Output", newWindowOutput));
     windowMenu->m_items.push_back(new WindowMenuItem("Undo Buffer", newWindowUndoBuffer));
     windowMenu->m_items.push_back(new WindowMenuItem("- - - - - - - - - -", []() {}));
+    windowMenu->m_items.push_back(new WindowMenuItem("Toggle Frame Lock", toggleFrameLock));
     windowMenu->m_items.push_back(new WindowMenuItem("Save Window Layout", []() { WindowManager::Instance().SaveWindowLayout(); }));
     wm.AddWindowMenu(windowMenu);
 
@@ -476,7 +490,7 @@ int Application::Run()
     SDL_Event e;
     while (!m_quit)
     {
-        while (SDL_PollEvent(&e))
+        while (!m_quit && SDL_PollEvent(&e))
         {
             if (e.type == CustomEvent_Timer)
             {

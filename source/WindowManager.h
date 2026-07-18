@@ -23,7 +23,8 @@ enum class WindowMessage
 {
     File_Deleted,
     File_Renamed,
-    File_Count
+    File_Count,
+    Layout_LockCount
 };
 
 struct WindowMessageStruct

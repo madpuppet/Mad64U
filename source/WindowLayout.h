@@ -19,6 +19,7 @@ struct WindowLayout
     float m_splitPercentage = 0.5f;
     std::vector<WindowBase*> m_tabs;
     int m_activeTab = 0;
+    bool m_locked = false;
 
     void Layout(SDL_Renderer* renderer, const Recti& area);
     void AddWindow(int x, int y, WindowBase* window);
