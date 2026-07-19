@@ -16,6 +16,7 @@ enum class ThemeColor
     MenuItemBackgroundSelected,
     WindowBackground,
     WindowClientEmpty,
+    LayoutSplit,
     TabBackground,
     TabText,
     TabTextModified,
@@ -28,6 +29,7 @@ enum class ThemeColor
     ScrollBarSelected,
     Cursor,
     TextHighlight,
+    HighlightArea,
 
     TextGeneral,
     TextOperator,

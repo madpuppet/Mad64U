@@ -26,6 +26,7 @@ static const char* s_themecolor_name[NumThemeColor] =
     "MenuItemBackgroundSelected",
     "WindowBackground",
     "WindowClientEmpty",
+    "LayoutSplit",
     "TabBackground",
     "TabText",
     "TabTextModified",
@@ -38,6 +39,8 @@ static const char* s_themecolor_name[NumThemeColor] =
     "ScrollBarSelected",
     "Cursor",
     "TextHighlight",
+    "HighlightArea",
+
     "TextGeneral",
     "TextOperator",
     "TextComment"
@@ -365,6 +368,7 @@ void Application::CreateSettings()
         theme.m_colors[(int)ThemeColor::MenuItemBackgroundSelected] = SDL_Color(255, 255, 255, 255);
         theme.m_colors[(int)ThemeColor::WindowBackground] = SDL_Color(16, 16, 16, 255);
         theme.m_colors[(int)ThemeColor::WindowClientEmpty] = SDL_Color(32, 32, 32, 255);
+        theme.m_colors[(int)ThemeColor::LayoutSplit] = SDL_Color(255, 255, 0, 255);
         theme.m_colors[(int)ThemeColor::TabBackground] = SDL_Color(48, 48, 48, 255);
         theme.m_colors[(int)ThemeColor::TabText] = SDL_Color(200, 200, 200, 255);
         theme.m_colors[(int)ThemeColor::TabTextModified] = SDL_Color(255, 0, 0, 255);
@@ -377,6 +381,7 @@ void Application::CreateSettings()
         theme.m_colors[(int)ThemeColor::ScrollBarSelected] = SDL_Color(255, 255, 0, 255);
         theme.m_colors[(int)ThemeColor::Cursor] = SDL_Color(255, 255, 128, 255);
         theme.m_colors[(int)ThemeColor::TextHighlight] = SDL_Color(128, 128, 128, 255);
+        theme.m_colors[(int)ThemeColor::HighlightArea] = SDL_Color(255, 255, 0, 64);
         theme.m_colors[(int)ThemeColor::TextGeneral] = SDL_Color(230, 230, 230, 255);
         theme.m_colors[(int)ThemeColor::TextOperator] = SDL_Color(64, 255, 255, 255);
         theme.m_colors[(int)ThemeColor::TextComment] = SDL_Color(128, 255, 128, 255);
@@ -394,6 +399,7 @@ void Application::CreateSettings()
         theme.m_colors[(int)ThemeColor::MenuItemBackgroundSelected] = SDL_Color(255, 255, 255, 255);
         theme.m_colors[(int)ThemeColor::WindowBackground] = SDL_Color(0, 0, 32, 255);
         theme.m_colors[(int)ThemeColor::WindowClientEmpty] = SDL_Color(8, 16, 48, 255);
+        theme.m_colors[(int)ThemeColor::LayoutSplit] = SDL_Color(255, 255, 0, 255);
         theme.m_colors[(int)ThemeColor::TabBackground] = SDL_Color(48, 48, 48, 255);
         theme.m_colors[(int)ThemeColor::TabText] = SDL_Color(200, 200, 200, 255);
         theme.m_colors[(int)ThemeColor::TabTextModified] = SDL_Color(255, 0, 0, 255);
@@ -406,6 +412,7 @@ void Application::CreateSettings()
         theme.m_colors[(int)ThemeColor::ScrollBarSelected] = SDL_Color(255, 255, 0, 255);
         theme.m_colors[(int)ThemeColor::Cursor] = SDL_Color(255, 255, 128, 255);
         theme.m_colors[(int)ThemeColor::TextHighlight] = SDL_Color(128, 128, 128, 128);
+        theme.m_colors[(int)ThemeColor::HighlightArea] = SDL_Color(255, 255, 0, 64);
         theme.m_colors[(int)ThemeColor::TextGeneral] = SDL_Color(0, 200, 255, 255);
         theme.m_colors[(int)ThemeColor::TextOperator] = SDL_Color(255, 128, 64, 255);
         theme.m_colors[(int)ThemeColor::TextComment] = SDL_Color(128, 255, 128, 255);
@@ -423,6 +430,7 @@ void Application::CreateSettings()
         theme.m_colors[(int)ThemeColor::MenuItemBackgroundSelected] = SDL_Color(255, 255, 255, 255);
         theme.m_colors[(int)ThemeColor::WindowBackground] = SDL_Color(64, 64, 64, 255);
         theme.m_colors[(int)ThemeColor::WindowClientEmpty] = SDL_Color(32, 32, 32, 255);
+        theme.m_colors[(int)ThemeColor::LayoutSplit] = SDL_Color(255, 255, 0, 255);
         theme.m_colors[(int)ThemeColor::TabBackground] = SDL_Color(100, 100, 100, 255);
         theme.m_colors[(int)ThemeColor::TabText] = SDL_Color(200, 200, 200, 255);
         theme.m_colors[(int)ThemeColor::TabTextSelected] = SDL_Color(255, 255, 255, 255);
@@ -435,6 +443,7 @@ void Application::CreateSettings()
         theme.m_colors[(int)ThemeColor::ScrollBarSelected] = SDL_Color(255, 255, 0, 255);
         theme.m_colors[(int)ThemeColor::Cursor] = SDL_Color(64, 64, 0, 255);
         theme.m_colors[(int)ThemeColor::TextHighlight] = SDL_Color(128, 128, 128, 255);
+        theme.m_colors[(int)ThemeColor::HighlightArea] = SDL_Color(255, 255, 0, 64);
         theme.m_colors[(int)ThemeColor::TextGeneral] = SDL_Color(0, 0, 0, 255);
         theme.m_colors[(int)ThemeColor::TextOperator] = SDL_Color(0, 0, 255, 255);
         theme.m_colors[(int)ThemeColor::TextComment] = SDL_Color(0, 128, 0, 255);

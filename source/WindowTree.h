@@ -31,17 +31,15 @@ struct WindowTree
     bool CheckForDocking(int x, int y, WindowDockQuery &query);
     void Paint(Recti *area);
     void GatherWindows(std::vector<WindowBase*>& windows);
-    bool CheckForTab(int x, int y, WindowTabQuery& query);
     int CountWindows();
     void CollapseEmptyLayouts();
     Icons FindIcon(int x, int y);
     bool CheckForSplit(int x, int y, WindowSplitQuery& query);
-    bool CheckForLayout(int x, int y, WindowLayout*& layout);
     WindowLayout* FindFirstNonSplitLayout();
-    bool CheckForScrollBar(int x, int y, WindowScrollBarQuery& query);
     void Tick();
 
     void MakeFullscreen();
     void MakeWindowed();
+    void Message(struct WindowMessageStruct& msg);
 };
 

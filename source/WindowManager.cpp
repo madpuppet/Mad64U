@@ -4,6 +4,7 @@
 #include "Application.h"
 #include "Settings.h"
 #include "SourceFileManager.h"
+#include "LogManager.h"
 #include <filesystem>
 
 std::vector<std::string> GetSourceFiles(const std::string& pathStr)
@@ -86,116 +87,126 @@ void WindowManager::HandleEvent(SDL_Event* e)
         {
             if (e->button.button == 1)
             {
-                WindowTree* tree = FindWindowByID(e->button.windowID);
-                if (tree)
-                {
-                    tree->m_dirty = true;
+                m_mouseHighlightQuery.Reset();
+                m_mouseSelectionQuery.Reset();
 
-                    auto icon = tree->FindIcon((int)e->button.x, (int)e->button.y);
-                    if (icon != Icons::None)
-                    {
-                        switch (icon)
+                WindowMessageStruct msg;
+                msg.m_type = WindowMessage::Query_Highlight;
+                msg.m_flags = WMF_Menu | WMF_AreaCheck | WMF_Layout | WMF_Window | WMF_EarlyOut;
+                msg.m_query = &m_mouseSelectionQuery;
+                msg.m_tree = FindWindowByID(e->button.windowID);
+                if (!msg.m_tree)
+                    break;
+
+                msg.m_x = (int)e->button.x;
+                msg.m_y = (int)e->button.y;
+                Message(msg);
+
+                switch (m_mouseSelectionQuery.m_highlight)
+                {
+                    case WindowHighlightType::WindowTreeIcon:
+                        switch ((Icons)m_mouseSelectionQuery.m_id)
                         {
                             case Icons::Fullscreen:
                             {
-                                tree->MakeFullscreen();
-                                return;
+                                m_mouseSelectionQuery.m_tree->MakeFullscreen();
                             }
-                            break;
+                            return;
 
                             case Icons::Windowed:
                             {
-                                tree->MakeWindowed();
-                                return;
+                                m_mouseSelectionQuery.m_tree->MakeWindowed();
                             }
-                            break;
+                            return;
 
                             case Icons::Close:
                             {
-                                auto it = std::find(m_windowTrees.begin(), m_windowTrees.end(), tree);
+                                auto it = std::find(m_windowTrees.begin(), m_windowTrees.end(), m_mouseSelectionQuery.m_tree);
                                 if (it != m_windowTrees.end()) {
                                     m_windowTrees.erase(it);
                                 }
-                                delete tree;
+                                delete m_mouseSelectionQuery.m_tree;
                                 if (m_windowTrees.empty())
                                     Application::Instance().Quit();
-                                return;
+
+                                m_mouseSelectionQuery.Reset();
                             }
-                            break;
+                            return;
 
                             case Icons::Resize:
                             {
                                 int w, h;
-                                SDL_GetWindowSizeInPixels(tree->m_window, &w, &h);
+                                SDL_GetWindowSizeInPixels(m_mouseSelectionQuery.m_tree->m_window, &w, &h);
                                 if ((w - e->button.x) < 15 && (h - e->button.y) < 15)
                                 {
                                     m_mouseMode = MouseMode_ResizingWindow;
-                                    m_mouseTree = tree;
+                                    m_mouseTree = m_mouseSelectionQuery.m_tree;
                                     m_mouseGrabPos.x = (int)e->button.x;
                                     m_mouseGrabPos.y = (int)e->button.y;
                                     m_mouseInitial.x = w;
                                     m_mouseInitial.y = h;
                                     SDL_CaptureMouse(true);
                                 }
-                                return;
                             }
-                            break;
-
-                            default:
-                                break;
+                            return;
                         }
-                    }
+                        break;
 
-                    if (m_menuList.CheckForMenu(tree, (int)e->button.x, (int)e->button.y, m_mouseMenuQuery))
+                    case WindowHighlightType::Menu:
                     {
-                        auto menu = m_menuList.m_menus[m_mouseMenuQuery.m_menuIdx];
+                        auto menu = m_menuList.m_menus[m_mouseSelectionQuery.m_menu.m_menuIdx];
                         menu->m_open = true;
                         m_mouseMode = MouseMode_UsingMenu;
-                        SetActiveTree(tree);
+                        SetActiveTree(m_mouseSelectionQuery.m_tree);
                         SDL_CaptureMouse(true);
-                        return;
+                        m_mouseHighlightQuery.Reset();
                     }
+                    return;
 
-                    // check for dragging the title bar
-                    if (!tree->m_fullscreen && e->button.y < WINDOW_TITLE_BAR_HEIGHT)
+                    case WindowHighlightType::WindowTitleBar:
                     {
+                        SetActiveTree(m_mouseSelectionQuery.m_tree);
                         int x, y;
-                        SDL_GetWindowPosition(tree->m_window, &x, &y);
-
+                        SDL_GetWindowPosition(m_mouseSelectionQuery.m_tree->m_window, &x, &y);
                         float mx, my;
                         SDL_GetGlobalMouseState(&mx, &my);
                         m_mouseMode = MouseMode_MovingWindow;
-                        m_mouseTree = tree;
+                        m_mouseTree = m_mouseSelectionQuery.m_tree;
                         m_mouseOriginateTree = nullptr;
                         m_mouseGrabPos.x = (int)mx;
                         m_mouseGrabPos.y = (int)my;
                         m_mouseInitial.x = x;
                         m_mouseInitial.y = y;
                         SDL_CaptureMouse(true);
-                        return;
                     }
+                    return;
 
-                    // check for a tab
-                    m_mouseTabQuery.m_tabIndex = -1;
-                    if (tree->CheckForTab((int)e->button.x, (int)e->button.y, m_mouseTabQuery))
+                    case WindowHighlightType::Tab:
                     {
-                        SetActiveTree(m_mouseTabQuery.m_tree);
-                        m_activeLayout = m_mouseTabQuery.m_layout;
+                        SetActiveTree(m_mouseSelectionQuery.m_tree);
+                        m_activeLayout = m_mouseSelectionQuery.m_layout;
                         m_menuList.Layout(m_activeTree);
 
-                        WindowMessageStruct msg;
-                        msg.m_type = WindowMessage::Layout_LockCount;
-                        MessageAllWindows(msg);
+                        WindowMessageStruct msgLLC;
+                        msgLLC.m_type = WindowMessage::Query_LockedLayoutCount;
+                        msgLLC.m_flags = WMF_Layout | WMF_EarlyOut;
+                        Message(msgLLC);
 
-                        if (msg.m_count == 0 && tree->CountWindows() <= 1)
+                        WindowMessageStruct msgWC;
+                        msgWC.m_type = WindowMessage::Query_WindowCount;
+                        msgWC.m_flags = WMF_Layout;
+                        msgWC.m_tree = m_mouseSelectionQuery.m_tree;
+                        Message(msgWC);
+
+                        if (msgLLC.m_response == 0 && msgWC.m_response <= 1)
                         {
                             int x, y;
-                            SDL_GetWindowPosition(tree->m_window, &x, &y);
+                            SDL_GetWindowPosition(m_mouseSelectionQuery.m_tree->m_window, &x, &y);
 
                             float mx, my;
                             SDL_GetGlobalMouseState(&mx, &my);
                             m_mouseMode = MouseMode_MovingWindow;
-                            m_mouseTree = tree;
+                            m_mouseTree = m_mouseSelectionQuery.m_tree;
                             m_mouseOriginateTree = nullptr;
                             m_mouseGrabPos.x = (int)mx;
                             m_mouseGrabPos.y = (int)my;
@@ -206,7 +217,7 @@ void WindowManager::HandleEvent(SDL_Event* e)
                         }
 
                         m_mouseMode = MouseMode_SelectingTab;
-                        m_mouseTabQuery.m_layout->m_activeTab = m_mouseTabQuery.m_tabIndex;
+                        m_mouseSelectionQuery.m_layout->m_activeTab = m_mouseSelectionQuery.m_id;
                         m_activeWindow = m_activeLayout->GetActiveWindow();
 
                         if (m_activeWindow)
@@ -220,12 +231,10 @@ void WindowManager::HandleEvent(SDL_Event* e)
                         SDL_GetGlobalMouseState(&mx, &my);
                         m_mouseGrabPos.x = (int)mx;
                         m_mouseGrabPos.y = (int)my;
-                        return;
                     }
+                    return;
 
-                    // check for split
-                    m_mouseSplitQuery.m_foundSplit = false;
-                    if (tree->CheckForSplit((int)e->button.x, (int)e->button.y, m_mouseSplitQuery))
+                    case WindowHighlightType::LayoutSplit:
                     {
                         m_mouseMode = MouseMode_MovingSplit;
                         float mx, my;
@@ -233,16 +242,20 @@ void WindowManager::HandleEvent(SDL_Event* e)
                         m_mouseGrabPos.x = (int)mx;
                         m_mouseGrabPos.y = (int)my;
                         SDL_CaptureMouse(true);
-                        return;
                     }
+                    return;
 
-                    // check for scrollbars
-                    m_mouseScrollBarQuery.m_window = nullptr;
-                    if (tree->CheckForScrollBar((int)e->button.x, (int)e->button.y, m_mouseScrollBarQuery))
+                    case WindowHighlightType::ScrollBar:
                     {
-                        SetActiveTree(tree);
-                        m_activeLayout = m_mouseScrollBarQuery.m_layout;
+                        SetActiveTree(m_mouseSelectionQuery.m_tree);
+                        m_activeLayout = m_mouseSelectionQuery.m_layout;
                         m_activeWindow = m_activeLayout->GetActiveWindow();
+
+                        bool vertical = m_mouseSelectionQuery.m_scrollbar.m_vertical;
+                        int offset = vertical ? (int)e->button.y : (int)e->button.x;
+                        m_mouseSelectionQuery.m_window->UpdateScrollBar(offset, vertical, m_mouseSelectionQuery.m_tree);
+                        m_mouseSelectionQuery.m_tree->m_dirty = true;
+
                         m_menuList.Layout(m_activeTree);
                         SDL_CaptureMouse(true);
                         m_mouseMode = MouseMode_ScrollBar;
@@ -250,18 +263,21 @@ void WindowManager::HandleEvent(SDL_Event* e)
                         SDL_GetGlobalMouseState(&mx, &my);
                         m_mouseInitial.x = (int)mx;
                         m_mouseInitial.y = (int)my;
-                        return;
                     }
+                    return;
 
-                    // check for layout select
-                    WindowLayout* layout;
-                    if (tree->CheckForLayout((int)e->button.x, (int)e->button.y, layout))
+                    case WindowHighlightType::ClientArea:
                     {
-                        SetActiveTree(tree);
-                        m_activeLayout = layout;
-                        m_activeWindow = layout->GetActiveWindow();
-                        m_menuList.Layout(m_activeTree);
+                        if (m_mouseSelectionQuery.m_window != m_activeWindow)
+                        {
+                            SetActiveTree(m_mouseSelectionQuery.m_tree);
+                            m_activeLayout = m_mouseSelectionQuery.m_layout;
+                            m_activeWindow = m_mouseSelectionQuery.m_window;
+                            m_menuList.Layout(m_activeTree);
+                            m_mouseSelectionQuery.m_tree->m_dirty;
+                        }
                     }
+                    break;
                 }
             }
         }
@@ -280,18 +296,18 @@ void WindowManager::HandleEvent(SDL_Event* e)
 
                     case MouseMode_UsingMenu:
                         SDL_CaptureMouse(false);
-                        if (m_mouseMenuQuery.m_menuIdx != -1)
+                        if (m_mouseSelectionQuery.m_highlight == WindowHighlightType::Menu)
                         {
-                            auto menu = m_menuList.m_menus[m_mouseMenuQuery.m_menuIdx];
+                            auto menu = m_menuList.m_menus[m_mouseSelectionQuery.m_menu.m_menuIdx];
                             menu->m_open = false;
-                            m_mouseMenuQuery.m_tree->m_dirty = true;
-                            if (m_mouseMenuQuery.m_menuItemIdx != -1)
+                            m_activeTree->m_dirty = true;
+                            if (m_mouseSelectionQuery.m_menu.m_itemIdx != -1)
                             {
-                                auto item = menu->m_items[m_mouseMenuQuery.m_menuItemIdx];
+                                auto item = menu->m_items[m_mouseSelectionQuery.m_menu.m_itemIdx];
                                 item->m_subMenuOpen = false;
-                                if (m_mouseMenuQuery.m_subMenuItemIdx != -1)
+                                if (m_mouseSelectionQuery.m_menu.m_subItemIdx != -1)
                                 {
-                                    auto subitem = item->m_subMenus[m_mouseMenuQuery.m_subMenuItemIdx];
+                                    auto subitem = item->m_subMenus[m_mouseSelectionQuery.m_menu.m_subItemIdx];
                                     if (subitem->m_activate)
                                         subitem->m_activate();
                                 }
@@ -317,8 +333,8 @@ void WindowManager::HandleEvent(SDL_Event* e)
                     case MouseMode_MovingSplit:
                         SDL_CaptureMouse(false);
                         m_mouseMode = MouseMode_Idle;
-                        m_mouseSplitQuery.m_foundSplit = false;
-                        m_mouseSplitQuery.m_tree->m_dirty = true;
+                        m_mouseSelectionQuery.m_tree->m_dirty = true;
+                        m_mouseSelectionQuery.Reset();
                         break;
 
                     case MouseMode_MovingWindow:
@@ -342,6 +358,7 @@ void WindowManager::HandleEvent(SDL_Event* e)
                             {
                                 for (auto vw : windows)
                                     m_mouseDockQuery.m_layout->m_tabs.push_back(vw);
+                                m_mouseDockQuery.m_layout->m_activeTab = m_mouseDockQuery.m_layout->m_tabs.size() - 1;
 
                                 SetActiveTree(m_mouseDockQuery.m_tree);
                                 m_activeLayout = m_mouseDockQuery.m_layout;
@@ -399,170 +416,197 @@ void WindowManager::HandleEvent(SDL_Event* e)
 
         case SDL_EVENT_MOUSE_MOTION:
         {
-            if (e->button.button == 1)
+            switch (m_mouseMode)
             {
-                switch (m_mouseMode)
+                case MouseMode_Idle:
                 {
-                    case MouseMode_ScrollBar:
+                    WindowHighlightQuery query;
+                    WindowMessageStruct msg;
+                    msg.m_type = WindowMessage::Query_Highlight;
+                    msg.m_flags = WMF_Menu | WMF_AreaCheck | WMF_Layout | WMF_Window | WMF_EarlyOut;
+                    msg.m_query = &query;
+                    msg.m_tree = FindWindowByID(e->button.windowID);
+                    if (msg.m_tree)
                     {
-                        int offset = m_mouseScrollBarQuery.m_vertical ? (int)e->button.y : (int)e->button.x;
-                        m_mouseScrollBarQuery.m_window->UpdateScrollBar(offset, m_mouseScrollBarQuery);
-                        m_mouseScrollBarQuery.m_tree->m_dirty = true;
-                    }
-                    break;
-
-                    case MouseMode_UsingMenu:
-                    {
-                        if (m_mouseMenuQuery.m_tree)
-                            m_mouseMenuQuery.m_tree->m_dirty = true;
-
-                        int oldMenuIdx = m_mouseMenuQuery.m_menuIdx;
-                        int oldMenuItemIdx = m_mouseMenuQuery.m_menuItemIdx;
-                        m_menuList.CheckForMenu(m_activeTree, (int)e->button.x, (int)e->button.y, m_mouseMenuQuery);
-
-                        // close the old menus
-                        if (oldMenuIdx != -1)
+                        msg.m_x = (int)e->button.x;
+                        msg.m_y = (int)e->button.y;
+                        Message(msg);
+                        if (!m_mouseHighlightQuery.IsEqual(query))
                         {
-                            m_menuList.m_menus[oldMenuIdx]->m_open = false;
-                            if (oldMenuItemIdx != -1)
-                            {
-                                m_menuList.m_menus[oldMenuIdx]->m_items[oldMenuItemIdx]->m_subMenuOpen = false;
-                            }
-                        }
-                        // open the new menus
-                        if (m_mouseMenuQuery.m_menuIdx != -1)
-                        {
-                            m_menuList.m_menus[m_mouseMenuQuery.m_menuIdx]->m_open = true;
-                            if (m_mouseMenuQuery.m_menuItemIdx != -1)
-                            {
-                                m_menuList.m_menus[m_mouseMenuQuery.m_menuIdx]->m_items[m_mouseMenuQuery.m_menuItemIdx]->m_subMenuOpen = true;
-                            }
+                            m_mouseHighlightQuery = query;
+                            msg.m_tree->m_dirty = true;
                         }
                     }
-                    break;
-
-                    case MouseMode_SelectingTab:
-                    {
-                        float mx, my;
-                        SDL_GetGlobalMouseState(&mx, &my);
-                        int dist = Abs((int)mx - m_mouseGrabPos.x) + Abs((int)my - m_mouseGrabPos.y);
-                        if (dist > 15)
-                        {
-                            // if this isn't the only tab in the tree, then we can drag it out
-                            WindowMessageStruct msg;
-                            msg.m_type = WindowMessage::Layout_LockCount;
-                            MessageAllWindows(msg);
-
-                            int count = m_mouseTabQuery.m_tree->CountWindows();
-                            if (msg.m_count > 0 || count > 1)
-                            {
-                                m_activeLayout = nullptr;
-                                m_activeWindow = nullptr;
-
-                                // drag out virtual window into a new window tree
-                                // go to MovingWindow mode
-                                auto vw = m_mouseTabQuery.m_layout->m_tabs[m_mouseTabQuery.m_tabIndex];
-                                m_mouseTabQuery.m_layout->m_tabs.erase(m_mouseTabQuery.m_layout->m_tabs.begin() + m_mouseTabQuery.m_tabIndex);
-                                m_mouseTabQuery.m_layout->m_activeTab = 0;
-                                if (m_mouseTabQuery.m_layout->m_tabs.empty())
-                                {
-                                    // collapse empty tab
-                                    m_mouseTabQuery.m_tree->CollapseEmptyLayouts();
-                                }
-                                m_mouseTabQuery.m_tree->LayoutWindows();
-
-                                float mx, my;
-                                SDL_GetGlobalMouseState(&mx, &my);
-                                m_mouseMode = MouseMode_MovingWindow;
-                                m_mouseOriginateTree = m_mouseTabQuery.m_tree;
-                                m_mouseGrabPos.x = (int)mx + vw->m_tabArea.w / 2;
-                                m_mouseGrabPos.y = (int)my + WINDOW_TITLE_BAR_HEIGHT + WINDOW_TAB_BAR_HEIGHT / 2;
-                                m_mouseInitial.x = (int)mx;
-                                m_mouseInitial.y = (int)my;
-                                m_mouseDockQuery.m_foundDock = false;
-
-                                auto tree = new WindowTree({ (int)mx - m_mouseGrabPos.x + m_mouseInitial.x, (int)my - m_mouseGrabPos.y + m_mouseInitial.y,640,512 });
-                                tree->m_layout.m_splitType = WindowLayout::NoSplit;
-                                tree->m_layout.m_tabs.push_back(vw);
-                                tree->m_dirty = true;
-                                SetActiveTree(tree);
-                                m_activeLayout = &tree->m_layout;
-                                m_activeWindow = m_activeLayout->GetActiveWindow();
-                                m_windowTrees.push_back(tree);
-                                m_mouseTree = tree;
-                                m_menuList.Layout(tree);
-                                tree->LayoutWindows();
-                            }
-                        }
-                    }
-                    break;
-
-                    case MouseMode_ResizingWindow:
-                    {
-                        m_mouseTree->m_dirty = true;
-                        int newW = Max(128, (int)e->button.x - m_mouseGrabPos.x + m_mouseInitial.x);
-                        int newH = Max(128, (int)e->button.y - m_mouseGrabPos.y + m_mouseInitial.y);
-                        SDL_SetWindowSize(m_mouseTree->m_window, newW, newH);
-                        SDL_SyncWindow(m_mouseTree->m_window);
-                        SDL_SetRenderViewport(m_mouseTree->m_renderer, nullptr);
-                        m_mouseTree->LayoutWindows();
-                    }
-                    break;
-
-                    case MouseMode_MovingSplit:
-                    {
-                        float mx, my;
-                        SDL_GetGlobalMouseState(&mx, &my);
-                        switch (m_mouseSplitQuery.m_layout->m_splitType)
-                        {
-                            case WindowLayout::Vertical:
-                            {
-                                int offset = (int)my - m_mouseGrabPos.y;
-                                int splitPos = m_mouseSplitQuery.m_splitPos + offset;
-                                m_mouseSplitQuery.m_layout->m_splitPercentage = Clamp((float)(splitPos - m_mouseSplitQuery.m_layout->m_area.y) / (float)m_mouseSplitQuery.m_layout->m_area.h, 0.0f, 1.0f);
-                            }
-                            break;
-
-                            case WindowLayout::Horizontal:
-                            {
-                                int offset = (int)mx - m_mouseGrabPos.x;
-                                int splitPos = m_mouseSplitQuery.m_splitPos + offset;
-                                m_mouseSplitQuery.m_layout->m_splitPercentage = Clamp((float)(splitPos - m_mouseSplitQuery.m_layout->m_area.x) / (float)m_mouseSplitQuery.m_layout->m_area.w, 0.0f, 1.0f);
-                            }
-                            break;
-                        }
-                        m_mouseSplitQuery.m_tree->LayoutWindows();
-                    }
-                    break;
-
-                    case MouseMode_MovingWindow:
-                    {
-                        m_mouseTree->m_dirty = true;
-                        float mx, my;
-                        SDL_GetGlobalMouseState(&mx, &my);
-
-                        int newX = (int)mx - m_mouseGrabPos.x + m_mouseInitial.x;
-                        int newY = (int)my - m_mouseGrabPos.y + m_mouseInitial.y;
-                        SDL_SetWindowPosition(m_mouseTree->m_window, newX, newY);
-
-                        // check if position is over another window for docking
-                        if (m_mouseDockQuery.m_foundDock)
-                            m_mouseDockQuery.m_tree->m_dirty = true;
-
-                        m_mouseDockQuery.m_foundDock = false;
-                        for (auto t : m_windowTrees)
-                        {
-                            if (t != m_mouseTree /* && t != m_mouseOriginateTree*/ && t->CheckForDocking((int)mx, (int)my, m_mouseDockQuery))
-                                break;
-                        }
-                        if (m_mouseDockQuery.m_foundDock)
-                            m_mouseDockQuery.m_tree->m_dirty = true;
-                    }
-                    break;
-
-                    case MouseMode_Idle:
-                        break;
                 }
+                break;
+
+                case MouseMode_ScrollBar:
+                {
+                    bool vertical = m_mouseSelectionQuery.m_scrollbar.m_vertical;
+                    int offset = vertical ? (int)e->button.y : (int)e->button.x;
+                    m_mouseSelectionQuery.m_window->UpdateScrollBar(offset, vertical, m_mouseSelectionQuery.m_tree);
+                    m_mouseSelectionQuery.m_tree->m_dirty = true;
+                }
+                break;
+
+                case MouseMode_UsingMenu:
+                {
+                    int oldMenuIdx = m_mouseSelectionQuery.m_menu.m_menuIdx;
+                    int oldMenuItemIdx = m_mouseSelectionQuery.m_menu.m_itemIdx;
+                    auto oldTree = m_mouseSelectionQuery.m_tree;
+
+                    m_activeTree->m_dirty = true;
+                    m_mouseSelectionQuery.Reset();
+                    WindowMessageStruct msg;
+                    msg.m_type = WindowMessage::Query_Highlight;
+                    msg.m_flags = WMF_Menu | WMF_AreaCheck | WMF_EarlyOut;
+                    msg.m_query = &m_mouseSelectionQuery;
+                    msg.m_tree = oldTree;
+                    msg.m_x = (int)e->button.x;
+                    msg.m_y = (int)e->button.y;
+                    Message(msg);
+
+                    // close the old menus
+                    if (oldMenuIdx != -1)
+                    {
+                        m_menuList.m_menus[oldMenuIdx]->m_open = false;
+                        if (oldMenuItemIdx != -1)
+                        {
+                            m_menuList.m_menus[oldMenuIdx]->m_items[oldMenuItemIdx]->m_subMenuOpen = false;
+                        }
+                    }
+
+                    // open the new menus
+                    if (m_mouseSelectionQuery.m_highlight == WindowHighlightType::Menu)
+                    {
+                        m_menuList.m_menus[m_mouseSelectionQuery.m_menu.m_menuIdx]->m_open = true;
+                        if (m_mouseSelectionQuery.m_menu.m_itemIdx != -1)
+                        {
+                            m_menuList.m_menus[m_mouseSelectionQuery.m_menu.m_menuIdx]->m_items[m_mouseSelectionQuery.m_menu.m_itemIdx]->m_subMenuOpen = true;
+                        }
+                    }
+                }
+                break;
+
+                case MouseMode_SelectingTab:
+                {
+                    float mx, my;
+                    SDL_GetGlobalMouseState(&mx, &my);
+                    int dist = Abs((int)mx - m_mouseGrabPos.x) + Abs((int)my - m_mouseGrabPos.y);
+                    if (dist > 15)
+                    {
+                        // if this isn't the only tab in the tree, then we can drag it out
+                        WindowMessageStruct msg;
+                        msg.m_flags = WMF_Layout | WMF_EarlyOut;
+                        msg.m_type = WindowMessage::Query_LockedLayoutCount;
+                        Message(msg);
+
+                        int count = m_mouseSelectionQuery.m_tree->CountWindows();
+                        if (msg.m_response > 0 || count > 1)
+                        {
+                            m_activeLayout = nullptr;
+                            m_activeWindow = nullptr;
+
+                            // drag out virtual window into a new window tree
+                            // go to MovingWindow mode
+                            auto vw = m_mouseSelectionQuery.m_layout->m_tabs[m_mouseSelectionQuery.m_id];
+                            m_mouseSelectionQuery.m_layout->m_tabs.erase(m_mouseSelectionQuery.m_layout->m_tabs.begin() + m_mouseSelectionQuery.m_id);
+                            m_mouseSelectionQuery.m_layout->m_activeTab = 0;
+                            if (m_mouseSelectionQuery.m_layout->m_tabs.empty())
+                            {
+                                // collapse empty tab
+                                m_mouseSelectionQuery.m_tree->CollapseEmptyLayouts();
+                            }
+                            m_mouseSelectionQuery.m_tree->LayoutWindows();
+
+                            float mx, my;
+                            SDL_GetGlobalMouseState(&mx, &my);
+                            m_mouseMode = MouseMode_MovingWindow;
+                            m_mouseOriginateTree = m_mouseSelectionQuery.m_tree;
+                            m_mouseGrabPos.x = (int)mx + vw->m_tabArea.w / 2;
+                            m_mouseGrabPos.y = (int)my + WINDOW_TITLE_BAR_HEIGHT + WINDOW_TAB_BAR_HEIGHT / 2;
+                            m_mouseInitial.x = (int)mx;
+                            m_mouseInitial.y = (int)my;
+                            m_mouseDockQuery.m_foundDock = false;
+
+                            auto tree = new WindowTree({ (int)mx - m_mouseGrabPos.x + m_mouseInitial.x, (int)my - m_mouseGrabPos.y + m_mouseInitial.y,640,512 });
+                            tree->m_layout.m_splitType = WindowLayout::NoSplit;
+                            tree->m_layout.m_tabs.push_back(vw);
+                            tree->m_dirty = true;
+                            SetActiveTree(tree);
+                            m_activeLayout = &tree->m_layout;
+                            m_activeWindow = m_activeLayout->GetActiveWindow();
+                            m_windowTrees.push_back(tree);
+                            m_mouseTree = tree;
+                            m_menuList.Layout(tree);
+                            tree->LayoutWindows();
+                        }
+                    }
+                }
+                break;
+
+                case MouseMode_ResizingWindow:
+                {
+                    m_mouseTree->m_dirty = true;
+                    int newW = Max(128, (int)e->button.x - m_mouseGrabPos.x + m_mouseInitial.x);
+                    int newH = Max(128, (int)e->button.y - m_mouseGrabPos.y + m_mouseInitial.y);
+                    SDL_SetWindowSize(m_mouseTree->m_window, newW, newH);
+                    SDL_SyncWindow(m_mouseTree->m_window);
+                    SDL_SetRenderViewport(m_mouseTree->m_renderer, nullptr);
+                    m_mouseTree->LayoutWindows();
+                }
+                break;
+
+                case MouseMode_MovingSplit:
+                {
+                    float mx, my;
+                    SDL_GetGlobalMouseState(&mx, &my);
+                    switch (m_mouseSelectionQuery.m_layout->m_splitType)
+                    {
+                        case WindowLayout::Vertical:
+                        {
+                            int offset = (int)my - m_mouseGrabPos.y;
+                            int splitPos = m_mouseSelectionQuery.m_split.m_splitPos + offset;
+                            m_mouseSelectionQuery.m_layout->m_splitPercentage = Clamp((float)(splitPos - m_mouseSelectionQuery.m_layout->m_area.y) / (float)m_mouseSelectionQuery.m_layout->m_area.h, 0.0f, 1.0f);
+                        }
+                        break;
+
+                        case WindowLayout::Horizontal:
+                        {
+                            int offset = (int)mx - m_mouseGrabPos.x;
+                            int splitPos = m_mouseSelectionQuery.m_split.m_splitPos + offset;
+                            m_mouseSelectionQuery.m_layout->m_splitPercentage = Clamp((float)(splitPos - m_mouseSelectionQuery.m_layout->m_area.x) / (float)m_mouseSelectionQuery.m_layout->m_area.w, 0.0f, 1.0f);
+                        }
+                        break;
+                    }
+                    m_mouseSelectionQuery.m_tree->LayoutWindows();
+                }
+                break;
+
+                case MouseMode_MovingWindow:
+                {
+                    m_mouseTree->m_dirty = true;
+                    float mx, my;
+                    SDL_GetGlobalMouseState(&mx, &my);
+
+                    int newX = (int)mx - m_mouseGrabPos.x + m_mouseInitial.x;
+                    int newY = (int)my - m_mouseGrabPos.y + m_mouseInitial.y;
+                    SDL_SetWindowPosition(m_mouseTree->m_window, newX, newY);
+
+                    // check if position is over another window for docking
+                    if (m_mouseDockQuery.m_foundDock)
+                        m_mouseDockQuery.m_tree->m_dirty = true;
+
+                    m_mouseDockQuery.m_foundDock = false;
+                    for (auto t : m_windowTrees)
+                    {
+                        if (t != m_mouseTree /* && t != m_mouseOriginateTree*/ && t->CheckForDocking((int)mx, (int)my, m_mouseDockQuery))
+                            break;
+                    }
+                    if (m_mouseDockQuery.m_foundDock)
+                        m_mouseDockQuery.m_tree->m_dirty = true;
+                }
+                break;
             }
         }
         break;
@@ -824,11 +868,35 @@ void WindowManager::LoadWindowLayout()
     }
 }
 
-void WindowManager::MessageAllWindows(WindowMessageStruct& msg)
+void WindowManager::Message(WindowMessageStruct& msg)
 {
-    for (auto tree : m_windowTrees)
-        tree->m_layout.Message(msg);
+    if (msg.m_flags & WMF_Menu)
+    {
+        if (msg.m_tree && msg.m_tree == m_activeTree)
+        {
+            m_menuList.Message(msg);
+            if ((msg.m_response > 0) && (msg.m_flags & WMF_EarlyOut))
+                return;
+        }
+    }
+
+    if (msg.m_tree)
+    {
+        msg.m_tree->Message(msg);
+    }
+    else
+    {
+        for (auto tree : m_windowTrees)
+        {
+            tree->Message(msg);
+            if ((msg.m_response > 0) && (msg.m_flags & WMF_EarlyOut))
+                return;
+        }
+    }
 }
+
+
+
 
 
 

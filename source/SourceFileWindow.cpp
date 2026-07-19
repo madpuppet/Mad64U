@@ -1179,7 +1179,7 @@ bool SourceFileWindow::CreateFromLayoutTokens(WindowLayout* layout, const std::v
     return true;
 }
 
-void SourceFileWindow::Message(struct WindowMessageStruct& msg)
+void SourceFileWindow::MessageChild(WindowLayout *layout, struct WindowMessageStruct& msg)
 {
     switch (msg.m_type)
     {
@@ -1196,13 +1196,26 @@ void SourceFileWindow::Message(struct WindowMessageStruct& msg)
                 m_name = p.filename().string();
             }
             break;
-        case WindowMessage::File_Count:
+        case WindowMessage::Query_FileCount:
             if (m_sourceFile == msg.m_sourceFile)
             {
-                msg.m_count++;
+                msg.m_response++;
             }
             break;
+        case WindowMessage::Query_Highlight:
+        {
+            auto query = (WindowHighlightQuery*)msg.m_query;
+            if (m_clientArea.Contains(msg.m_x, msg.m_y))
+            {
+                msg.m_response++;
+                query->m_area = m_clientArea;
+                query->m_highlight = WindowHighlightType::ClientArea;
+                query->m_tree = msg.m_tree;
+                query->m_layout = layout;
+                query->m_window = this;
+                return;
+            }
+        }
+        break;
     }
 }
-
-

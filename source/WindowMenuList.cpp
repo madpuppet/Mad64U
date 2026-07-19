@@ -2,15 +2,13 @@
 #include "WindowMenuList.h"
 #include "FontRenderer.h"
 #include "WindowQueries.h"
+#include "WindowManager.h"
 
 #define MENU_LINE_HEIGHT 24
 #define MENU_ITEM_MARGIN 8
 
-void WindowMenu::Paint(SDL_Renderer* renderer, int highlightItemIdx)
+void WindowMenu::Paint(SDL_Renderer* renderer, int itemIdx, int subMenuIdx)
 {
-    int subMenuIdx = (highlightItemIdx >> 8) & 255;
-    int menuIdx = highlightItemIdx & 255;
-
     SDL_Color col{ 255,255,255,128 };
     SDL_FRect area{ (float)m_area.x, (float)m_area.y, (float)m_area.w, (float)m_area.h };
     auto& fr = FontRenderer::Instance();
@@ -31,7 +29,7 @@ void WindowMenu::Paint(SDL_Renderer* renderer, int highlightItemIdx)
         for (size_t i = 0; i < m_items.size(); i++)
         {
             auto item = m_items[i];
-            if (i == menuIdx)
+            if (i == itemIdx)
             {
                 SDL_SetRenderDrawColor(renderer, 0, 0, 0, 64);
                 SDL_FRect itemBody{ dropDownBody.x, (float)item->m_area.y, dropDownBody.w, (float)item->m_area.h };
@@ -112,15 +110,29 @@ void WindowMenu::Layout(SDL_Renderer* renderer, const Vec2i &pos)
     }
 }
 
-void WindowMenuList::Paint(const WindowMenuQuery& highlight)
+void WindowMenuList::Paint()
 {
     if (m_tree)
     {
-        int highlightIdx = (highlight.m_menuItemIdx & 255) | ((highlight.m_subMenuItemIdx & 255) << 8);
+        auto& query = WindowManager::Instance().GetWindowSelectionQuery();
+        int menuIdx = -1;
+        if (query.m_highlight == WindowHighlightType::Menu)
+        {
+            menuIdx = query.m_menu.m_menuIdx;
+        }
+
         for (size_t m = 0; m < m_menus.size(); m++)
         {
+            int itemIdx = -1;
+            int subMenuIdx = -1;
+            if (menuIdx == m)
+            {
+                itemIdx = query.m_menu.m_itemIdx;
+                subMenuIdx = query.m_menu.m_subItemIdx;
+            }
+
             auto menu = m_menus[m];
-            menu->Paint(m_tree->m_renderer, highlight.m_menuIdx == m ? highlightIdx : -1);
+            menu->Paint(m_tree->m_renderer, itemIdx, subMenuIdx);
         }
     }
 }
@@ -133,6 +145,76 @@ void WindowMenuList::Layout(WindowTree *tree)
     {
         menu->Layout(tree->m_renderer, pos);
         pos.x = menu->m_area.x + menu->m_area.w + 32;
+    }
+}
+
+void WindowMenuList::Message(WindowMessageStruct& msg)
+{
+    for (size_t i = 0; i < m_menus.size(); i++)
+    {
+        auto menu = m_menus[i];
+        if (msg.m_type == WindowMessage::Query_Highlight)
+        {
+            auto query = (WindowHighlightQuery*)msg.m_query;
+            if (menu->m_area.Contains(msg.m_x, msg.m_y))
+            {
+                query->m_highlight = WindowHighlightType::Menu;
+                query->m_tree = msg.m_tree;
+                query->m_menu.m_menuIdx = (int)i;
+                query->m_menu.m_itemIdx = -1;
+                query->m_menu.m_subItemIdx = -1;
+                query->m_area = menu->m_area;
+                msg.m_response++;
+                return;
+            }
+            else if (menu->m_open)
+            {
+                // check against any open submenus first
+                for (size_t ii = 0; ii < menu->m_items.size(); ii++)
+                {
+                    auto item = menu->m_items[ii];
+                    if (item->m_subMenuOpen && item->m_subArea.Contains(msg.m_x, msg.m_y))
+                    {
+                        query->m_menu.m_menuIdx = (int)i;
+                        for (size_t s = 0; s < item->m_subMenus.size(); s++)
+                        {
+                            auto subItem = item->m_subMenus[s];
+                            if (msg.m_y < (subItem->m_area.y + subItem->m_area.h))
+                            {
+                                query->m_highlight = WindowHighlightType::Menu;
+                                query->m_tree = msg.m_tree;
+                                query->m_menu.m_itemIdx = (int)ii;
+                                query->m_menu.m_subItemIdx = (int)s;
+                                query->m_area = subItem->m_area;
+                                msg.m_response++;
+                                return;
+                            }
+                        }
+                    }
+                }
+
+                // check against the menu items
+                if (menu->m_dropDownArea.Contains(msg.m_x, msg.m_y))
+                {
+                    query->m_highlight = WindowHighlightType::Menu;
+                    query->m_tree = msg.m_tree;
+                    query->m_menu.m_menuIdx = (int)i;
+                    query->m_menu.m_itemIdx = -1;
+                    query->m_menu.m_subItemIdx = -1;
+                    msg.m_response++;
+                    for (size_t ii = 0; ii < menu->m_items.size(); ii++)
+                    {
+                        auto item = menu->m_items[ii];
+                        if (msg.m_y < (item->m_area.y + item->m_area.h))
+                        {
+                            query->m_menu.m_itemIdx = (int)ii;
+                            return;
+                        }
+                    }
+                }
+                return;
+            }
+        }
     }
 }
 

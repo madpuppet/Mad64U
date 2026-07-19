@@ -50,6 +50,7 @@ void WindowBase::LayoutScrollbars()
 void WindowBase::PaintScrollbars(SDL_Renderer* renderer)
 {
     auto& tp = Application::Instance().GetThemeProperties();
+
     if (m_horizontalScrollbarVisible)
     {
         SDL_FRect backarea = m_hsbBackgroundArea.AsSDLFRect();
@@ -70,31 +71,14 @@ void WindowBase::PaintScrollbars(SDL_Renderer* renderer)
         tp.SetRenderDrawColor(renderer, ThemeColor::ScrollBar);
         SDL_RenderFillRect(renderer, &bararea);
     }
-}
 
-bool WindowBase::CheckForScrollBar(int x, int y, WindowScrollBarQuery& query)
-{
-    if (m_horizontalScrollbarVisible)
+    auto& query = WindowManager::Instance().GetWindowHighlightQuery();
+    if (query.m_highlight == WindowHighlightType::ScrollBar)
     {
-        if (m_hsbBackgroundArea.Contains(x, y))
-        {
-            query.m_window = this;
-            query.m_grabOffset = x - m_hsbBackgroundArea.x;
-            query.m_vertical = false;
-            return true;
-        }
+        SDL_FRect area = query.m_area.AsSDLFRect();
+        tp.SetRenderDrawColor(renderer, ThemeColor::HighlightArea);
+        SDL_RenderFillRect(renderer, &area);
     }
-    if (m_verticalScrollbarVisible)
-    {
-        if (m_vsbBackgroundArea.Contains(x, y))
-        {
-            query.m_window = this;
-            query.m_grabOffset = y - m_vsbBackgroundArea.y;
-            query.m_vertical = true;
-            return true;
-        }
-    }
-    return false;
 }
 
 void WindowBase::Close()
@@ -103,15 +87,15 @@ void WindowBase::Close()
     delete this;
 }
 
-void WindowBase::UpdateScrollBar(int offset, WindowScrollBarQuery& query)
+void WindowBase::UpdateScrollBar(int offset, bool vertical, WindowTree *tree)
 {
-    if (query.m_vertical)
+    if (vertical)
     {
         float offsetPercent = Clamp((float)(offset - m_vsbBackgroundArea.y) / (float)(m_vsbBackgroundArea.h - WINDOW_SCROLLBAR_MARGIN * 2), 0.0f, 1.0f);
         int contentOffset = (int)(offsetPercent * m_clientContentSize.y);
         m_clientContentOffset.y = Clamp(contentOffset - m_clientArea.h / 2, 0, m_clientContentSize.y - m_clientArea.h);
         LayoutScrollbars();
-        query.m_tree->m_dirty = true;
+        tree->m_dirty = true;
     }
     else
     {
@@ -119,7 +103,7 @@ void WindowBase::UpdateScrollBar(int offset, WindowScrollBarQuery& query)
         int contentOffset = (int)(offsetPercent * m_clientContentSize.x);
         m_clientContentOffset.x = Clamp(contentOffset - m_clientArea.w / 2, 0, m_clientContentSize.x - m_clientArea.w);
         LayoutScrollbars();
-        query.m_tree->m_dirty = true;
+        tree->m_dirty = true;
     }
 }
 
@@ -158,4 +142,45 @@ WindowBase::~WindowBase()
 {
     WindowManager::Instance().OnWindowDestruct(this);
 }
+
+void WindowBase::Message(WindowLayout *layout, struct WindowMessageStruct& msg)
+{
+    switch (msg.m_type)
+    {
+        case WindowMessage::Query_Highlight:
+        {
+            auto query = (WindowHighlightQuery*)msg.m_query;
+            if (m_hsbBackgroundArea.Contains(msg.m_x, msg.m_y))
+            {
+                msg.m_response++;
+                query->m_area = m_hsbBackgroundArea;
+                query->m_highlight = WindowHighlightType::ScrollBar;
+                query->m_tree = msg.m_tree;
+                query->m_layout = layout;
+                query->m_window = this;
+                query->m_scrollbar.m_vertical = false;
+                return;
+            }
+            if (m_vsbBackgroundArea.Contains(msg.m_x, msg.m_y))
+            {
+                msg.m_response++;
+                query->m_area = m_vsbBackgroundArea;
+                query->m_highlight = WindowHighlightType::ScrollBar;
+                query->m_tree = msg.m_tree;
+                query->m_layout = layout;
+                query->m_window = this;
+                query->m_scrollbar.m_vertical = true;
+                return;
+            }
+        }
+        break;
+    }
+    if (msg.m_response > 0 && msg.m_flags & WMF_EarlyOut)
+        return;
+
+    MessageChild(layout, msg);
+}
+
+
+
 

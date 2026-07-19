@@ -50,13 +50,19 @@ public:
     }
     std::string Desc() override 
     {
-        std::ostringstream oss;
-        oss << m_desc << " ";
-        for (auto cmd : m_cmds)
+        if (m_desc.empty())
         {
-            oss << cmd->Desc() << " ";
+            std::ostringstream oss;
+            for (auto cmd : m_cmds)
+            {
+                oss << cmd->Desc() << " ";
+            }
+            return oss.str();
         }
-        return oss.str();
+        else
+        {
+            return m_desc;
+        }
     }
     
     std::string m_desc;

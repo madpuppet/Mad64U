@@ -30,7 +30,11 @@ void UndoBufferWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     auto& list = file->m_cmdBuffer->m_commandList;
     m_clientContentSize.y = (int)list.size() * LINE_HEIGHT + LINE_HEIGHT;
 
-    MakeRowVisible(file->m_cmdBuffer->m_cmdIndex);
+    if (file->m_cmdBuffer->m_cmdIndex != m_lastVisibleRow)
+    {
+        MakeRowVisible(file->m_cmdBuffer->m_cmdIndex);
+        m_lastVisibleRow = file->m_cmdBuffer->m_cmdIndex;
+    }
 
     int firstLine = Max(m_clientContentOffset.y / LINE_HEIGHT, 0);
     int lastLine = Min(firstLine + m_clientArea.h / LINE_HEIGHT, (int)list.size());
@@ -91,4 +95,25 @@ bool UndoBufferWindow::CreateFromLayoutTokens(WindowLayout* layout, const std::v
     return true;
 }
 
+void UndoBufferWindow::MessageChild(WindowLayout* layout, struct WindowMessageStruct& msg)
+{
+    switch (msg.m_type)
+    {
+        case WindowMessage::Query_Highlight:
+        {
+            auto query = (WindowHighlightQuery*)msg.m_query;
+            if (m_clientArea.Contains(msg.m_x, msg.m_y))
+            {
+                msg.m_response++;
+                query->m_area = m_clientArea;
+                query->m_highlight = WindowHighlightType::ClientArea;
+                query->m_tree = msg.m_tree;
+                query->m_layout = layout;
+                query->m_window = this;
+                return;
+            }
+        }
+        break;
+    }
+}
 

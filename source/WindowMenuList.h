@@ -23,7 +23,7 @@ struct WindowMenuItem
 struct WindowMenu
 {
     void Layout(SDL_Renderer* renderer, const Vec2i &pos);
-    void Paint(SDL_Renderer* renderer, int highlightItemIdx);
+    void Paint(SDL_Renderer* renderer, int menuIdx, int subMenuIdx);
 
     std::string m_name;
     std::vector<WindowMenuItem*> m_items;
@@ -37,8 +37,9 @@ struct WindowMenu
 struct WindowMenuList
 {
     void Layout(WindowTree* tree);
-    void Paint(const WindowMenuQuery &highlight);
+    void Paint();
 
+    void Message(struct WindowMessageStruct &msg);
     bool CheckForMenu(WindowTree *tree, int x, int y, WindowMenuQuery& query);
 
     WindowTree* m_tree = nullptr;

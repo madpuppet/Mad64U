@@ -43,8 +43,8 @@ bool SourceFileManager::RenameFile(SourceFile* file, const std::string& path)
     WindowMessageStruct msg;
     msg.m_type = WindowMessage::File_Renamed;
     msg.m_sourceFile = file;
-    WindowManager::Instance().MessageAllWindows(msg);
-
+    msg.m_flags = WMF_Window;
+    WindowManager::Instance().Message(msg);
     WindowManager::Instance().LayoutWindows();
     return true;
 }
@@ -118,10 +118,11 @@ void SourceFileManager::LoadRequestedFiles(bool addWindow)
                 if (addWindow)
                 {
                     WindowMessageStruct msg;
-                    msg.m_type = WindowMessage::File_Count;
+                    msg.m_type = WindowMessage::Query_FileCount;
+                    msg.m_flags = WMF_Window | WMF_EarlyOut;
                     msg.m_sourceFile = file;
-                    WindowManager::Instance().MessageAllWindows(msg);
-                    if (msg.m_count == 0)
+                    WindowManager::Instance().Message(msg);
+                    if (msg.m_response == 0)
                     {
                         auto sourceFileRenderer = new SourceFileWindow(file);
                         wm.AddWindow(sourceFileRenderer);
@@ -160,6 +161,12 @@ void SourceFileManager::LoadRequestedFiles(bool addWindow)
             sourceFile->m_lines.push_back(sl);
         }
         m_sourceFiles.push_back(sourceFile);
+
+        WindowMessageStruct msg;
+        msg.m_type = WindowMessage::File_Added;
+        msg.m_flags = WMF_Window;
+        msg.m_sourceFile = sourceFile;
+        WindowManager::Instance().Message(msg);
 
         if (addWindow)
         {
@@ -210,8 +217,9 @@ bool SourceFileManager::CloseFile(SourceFile* file)
 
     WindowMessageStruct msg;
     msg.m_type = WindowMessage::File_Deleted;
+    msg.m_flags = WMF_Window;
     msg.m_sourceFile = file;
-    WindowManager::Instance().MessageAllWindows(msg);
+    WindowManager::Instance().Message(msg);
     WindowManager::Instance().RemoveQueuedWindows();
 
     // delete the file

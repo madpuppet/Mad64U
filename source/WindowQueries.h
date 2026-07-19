@@ -28,13 +28,6 @@ struct WindowDockQuery
     Recti m_splitArea;
 };
 
-struct WindowTabQuery
-{
-    struct WindowTree* m_tree = nullptr;
-    struct WindowLayout* m_layout = nullptr;
-    int m_tabIndex = -1;
-};
-
 struct WindowMenuQuery
 {
     void Reset() { m_tree = nullptr; m_menuIdx = -1; m_menuItemIdx = -1; m_subMenuItemIdx = -1; }
@@ -56,20 +49,32 @@ struct WindowScrollBarQuery
 enum class WindowHighlightType
 {
     None,
+    LayoutSplit,
     Menu,
     Tab,
-    Icon,
+    WindowTitleBar,
+    WindowTreeIcon,
+    WindowLayoutIcon,
+    ProjectListIcon,
     ScrollBar,
-    Local
+    ProjectListFolder,
+    ProjectListFile,
+    ClientArea
 };
 
 struct WindowHighlightQuery
 {
+    void Reset()
+    {
+        m_highlight = WindowHighlightType::None;
+    }
+
     WindowHighlightType m_highlight = WindowHighlightType::None;
     struct WindowTree* m_tree = nullptr;
     struct WindowLayout* m_layout = nullptr;
     class WindowBase* m_window = nullptr;
-    int m_localID = 0;
+    int m_id = 0;                        // context specific identifier for icon, list index, file index, tab index, etc.
+    Recti m_area{ 0,0,0,0 };
     union
     {
         struct
@@ -81,18 +86,21 @@ struct WindowHighlightQuery
         } m_menu;
         struct
         {
-            int m_tabIdx;
-        } m_tab;
-        struct
-        {
-            int m_iconIdx;
-        } m_icon;
-        struct
-        {
             bool m_vertical;
             bool m_bar;
         } m_scrollbar;
+        struct
+        {
+            bool m_vertical;
+            int m_splitPos;
+        } m_split;
     };
+
+    bool IsEqual(const WindowHighlightQuery& o)
+    {
+        return o.m_highlight == m_highlight && o.m_tree == m_tree && o.m_area.x == m_area.x && o.m_area.y == m_area.y 
+            && o.m_area.w == m_area.w && o.m_area.h == m_area.h;
+    }
 };
 
 

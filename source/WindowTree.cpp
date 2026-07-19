@@ -114,6 +114,7 @@ void WindowTree::Paint(Recti* area)
     auto& wm = WindowManager::Instance();
     auto& ir = IconRenderer::Instance();
     auto& tp = Application::Instance().GetThemeProperties();
+    auto& highlight = wm.GetWindowHighlightQuery();
 
     tp.SetRenderDrawColor(m_renderer, ThemeColor::WindowBackground);
     SDL_RenderClear(m_renderer);
@@ -160,6 +161,13 @@ void WindowTree::Paint(Recti* area)
         SDL_RenderFillRect(m_renderer, &bodyArea);
     }
 
+    if ((highlight.m_highlight == WindowHighlightType::Menu || highlight.m_highlight == WindowHighlightType::WindowTreeIcon) && highlight.m_tree == this)
+    {
+        SDL_FRect area = highlight.m_area.AsSDLFRect();
+        tp.SetRenderDrawColor(m_renderer, ThemeColor::HighlightArea);
+        SDL_RenderFillRect(m_renderer, &area);
+    }
+
     ir.DrawIcon(m_renderer, Icons::Close, windowArea.w - 12, WINDOW_TITLE_BAR_HEIGHT/2);
     if (m_fullscreen)
         ir.DrawIcon(m_renderer, Icons::Windowed, windowArea.w - 30, WINDOW_TITLE_BAR_HEIGHT / 2);
@@ -171,7 +179,7 @@ void WindowTree::Paint(Recti* area)
 
     if (wm.GetActiveWindowTree() == this)
     {
-        wm.PaintMenu(wm.GetWindowMenuQuery());
+        wm.PaintMenu();
     }
 
     SDL_RenderPresent(m_renderer);
@@ -191,12 +199,6 @@ bool WindowTree::CheckForSplit(int x, int y, WindowSplitQuery& query)
 {
     query.m_tree = this;
     return m_layout.CheckForSplit(x, y, query);
-}
-
-bool WindowTree::CheckForTab(int x, int y, WindowTabQuery& query)
-{
-    query.m_tree = this;
-    return m_layout.CheckForTab(x, y, query);
 }
 
 int WindowTree::CountWindows()
@@ -268,25 +270,64 @@ void WindowTree::MakeWindowed()
     LayoutWindows();
 }
 
-bool WindowTree::CheckForLayout(int x, int y, WindowLayout*& layout)
-{
-    return m_layout.CheckForLayout(x, y, layout);
-}
-
 WindowLayout* WindowTree::FindLayoutFromWindow(WindowBase* window, int& tabIdx)
 {
     return m_layout.FindLayoutFromWindow(window, tabIdx);
-}
-
-bool WindowTree::CheckForScrollBar(int x, int y, WindowScrollBarQuery& query)
-{
-    query.m_tree = this;
-    return m_layout.CheckForScrollBar(x, y, query);
 }
 
 void WindowTree::Tick()
 {
     m_dirty |= m_layout.Tick();
 }
+
+void WindowTree::Message(struct WindowMessageStruct& msg)
+{
+    if (msg.m_type == WindowMessage::Query_Highlight)
+    {
+        auto& ir = IconRenderer::Instance();
+        auto query = (WindowHighlightQuery*)msg.m_query;
+
+        Vec2i windowSize;
+        SDL_GetWindowSizeInPixels(m_window, &windowSize.x, &windowSize.y);
+
+        Recti titleBarArea{ 0,0,windowSize.x,WINDOW_TITLE_BAR_HEIGHT };
+        if (!m_fullscreen && titleBarArea.Contains(msg.m_x, msg.m_y))
+        {
+            query->m_highlight = WindowHighlightType::WindowTitleBar;
+            query->m_area = titleBarArea;
+            query->m_tree = this;
+            msg.m_response++;
+            return;
+        }
+
+        auto testIcon = [query, this, &msg](Icons icon, int x, int y)
+            {
+                Recti area = IconRenderer::Instance().CalcIconArea(icon, x, y);
+                if (area.Contains(msg.m_x, msg.m_y))
+                {
+                    query->m_highlight = WindowHighlightType::WindowTreeIcon;
+                    query->m_id = (int)icon;
+                    query->m_tree = this;
+                    query->m_area = area;
+                    msg.m_response++;
+                }
+            };
+
+        testIcon(Icons::Close, windowSize.x - 12, WINDOW_TITLE_BAR_HEIGHT / 2);
+        if (m_fullscreen)
+            testIcon(Icons::Windowed, windowSize.x - 30, WINDOW_TITLE_BAR_HEIGHT / 2);
+        else
+        {
+            testIcon(Icons::Fullscreen, windowSize.x - 30, WINDOW_TITLE_BAR_HEIGHT / 2);
+            testIcon(Icons::Resize, windowSize.x - 8, windowSize.y - 8);
+        }
+
+        if (msg.m_response > 0)
+            return;
+    }
+
+    m_layout.Message(msg);
+}
+
 
 

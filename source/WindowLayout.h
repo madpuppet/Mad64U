@@ -28,12 +28,9 @@ struct WindowLayout
     bool CheckForDocking(int x, int y, WindowDockQuery& query);
     void Paint(SDL_Renderer* renderer, const Recti& area);
     void GatherWindows(std::vector<WindowBase*>& windows);
-    bool CheckForTab(int x, int y, WindowTabQuery& query);
     int CountWindows();
     void CollapseEmptyLayouts();
     bool CheckForSplit(int x, int y, WindowSplitQuery& query);
-    bool CheckForLayout(int x, int y, WindowLayout*& layout);
-    bool CheckForScrollBar(int x, int y, WindowScrollBarQuery& query);
     bool Tick();
     class WindowBase* GetActiveWindow();
 

@@ -13,7 +13,9 @@ enum class Icons
     Resize,
     Submenu,
     LayoutLocked,
-    LayoutFree
+    LayoutFree,
+    Build,
+    Run
 };
 
 class IconRenderer : public Singleton<IconRenderer>
@@ -23,6 +25,8 @@ public:
     ~IconRenderer();
 
     void DrawIcon(SDL_Renderer *renderer, Icons icon, int x, int y);
+    Recti CalcIconArea(Icons icon, int x, int y);
+
     void FlushRenderer(SDL_Renderer* renderer);
 
 private:

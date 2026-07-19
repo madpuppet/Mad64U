@@ -21,17 +21,31 @@ struct WindowHighlightState
 // these go to ALL windows,  unlike SDL Events only go to active windows
 enum class WindowMessage
 {
+    File_Added,
     File_Deleted,
     File_Renamed,
-    File_Count,
-    Layout_LockCount
+    Query_FileCount,
+    Query_LockedLayoutCount,
+    Query_WindowCount,
+    Query_Highlight
 };
+
+#define WMF_Window 1                // send message to window (layout tabs)
+#define WMF_Layout 2                // layouts can respond the message
+#define WMF_Menu 4                 // menus can respond to the message
+#define WMF_EarlyOut 8              // exit as soon as anyone responds (m_response > 0)
+#define WMF_AreaCheck 16            // use layout area checks - only active tabs will get processed
 
 struct WindowMessageStruct
 {
+    int m_flags = WMF_Window;       // just send to all windows by default
     WindowMessage m_type;
     class SourceFile* m_sourceFile = nullptr;
-    int m_count = 0;
+    int m_response = 0;             // response count - incremented whenever a window or layout respons, if WMF_EarlyOut, drop out after 1 response
+    WindowTree* m_tree = nullptr;
+    int m_x = 0;
+    int m_y = 0;
+    void* m_query = nullptr;
 };
 
 
@@ -41,11 +55,11 @@ public:
     void HandleEvent(SDL_Event* e);
     WindowTree* FindWindowByID(int id);
 
-    void MessageAllWindows(WindowMessageStruct& msg);
+    void Message(WindowMessageStruct& msg);
 
     const WindowDockQuery& GetWindowDockQuery() { return m_mouseDockQuery; }
-    const WindowSplitQuery& GetWindowSplitQuery() { return m_mouseSplitQuery; }
-    const WindowMenuQuery& GetWindowMenuQuery() { return m_mouseMenuQuery; }
+    const WindowHighlightQuery& GetWindowHighlightQuery() { return m_mouseHighlightQuery; }
+    const WindowHighlightQuery& GetWindowSelectionQuery() { return m_mouseSelectionQuery; }
 
     WindowLayout* GetActiveWindowLayout() { return m_activeLayout; }
     WindowTree* GetActiveWindowTree() { return m_activeTree; }
@@ -54,7 +68,7 @@ public:
     bool IsMovingSplit() { return m_mouseMode == MouseMode_MovingSplit; }
     void Paint();
     void PaintAll();
-    void PaintMenu(const WindowMenuQuery& highlight) { m_menuList.Paint(highlight); }
+    void PaintMenu() { m_menuList.Paint(); }
     void LayoutMenu();
     void SetActiveTree(WindowTree* tree);
     void LayoutWindows();
@@ -114,10 +128,8 @@ protected:
     Vec2i m_mouseGrabPos;
     Vec2i m_mouseInitial;
     WindowDockQuery m_mouseDockQuery;
-    WindowTabQuery m_mouseTabQuery;
-    WindowSplitQuery m_mouseSplitQuery;
-    WindowMenuQuery m_mouseMenuQuery;
-    WindowScrollBarQuery m_mouseScrollBarQuery;
+    WindowHighlightQuery m_mouseHighlightQuery;
+    WindowHighlightQuery m_mouseSelectionQuery;
     WindowTree* m_mouseTree = nullptr;
     WindowTree* m_mouseOriginateTree = nullptr;
     WindowTree* m_activeTree = nullptr;

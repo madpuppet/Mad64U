@@ -23,9 +23,9 @@ public:
 
     void LayoutScrollbars();                 // layout scrollbars based on content size
     void PaintScrollbars(SDL_Renderer* renderer);        // paint scrollbars if visible
-    bool CheckForScrollBar(int x, int y, WindowScrollBarQuery& query);
-    void UpdateScrollBar(int offset, WindowScrollBarQuery& query);
+    void UpdateScrollBar(int offset, bool vertical, struct WindowTree* tree);
     void MakeRowVisible(int row);
+    void Message(struct WindowLayout *layout, struct WindowMessageStruct& msg);
 
     virtual ~WindowBase();
     virtual void Paint(SDL_Renderer* renderer, const Recti& dirtyArea) = 0;
@@ -35,7 +35,7 @@ public:
     virtual bool HandleEvent(SDL_Event* e);
     virtual bool IsModified() { return false; }
     virtual class SourceFile* GetSourceFile() { return nullptr; }
-    virtual void Message(struct WindowMessageStruct& msg) {}
+    virtual void MessageChild(struct WindowLayout *layout, struct WindowMessageStruct& msg) {}
 
     // enough info to recreate the window from static CreateFromTokens() function each window type should have
     virtual void SaveTokens(std::vector<std::string>& layoutTokens) = 0;

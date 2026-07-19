@@ -208,32 +208,22 @@ bool WindowLayout::CheckForDocking(int x, int y, WindowDockQuery& query)
     }
 }
 
-bool WindowLayout::CheckForLayout(int x, int y, WindowLayout*& layout)
-{
-
-    if (!m_area.Contains(x, y))
-        return false;
-
-    if (m_splitType == NoSplit)
-    {
-        layout = this;
-        return true;
-    }
-    else
-    {
-        if (m_splits[0]->CheckForLayout(x, y, layout))
-            return true;
-        return m_splits[1]->CheckForLayout(x, y, layout);
-    }
-}
-
 void WindowLayout::Paint(SDL_Renderer* renderer, const Recti& area)
 {
     auto& wm = WindowManager::Instance();
     auto& tp = Application::Instance().GetThemeProperties();
+    auto& highlight = wm.GetWindowHighlightQuery();
+    auto& selection = wm.GetWindowSelectionQuery();
 
     if (m_area.Overlaps(area))
     {
+        if (highlight.m_highlight == WindowHighlightType::LayoutSplit && highlight.m_layout == this)
+        {
+            SDL_FRect area = highlight.m_area.AsSDLFRect();
+            tp.SetRenderDrawColor(renderer, ThemeColor::HighlightArea);
+            SDL_RenderFillRect(renderer, &area);
+        }
+
         if (m_splitType == NoSplit)
         {
             Recti bodyRect{ m_area.x, m_area.y + WINDOW_TAB_BAR_HEIGHT + WINDOW_CLIENT_BORDER, m_area.w, m_area.h - WINDOW_TAB_BAR_HEIGHT - WINDOW_CLIENT_BORDER * 2 };
@@ -243,7 +233,7 @@ void WindowLayout::Paint(SDL_Renderer* renderer, const Recti& area)
 
             if (!m_tabs.empty())
             {
-                // render tabs
+                // render tabs backgrounds
                 auto& fr = FontRenderer::Instance();
                 for (auto w : m_tabs)
                 {
@@ -251,10 +241,27 @@ void WindowLayout::Paint(SDL_Renderer* renderer, const Recti& area)
                     tp.SetRenderDrawColor(renderer, ThemeColor::TabBackground);
                     SDL_RenderFillRect(renderer, &sdlTabInnerRect);
                     SDL_Color col = tp.m_colors[(int)ThemeColor::TabText];
+                    if (m_activeTab != -1 && m_tabs[m_activeTab] == w)
+                    {
+                        tp.SetRenderDrawColor(renderer, ThemeColor::TabHighlight);
+                        SDL_RenderLine(renderer, (float)w->m_tabArea.x, (float)w->m_tabArea.y + 1, (float)w->m_tabArea.x + (float)w->m_tabArea.w, (float)w->m_tabArea.y + 1);
+                    }
+                }
+
+                // render tab highlighted
+                if (highlight.m_highlight == WindowHighlightType::Tab && highlight.m_layout == this)
+                {
+                    SDL_FRect area = highlight.m_area.AsSDLFRect();
+                    tp.SetRenderDrawColor(renderer, ThemeColor::HighlightArea);
+                    SDL_RenderFillRect(renderer, &area);
+                }
+
+                // render tab text
+                for (auto w : m_tabs)
+                {
+                    SDL_Color col = tp.m_colors[(int)ThemeColor::TabText];
                     if (w->IsModified())
                         col = tp.m_colors[(int)ThemeColor::TabTextModified];
-                    else if (m_activeTab != -1 && m_tabs[m_activeTab] == w)
-                        col = tp.m_colors[(int)ThemeColor::TabTextSelected];
                     fr.RenderText(renderer, w->m_name, col, w->m_tabArea.x + TEXT_HBORDER, w->m_tabArea.y + 4, FontType::UI);
                     if (m_activeTab != -1 && m_tabs[m_activeTab] == w)
                     {
@@ -262,6 +269,7 @@ void WindowLayout::Paint(SDL_Renderer* renderer, const Recti& area)
                         SDL_RenderLine(renderer, (float)w->m_tabArea.x, (float)w->m_tabArea.y + 1, (float)w->m_tabArea.x + (float)w->m_tabArea.w, (float)w->m_tabArea.y + 1);
                     }
                 }
+
 
                 // render active tab body
                 if (m_activeTab != -1)
@@ -307,8 +315,6 @@ void WindowLayout::Paint(SDL_Renderer* renderer, const Recti& area)
             m_splits[0]->Paint(renderer, area);
             m_splits[1]->Paint(renderer, area);
 
-            auto& splitQuery = wm.GetWindowSplitQuery();
-
             switch (m_splitType)
             {
                 case WindowLayout::Vertical:
@@ -319,17 +325,17 @@ void WindowLayout::Paint(SDL_Renderer* renderer, const Recti& area)
                     int y1 = y - 3;
                     int y2 = y + 3;
 
-                    if (splitQuery.m_layout == this && splitQuery.m_foundSplit)
+                    if (selection.m_highlight == WindowHighlightType::LayoutSplit && selection.m_layout == this)
                     {
                         SDL_FRect bodyArea{ (float)x1, (float)y1, (float)(x2 - x1),(float)(y2 - y1) };
-                        SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+                        tp.SetRenderDrawColor(renderer, ThemeColor::LayoutSplit);
                         SDL_RenderFillRect(renderer, &bodyArea);
                     }
                     else
                     {
                         int x = m_area.x + (int)(m_area.w / 2);
                         SDL_FRect nob = SDL_FRect{ (float)(x - 8), (float)(y - 1), (float)16, (float)2 };
-                        SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+                        tp.SetRenderDrawColor(renderer, ThemeColor::LayoutSplit);
                         SDL_RenderFillRect(renderer, &nob);
                     }
                 }
@@ -343,24 +349,24 @@ void WindowLayout::Paint(SDL_Renderer* renderer, const Recti& area)
                     int x1 = x - 3;
                     int x2 = x + 3;
 
-                    if (splitQuery.m_layout == this && splitQuery.m_foundSplit)
+                    if (selection.m_highlight == WindowHighlightType::LayoutSplit && selection.m_layout == this)
                     {
                         SDL_FRect bodyArea = SDL_FRect{ (float)x1, (float)y1, (float)(x2 - x1),(float)(y2 - y1) };
-                        SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+                        tp.SetRenderDrawColor(renderer, ThemeColor::LayoutSplit);
                         SDL_RenderFillRect(renderer, &bodyArea);
                     }
                     else
                     {
                         int y = m_area.y + (int)(m_area.h / 2);
                         SDL_FRect nob = SDL_FRect{ (float)(x - 1), (float)(y - 8), (float)2, (float)16 };
-                        SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+                        tp.SetRenderDrawColor(renderer, ThemeColor::LayoutSplit);
                         SDL_RenderFillRect(renderer, &nob);
                     }
                 }
                 break;
             }
 
-            if (splitQuery.m_layout == this && splitQuery.m_foundSplit)
+            if (selection.m_highlight == WindowHighlightType::LayoutSplit && selection.m_layout == this)
             {
                 SDL_SetRenderDrawColor(renderer, 255, 255, 255, 32);
                 SDL_FRect fullBody{ (float)m_area.x, (float)m_area.y, (float)m_area.w, (float)m_area.h };
@@ -404,32 +410,6 @@ WindowLayout* WindowLayout::FindLayoutFromWindow(WindowBase* window, int& tabIdx
         return m_splits[1]->FindLayoutFromWindow(window, tabIdx);
     }
     return nullptr;
-}
-
-bool WindowLayout::CheckForTab(int x, int y, WindowTabQuery& query)
-{
-    if (!m_area.Contains(x, y))
-        return false;
-
-    if (m_splitType == NoSplit)
-    {
-        for (int i = 0; i < m_tabs.size(); i++)
-        {
-            if (m_tabs[i]->m_tabArea.Contains(x, y))
-            {
-                query.m_layout = this;
-                query.m_tabIndex = i;
-                return true;
-            }
-        }
-        return false;
-    }
-    else
-    {
-        if (m_splits[0]->CheckForTab(x, y, query))
-            return true;
-        return m_splits[1]->CheckForTab(x, y, query);
-    }
 }
 
 void WindowLayout::GatherWindows(std::vector<WindowBase*>& windows)
@@ -557,26 +537,6 @@ bool WindowLayout::CheckForSplit(int x, int y, WindowSplitQuery& query)
     return false;
 }
 
-bool WindowLayout::CheckForScrollBar(int x, int y, WindowScrollBarQuery& query)
-{
-    if (!m_area.Contains(x,y))
-        return false;
-    
-    query.m_layout = this;
-    if (m_splitType == NoSplit)
-    {
-        if (!m_tabs.empty())
-            return m_tabs[m_activeTab]->CheckForScrollBar(x, y, query);
-    }
-    else
-    {
-        if (m_splits[0]->CheckForScrollBar(x, y, query))
-            return true;
-        return m_splits[1]->CheckForScrollBar(x, y, query);
-    }
-    return false;
-}
-
 WindowBase* WindowLayout::GetActiveWindow()
 {
     if (m_splitType == NoSplit && m_tabs.size() > 0)
@@ -663,30 +623,145 @@ void WindowLayout::LoadLayout(const std::vector<std::string>& layoutTokens, size
 
 void WindowLayout::Message(struct WindowMessageStruct& msg)
 {
-    if (msg.m_type == WindowMessage::Layout_LockCount)
+    if (msg.m_flags & WMF_AreaCheck)
     {
-        if (m_locked)
-            msg.m_count++;
+        if (!m_area.Contains(msg.m_x, msg.m_y))
+            return;
+    }
 
-        if (m_splitType != NoSplit)
+    if (msg.m_flags & WMF_Layout)
+    {
+        switch (msg.m_type)
         {
-            m_splits[0]->Message(msg);
-            m_splits[1]->Message(msg);
+            case WindowMessage::Query_LockedLayoutCount:
+                if (m_splitType == NoSplit && m_locked)
+                    msg.m_response++;
+                break;
+
+            case WindowMessage::Query_Highlight:
+            {
+                switch (m_splitType)
+                {
+                    case Horizontal:
+                    {
+                        int splitX = m_area.x + (int)(m_area.w * m_splitPercentage);
+                        Recti splitArea{ splitX - 6, m_area.y, 12, m_area.h };
+                        if (splitArea.Contains(msg.m_x, msg.m_y))
+                        {
+                            auto query = (WindowHighlightQuery*)msg.m_query;
+                            query->m_area = splitArea;
+                            query->m_highlight = WindowHighlightType::LayoutSplit;
+                            query->m_tree = msg.m_tree;
+                            query->m_layout = this;
+                            query->m_split.m_vertical = false;
+                            query->m_split.m_splitPos = splitX;
+                            msg.m_response++;
+                        }
+                    }
+                    break;
+
+                    case Vertical:
+                    {
+                        int splitY = m_area.y + (int)(m_area.h * m_splitPercentage);
+                        Recti splitArea{ m_area.x, splitY - 6, m_area.w,  12 };
+                        if (splitArea.Contains(msg.m_x, msg.m_y))
+                        {
+                            auto query = (WindowHighlightQuery*)msg.m_query;
+                            query->m_area = splitArea;
+                            query->m_highlight = WindowHighlightType::LayoutSplit;
+                            query->m_tree = msg.m_tree;
+                            query->m_layout = this;
+                            query->m_split.m_vertical = false;
+                            query->m_split.m_splitPos = splitY;
+                            msg.m_response++;
+                        }
+                    }
+                    break;
+                }
+            }
+            break;
         }
-        return;
+        if ((msg.m_flags & WMF_EarlyOut) && msg.m_response > 0)
+            return;
     }
 
     if (m_splitType == NoSplit)
     {
-        for (auto tab : m_tabs)
+        if (msg.m_flags & WMF_Layout)
         {
-            tab->Message(msg);
+            // handle tab checks...
+            switch (msg.m_type)
+            {
+                case WindowMessage::Query_Highlight:
+                {
+                    auto query = (WindowHighlightQuery*)msg.m_query;
+                    Recti lockArea = IconRenderer::Instance().CalcIconArea(Icons::LayoutLocked, m_area.x + 14, m_area.y + 18);
+                    if (lockArea.Contains(msg.m_x, msg.m_y))
+                    {
+                        query->m_highlight = WindowHighlightType::WindowLayoutIcon;
+                        query->m_id = (int)Icons::LayoutLocked;
+                        query->m_tree = msg.m_tree;
+                        query->m_layout = this;
+                        query->m_area = lockArea;
+                        msg.m_response++;
+                        return;
+                    }
+
+                    for (int i = 0; i < m_tabs.size(); i++)
+                    {
+                        if (m_tabs[i]->m_tabArea.Contains(msg.m_x, msg.m_y))
+                        {
+                            query->m_area = m_tabs[i]->m_tabArea;
+                            query->m_highlight = WindowHighlightType::Tab;
+                            query->m_tree = msg.m_tree;
+                            query->m_layout = this;
+                            query->m_id = i;
+                            msg.m_response++;
+                            return;
+                        }
+                    }
+                }
+                break;
+
+                case WindowMessage::Query_WindowCount:
+                {
+                    msg.m_response += (int)m_tabs.size();
+                }
+                break;;
+            }
+
+            if ((msg.m_flags & WMF_EarlyOut) && msg.m_response > 0)
+                return;
+        }
+
+        if (msg.m_flags & WMF_Window)
+        {
+            if (msg.m_flags & WMF_AreaCheck)
+            {
+                if (!m_tabs.empty())
+                    m_tabs[m_activeTab]->Message(this, msg);
+            }
+            else
+            {
+                for (auto tab : m_tabs)
+                {
+                    tab->Message(this, msg);
+
+                    if ((msg.m_flags & WMF_EarlyOut) && msg.m_response > 0)
+                        return;
+                }
+            }
         }
     }
     else
     {
         m_splits[0]->Message(msg);
+        if ((msg.m_flags & WMF_EarlyOut) && msg.m_response > 0)
+            return;
+
         m_splits[1]->Message(msg);
+        if ((msg.m_flags & WMF_EarlyOut) && msg.m_response > 0)
+            return;
     }
 }
 

@@ -14,6 +14,8 @@ IconRenderer::IconRenderer()
     LoadImage("data/icon_submenu.png");
     LoadImage("data/icon_layoutLocked.png");
     LoadImage("data/icon_layoutFree.png");
+    LoadImage("data/icon_build.png");
+    LoadImage("data/icon_run.png");
 }
 
 IconRenderer::~IconRenderer()
@@ -62,4 +64,10 @@ void IconRenderer::DrawIcon(SDL_Renderer* renderer, Icons icon, int x, int y)
     SDL_RenderTexture(renderer, ci->texture, nullptr, &dest);
 }
 
+Recti IconRenderer::CalcIconArea(Icons icon, int x, int y)
+{
+    int w = 16;
+    int h = 16;
+    return Recti{ x - w / 2,y - w / 2, w, h };
+}
 
