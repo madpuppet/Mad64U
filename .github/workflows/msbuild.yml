@@ -1,0 +1,71 @@
+name: Build and Release Mad64U
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+env:
+  SOLUTION_FILE_PATH: Mad64U.sln
+  BUILD_CONFIGURATION: Release
+  BUILD_PLATFORM: x64
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build Mad64U
+        shell: pwsh
+        run: >
+          msbuild "${{ env.SOLUTION_FILE_PATH }}"
+          /m
+          /t:Build
+          /p:Configuration=${{ env.BUILD_CONFIGURATION }}
+          /p:Platform=${{ env.BUILD_PLATFORM }}
+
+      - name: Package release directory
+        shell: pwsh
+        run: |
+          $zipName = "Mad64U-${{ github.ref_name }}-windows-x64.zip"
+
+          Compress-Archive `
+            -Path "release/*" `
+            -DestinationPath $zipName `
+            -Force
+
+          "ZIP_NAME=$zipName" |
+            Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Mad64U-windows-x64
+          path: ${{ env.ZIP_NAME }}
+          if-no-files-found: error
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ github.ref_name }}" `
+            "${{ env.ZIP_NAME }}" `
+            --title "Mad64U ${{ github.ref_name }}" `
+            --generate-notes
+            
