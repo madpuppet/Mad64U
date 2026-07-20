@@ -31,7 +31,6 @@ public:
     virtual void Paint(SDL_Renderer* renderer, const Recti& dirtyArea) = 0;
     virtual void Close();
     virtual bool Tick() { return false; }
-    virtual void Compile() {};
     virtual bool HandleEvent(SDL_Event* e);
     virtual bool IsModified() { return false; }
     virtual class SourceFile* GetSourceFile() { return nullptr; }

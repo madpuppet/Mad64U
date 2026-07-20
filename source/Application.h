@@ -30,6 +30,10 @@ enum class ThemeColor
     Cursor,
     TextHighlight,
     HighlightArea,
+    WindowEdgeLight,
+    WindowEdgeDark,
+    WindowEdgeLightSelected,
+    WindowEdgeDarkSelected,
 
     TextGeneral,
     TextOperator,
@@ -62,7 +66,13 @@ public:
     void SelectTheme(const char *theme);
     ThemeProperties& GetThemeProperties() { return *m_activeTheme; }
 
+    bool SendShellCommand(const std::string& command);
+
 protected:
+    void CreateShellProcess();
+    void ProcessShellOutput();
+    void DestroyShellProcess();
+
     void CreateSettings();
     void CreateMenus();
     void CreateThemes();
@@ -74,5 +84,10 @@ protected:
     bool m_quit = false;
     ThemeProperties* m_activeTheme;
     std::vector<ThemeProperties*> m_themes;
+
+    SDL_Process* m_shellProcess;
+    SDL_IOStream* m_shellInput;
+    SDL_IOStream* m_shellOutput;
+    std::string m_shellOutputLine;
 };
 

@@ -104,6 +104,16 @@ void WindowManager::HandleEvent(SDL_Event* e)
 
                 switch (m_mouseSelectionQuery.m_highlight)
                 {
+                    case WindowHighlightType::ProjectListFile:
+                    case WindowHighlightType::ProjectListFolder:
+                    case WindowHighlightType::ProjectListIcon:
+                        m_mouseSelectionQuery.m_window->HandleEvent(e);
+                        return;
+
+                    case WindowHighlightType::WindowLayoutIcon:
+                        m_mouseSelectionQuery.m_layout->HandleEvent(e);
+                        return;
+
                     case WindowHighlightType::WindowTreeIcon:
                         switch ((Icons)m_mouseSelectionQuery.m_id)
                         {
@@ -121,14 +131,18 @@ void WindowManager::HandleEvent(SDL_Event* e)
 
                             case Icons::Close:
                             {
-                                auto it = std::find(m_windowTrees.begin(), m_windowTrees.end(), m_mouseSelectionQuery.m_tree);
-                                if (it != m_windowTrees.end()) {
-                                    m_windowTrees.erase(it);
-                                }
-                                delete m_mouseSelectionQuery.m_tree;
-                                if (m_windowTrees.empty())
+                                if (m_windowTrees.size() == 1)
+                                {
                                     Application::Instance().Quit();
-
+                                }
+                                else
+                                {
+                                    auto it = std::find(m_windowTrees.begin(), m_windowTrees.end(), m_mouseSelectionQuery.m_tree);
+                                    if (it != m_windowTrees.end()) {
+                                        m_windowTrees.erase(it);
+                                    }
+                                    delete m_mouseSelectionQuery.m_tree;
+                                }
                                 m_mouseSelectionQuery.Reset();
                             }
                             return;
@@ -188,7 +202,7 @@ void WindowManager::HandleEvent(SDL_Event* e)
                         m_menuList.Layout(m_activeTree);
 
                         WindowMessageStruct msgLLC;
-                        msgLLC.m_type = WindowMessage::Query_LockedLayoutCount;
+                        msgLLC.m_type = WindowMessage::Query_FindLockedLayout;
                         msgLLC.m_flags = WMF_Layout | WMF_EarlyOut;
                         Message(msgLLC);
 
@@ -358,7 +372,7 @@ void WindowManager::HandleEvent(SDL_Event* e)
                             {
                                 for (auto vw : windows)
                                     m_mouseDockQuery.m_layout->m_tabs.push_back(vw);
-                                m_mouseDockQuery.m_layout->m_activeTab = m_mouseDockQuery.m_layout->m_tabs.size() - 1;
+                                m_mouseDockQuery.m_layout->m_activeTab = (int)m_mouseDockQuery.m_layout->m_tabs.size() - 1;
 
                                 SetActiveTree(m_mouseDockQuery.m_tree);
                                 m_activeLayout = m_mouseDockQuery.m_layout;
@@ -407,6 +421,7 @@ void WindowManager::HandleEvent(SDL_Event* e)
                             m_mouseTree = nullptr;
 
                             m_mouseDockQuery.m_tree->LayoutWindows();
+                            WindowManager::Instance().SaveWindowLayout();
                         }
                         break;
                 }
@@ -498,11 +513,14 @@ void WindowManager::HandleEvent(SDL_Event* e)
                         // if this isn't the only tab in the tree, then we can drag it out
                         WindowMessageStruct msg;
                         msg.m_flags = WMF_Layout | WMF_EarlyOut;
-                        msg.m_type = WindowMessage::Query_LockedLayoutCount;
+                        msg.m_type = WindowMessage::Query_FindLockedLayout;
                         Message(msg);
 
-                        int count = m_mouseSelectionQuery.m_tree->CountWindows();
-                        if (msg.m_response > 0 || count > 1)
+                        WindowMessageStruct msgCW;
+                        msgCW.m_flags = WMF_Window;
+                        msgCW.m_type = WindowMessage::Query_WindowCount;
+                        Message(msgCW);
+                        if (msg.m_response > 0 || msgCW.m_response > 1)
                         {
                             m_activeLayout = nullptr;
                             m_activeWindow = nullptr;
@@ -831,8 +849,9 @@ void WindowManager::SaveWindowLayout()
 
         tree->m_layout.SaveLayout(layoutTokens);
     }
+    Log(LogGroup::System, "Save Window Layout : {} windows, {} tokens", m_windowTrees.size(), layoutTokens.size());
+
     Settings::Instance().SetStringList(SETTING_WINDOWS, layoutTokens);
-    Settings::Instance().Save();
 }
 
 void WindowManager::LoadWindowLayout()
@@ -888,6 +907,7 @@ void WindowManager::Message(WindowMessageStruct& msg)
     {
         for (auto tree : m_windowTrees)
         {
+            msg.m_tree = tree;
             tree->Message(msg);
             if ((msg.m_response > 0) && (msg.m_flags & WMF_EarlyOut))
                 return;

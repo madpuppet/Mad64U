@@ -40,6 +40,10 @@ static const char* s_themecolor_name[NumThemeColor] =
     "Cursor",
     "TextHighlight",
     "HighlightArea",
+    "WindowEdgeLight",
+    "WindowEdgeDark",
+    "WindowEdgeLightSelected",
+    "WindowEdgeDarkSelected",
 
     "TextGeneral",
     "TextOperator",
@@ -201,9 +205,15 @@ void Application::CreateMenus()
             WindowManager::Instance().LayoutWindows();
         };
 
-    auto newWindowOutput = []()
+    auto newWindowSystemOutput = []()
         {
-            WindowManager::Instance().AddWindow(new OutputWindow);
+            WindowManager::Instance().AddWindow(new OutputWindow(LogGroup::System));
+            WindowManager::Instance().LayoutWindows();
+        };
+
+    auto newWindowBuildOutput = []()
+        {
+            WindowManager::Instance().AddWindow(new OutputWindow(LogGroup::Build));
             WindowManager::Instance().LayoutWindows();
         };
 
@@ -223,11 +233,12 @@ void Application::CreateMenus()
     auto windowMenu = new WindowMenu;
     windowMenu->m_name = "Windows";
     windowMenu->m_items.push_back(new WindowMenuItem("Project Files", newWindowProjectList ));
-    windowMenu->m_items.push_back(new WindowMenuItem("Output", newWindowOutput));
+    windowMenu->m_items.push_back(new WindowMenuItem("System Output", newWindowSystemOutput));
+    windowMenu->m_items.push_back(new WindowMenuItem("Build Output", newWindowBuildOutput));
     windowMenu->m_items.push_back(new WindowMenuItem("Undo Buffer", newWindowUndoBuffer));
     windowMenu->m_items.push_back(new WindowMenuItem("- - - - - - - - - -", []() {}));
     windowMenu->m_items.push_back(new WindowMenuItem("Toggle Frame Lock", toggleFrameLock));
-    windowMenu->m_items.push_back(new WindowMenuItem("Save Window Layout", []() { WindowManager::Instance().SaveWindowLayout(); }));
+    windowMenu->m_items.push_back(new WindowMenuItem("Save Window Layout", []() { WindowManager::Instance().SaveWindowLayout(); Settings::Instance().Save(); }));
     wm.AddWindowMenu(windowMenu);
 
     auto buildMenu = new WindowMenu;
@@ -235,8 +246,12 @@ void Application::CreateMenus()
 
     auto buildCB = []()
         {
-            auto window = WindowManager::Instance().GetActiveWindowBase();
-            window->Compile();
+            auto& sfm = SourceFileManager::Instance();
+            auto file = sfm.GetActiveSourceFile();
+            if (file)
+            {
+                sfm.Compile(file);
+            }
         };
 
     buildMenu->m_items.push_back(new WindowMenuItem("Build", buildCB));
@@ -374,14 +389,18 @@ void Application::CreateSettings()
         theme.m_colors[(int)ThemeColor::TabTextModified] = SDL_Color(255, 0, 0, 255);
         theme.m_colors[(int)ThemeColor::TabTextSelected] = SDL_Color(255, 255, 255, 255);
         theme.m_colors[(int)ThemeColor::TabHighlight] = SDL_Color(255, 128, 255, 255);
-        theme.m_colors[(int)ThemeColor::SourceBackground] = SDL_Color(32, 32, 32, 255);
-        theme.m_colors[(int)ThemeColor::SourceBackgroundSelected] = SDL_Color(48, 48, 48, 255);
+        theme.m_colors[(int)ThemeColor::SourceBackground] = SDL_Color(16, 16, 16, 255);
+        theme.m_colors[(int)ThemeColor::SourceBackgroundSelected] = SDL_Color(24, 24, 24, 255);
         theme.m_colors[(int)ThemeColor::ScrollBarBackground] = SDL_Color(0, 0, 0, 255);
         theme.m_colors[(int)ThemeColor::ScrollBar] = SDL_Color(128, 128, 0, 255);
         theme.m_colors[(int)ThemeColor::ScrollBarSelected] = SDL_Color(255, 255, 0, 255);
         theme.m_colors[(int)ThemeColor::Cursor] = SDL_Color(255, 255, 128, 255);
         theme.m_colors[(int)ThemeColor::TextHighlight] = SDL_Color(128, 128, 128, 255);
         theme.m_colors[(int)ThemeColor::HighlightArea] = SDL_Color(255, 255, 0, 64);
+        theme.m_colors[(int)ThemeColor::WindowEdgeLight] = SDL_Color(64, 64, 64, 255);
+        theme.m_colors[(int)ThemeColor::WindowEdgeDark] = SDL_Color(0, 0, 0, 255);
+        theme.m_colors[(int)ThemeColor::WindowEdgeLightSelected] = SDL_Color(96, 96, 96, 255);
+        theme.m_colors[(int)ThemeColor::WindowEdgeDarkSelected] = SDL_Color(0, 0, 0, 255);
         theme.m_colors[(int)ThemeColor::TextGeneral] = SDL_Color(230, 230, 230, 255);
         theme.m_colors[(int)ThemeColor::TextOperator] = SDL_Color(64, 255, 255, 255);
         theme.m_colors[(int)ThemeColor::TextComment] = SDL_Color(128, 255, 128, 255);
@@ -413,6 +432,10 @@ void Application::CreateSettings()
         theme.m_colors[(int)ThemeColor::Cursor] = SDL_Color(255, 255, 128, 255);
         theme.m_colors[(int)ThemeColor::TextHighlight] = SDL_Color(128, 128, 128, 128);
         theme.m_colors[(int)ThemeColor::HighlightArea] = SDL_Color(255, 255, 0, 64);
+        theme.m_colors[(int)ThemeColor::WindowEdgeLight] = SDL_Color(128, 196, 196, 64);
+        theme.m_colors[(int)ThemeColor::WindowEdgeDark] = SDL_Color(0, 0, 0, 255);
+        theme.m_colors[(int)ThemeColor::WindowEdgeLightSelected] = SDL_Color(128, 220, 220, 64);
+        theme.m_colors[(int)ThemeColor::WindowEdgeDarkSelected] = SDL_Color(0, 0, 0, 255);
         theme.m_colors[(int)ThemeColor::TextGeneral] = SDL_Color(0, 200, 255, 255);
         theme.m_colors[(int)ThemeColor::TextOperator] = SDL_Color(255, 128, 64, 255);
         theme.m_colors[(int)ThemeColor::TextComment] = SDL_Color(128, 255, 128, 255);
@@ -444,6 +467,10 @@ void Application::CreateSettings()
         theme.m_colors[(int)ThemeColor::Cursor] = SDL_Color(64, 64, 0, 255);
         theme.m_colors[(int)ThemeColor::TextHighlight] = SDL_Color(128, 128, 128, 255);
         theme.m_colors[(int)ThemeColor::HighlightArea] = SDL_Color(255, 255, 0, 64);
+        theme.m_colors[(int)ThemeColor::WindowEdgeLight] = SDL_Color(164, 164, 164, 64);
+        theme.m_colors[(int)ThemeColor::WindowEdgeDark] = SDL_Color(0, 0, 0, 255);
+        theme.m_colors[(int)ThemeColor::WindowEdgeLightSelected] = SDL_Color(196, 196, 196, 64);
+        theme.m_colors[(int)ThemeColor::WindowEdgeDarkSelected] = SDL_Color(64, 64, 64, 255);
         theme.m_colors[(int)ThemeColor::TextGeneral] = SDL_Color(0, 0, 0, 255);
         theme.m_colors[(int)ThemeColor::TextOperator] = SDL_Color(0, 0, 255, 255);
         theme.m_colors[(int)ThemeColor::TextComment] = SDL_Color(0, 128, 0, 255);
@@ -475,12 +502,15 @@ int Application::Run()
         Log("RENDERER: %s\n", name);
     }
 
+    CreateShellProcess();
+
     // create 
     CreateSettings();
     FontRenderer::Startup();
     IconRenderer::Startup();
     WindowManager::Startup();
     SourceFileManager::Startup();
+    SourceFileManager::Instance().RestoreFilesFromSettings();
 
     auto& wm = WindowManager::Instance();
 
@@ -488,6 +518,7 @@ int Application::Run()
     SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
 
     auto win = new WindowTree(Recti{ 300,100,640,512 });
+    win->m_layout.m_locked = true;
     wm.AddWindowTree(win);
     wm.SetActiveTree(win);
 
@@ -505,12 +536,18 @@ int Application::Run()
             {
                 SourceFileManager::Instance().Tick();
                 WindowManager::Instance().Tick();
+                ProcessShellOutput();
             }
             else
                 wm.HandleEvent(&e);
         }
         wm.Paint();
     }
+
+    DestroyShellProcess();
+    SourceFileManager::Instance().SaveFilesToSettings();
+    WindowManager::Instance().SaveWindowLayout();
+    Settings::Instance().Save();
 
     SourceFileManager::Shutdown();
     WindowManager::Shutdown();
@@ -530,3 +567,56 @@ void Application::SelectTheme(const char *themeName)
         Settings::Instance().Save();
     }
 }
+
+void Application::DestroyShellProcess()
+{
+    SDL_DestroyProcess(m_shellProcess);
+}
+
+void Application::CreateShellProcess()
+{
+    SDL_PropertiesID props = SDL_CreateProperties();
+    SDL_SetStringProperty(props, SDL_PROP_PROCESS_CREATE_CMDLINE_STRING, "cmd.exe");
+    SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDIN_NUMBER, SDL_PROCESS_STDIO_APP);
+    SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER, SDL_PROCESS_STDIO_APP);
+    SDL_SetBooleanProperty(props, SDL_PROP_PROCESS_CREATE_BACKGROUND_BOOLEAN, true);
+    m_shellProcess = SDL_CreateProcessWithProperties(props);
+    m_shellInput = SDL_GetProcessInput(m_shellProcess);
+    m_shellOutput = SDL_GetProcessOutput(m_shellProcess);
+}
+
+bool Application::SendShellCommand(const std::string& command)
+{
+    if (!m_shellInput)
+        return false;
+
+    std::string line = command;
+    line += '\n';
+
+    const size_t written =
+        SDL_WriteIO(m_shellInput, line.data(), line.size());
+
+    return written == line.size();
+}
+
+void Application::ProcessShellOutput()
+{
+    if (!m_shellOutput)
+        return;
+
+    char buffer[1024];
+    size_t bytesRead = SDL_ReadIO(m_shellOutput, buffer, sizeof(buffer));
+    for (int i = 0; i < bytesRead; i++)
+    {
+        if (buffer[i] == '\n')
+        {
+            Log(LogGroup::Build, m_shellOutputLine);
+            m_shellOutputLine.clear();
+        }
+        else if (buffer[i] != '\t' && buffer[i] != '\r')
+        {
+            m_shellOutputLine.push_back(buffer[i]);
+        }
+    }
+}
+

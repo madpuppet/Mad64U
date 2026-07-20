@@ -25,9 +25,10 @@ enum class WindowMessage
     File_Deleted,
     File_Renamed,
     Query_FileCount,
-    Query_LockedLayoutCount,
     Query_WindowCount,
-    Query_Highlight
+    Query_Highlight,
+    Query_FindFileWindow,
+    Query_FindLockedLayout
 };
 
 #define WMF_Window 1                // send message to window (layout tabs)
@@ -42,9 +43,14 @@ struct WindowMessageStruct
     WindowMessage m_type;
     class SourceFile* m_sourceFile = nullptr;
     int m_response = 0;             // response count - incremented whenever a window or layout respons, if WMF_EarlyOut, drop out after 1 response
-    WindowTree* m_tree = nullptr;
+
+    WindowTree* m_tree = nullptr;           // this can be initialised to restrict message to single tree
+    WindowLayout* m_layout = nullptr;
+    WindowBase* m_window = nullptr;
+
     int m_x = 0;
     int m_y = 0;
+
     void* m_query = nullptr;
 };
 

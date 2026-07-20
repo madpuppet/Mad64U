@@ -1094,65 +1094,6 @@ void SourceFileWindow::PasteSelected()
     WindowManager::Instance().GetActiveWindowTree()->m_dirty = true;
 }
 
-void SourceFileWindow::Compile()
-{
-    SourceFileManager::Instance().SaveAll();
-
-    auto compile = [file = m_sourceFile]()
-        {
-            LogManager::Instance().Clear(LogGroup::Build);
-
-            std::filesystem::path workingDir = std::filesystem::path(file->m_path).parent_path() / "out";
-            std::error_code ec;
-            if (!std::filesystem::create_directories(workingDir, ec) && ec)
-            {
-                Log(LogGroup::Build,
-                    "Failed to create directory '{}': {}\n",
-                    workingDir.string(),
-                    ec.message());
-                return;
-            }
-
-            std::string wd = workingDir.string();
-            const char* args[] =
-            {
-                "java", "-jar", "kickass\\kickass.jar", file->m_path.c_str(), "-bytedump", "-debugdump", "-odir", wd.c_str(), nullptr
-            };
-
-            SDL_Process* process = SDL_CreateProcess(args, true);
-            if (!process)
-            {
-                Log(LogGroup::Build, "Failed to start process: {}\n", SDL_GetError());
-            }
-
-            size_t outputSize = 0;
-            int exitCode = -1;
-            void* outputData = SDL_ReadProcess(process, &outputSize, &exitCode);
-            if (!outputData)
-            {
-                Log(LogGroup::Build, "SDL_ReadProcess failed: {}", SDL_GetError());
-                SDL_DestroyProcess(process);
-                return;
-            }
-
-            const std::string output( static_cast<const char*>(outputData), outputSize);
-            SDL_free(outputData);
-            SDL_DestroyProcess(process);
-
-            std::istringstream stream(output);
-            std::string line;
-            while (std::getline(stream, line))
-            {
-                while (!line.empty() && (line.back() == '\n' || line.back() == '\r'))
-                    line.pop_back();
-
-                Log(LogGroup::Build, line);
-            }
-        };
-
-    std::thread(compile).detach();
-}
-
 void SourceFileWindow::SaveTokens(std::vector<std::string>& layoutTokens)
 {
     layoutTokens.push_back("SOURCE");

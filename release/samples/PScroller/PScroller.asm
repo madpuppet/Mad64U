@@ -1,4 +1,4 @@
-#import "../includes/c64.lib"
+#import "../includes/c64.asm"
 
 BasicUpstart2(start)
 

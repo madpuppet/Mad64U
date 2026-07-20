@@ -94,6 +94,10 @@ struct WindowHighlightQuery
             bool m_vertical;
             int m_splitPos;
         } m_split;
+        struct
+        {
+            enum class Icons m_icon;
+        } m_projectFiles;
     };
 
     bool IsEqual(const WindowHighlightQuery& o)

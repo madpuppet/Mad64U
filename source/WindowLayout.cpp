@@ -227,9 +227,7 @@ void WindowLayout::Paint(SDL_Renderer* renderer, const Recti& area)
         if (m_splitType == NoSplit)
         {
             Recti bodyRect{ m_area.x, m_area.y + WINDOW_TAB_BAR_HEIGHT + WINDOW_CLIENT_BORDER, m_area.w, m_area.h - WINDOW_TAB_BAR_HEIGHT - WINDOW_CLIENT_BORDER * 2 };
-
-            if (m_locked)
-                IconRenderer::Instance().DrawIcon(renderer, Icons::LayoutLocked, m_area.x + 14, m_area.y + 18);
+            IconRenderer::Instance().DrawIcon(renderer, m_locked ? Icons::LayoutLocked : Icons::LayoutFree, m_area.x + 14, m_area.y + 18);
 
             if (!m_tabs.empty())
             {
@@ -294,18 +292,19 @@ void WindowLayout::Paint(SDL_Renderer* renderer, const Recti& area)
             float by1 = (float)(m_area.y + WINDOW_TAB_BAR_HEIGHT + WINDOW_CLIENT_BORDER - 1);
             float by2 = (float)(m_area.y + m_area.h - WINDOW_CLIENT_BORDER + 1);
             bool selected = wm.GetActiveWindowLayout() == this;
+
             if (selected)
-                SDL_SetRenderDrawColor(renderer, 196, 196, 196, 255);
+                tp.SetRenderDrawColor(renderer, ThemeColor::WindowEdgeLightSelected);
             else
-                SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
+                tp.SetRenderDrawColor(renderer, ThemeColor::WindowEdgeLight);
 
             SDL_RenderLine(renderer, bx1, by1, bx1, by2);
             SDL_RenderLine(renderer, bx1, by1, bx2, by1);
 
             if (selected)
-                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+                tp.SetRenderDrawColor(renderer, ThemeColor::WindowEdgeDarkSelected);
             else
-                SDL_SetRenderDrawColor(renderer, 32, 32, 32, 255);
+                tp.SetRenderDrawColor(renderer, ThemeColor::WindowEdgeDark);
 
             SDL_RenderLine(renderer, bx2, by1, bx2, by2);
             SDL_RenderLine(renderer, bx1, by2, bx2, by2);
@@ -331,13 +330,6 @@ void WindowLayout::Paint(SDL_Renderer* renderer, const Recti& area)
                         tp.SetRenderDrawColor(renderer, ThemeColor::LayoutSplit);
                         SDL_RenderFillRect(renderer, &bodyArea);
                     }
-                    else
-                    {
-                        int x = m_area.x + (int)(m_area.w / 2);
-                        SDL_FRect nob = SDL_FRect{ (float)(x - 8), (float)(y - 1), (float)16, (float)2 };
-                        tp.SetRenderDrawColor(renderer, ThemeColor::LayoutSplit);
-                        SDL_RenderFillRect(renderer, &nob);
-                    }
                 }
                 break;
 
@@ -354,13 +346,6 @@ void WindowLayout::Paint(SDL_Renderer* renderer, const Recti& area)
                         SDL_FRect bodyArea = SDL_FRect{ (float)x1, (float)y1, (float)(x2 - x1),(float)(y2 - y1) };
                         tp.SetRenderDrawColor(renderer, ThemeColor::LayoutSplit);
                         SDL_RenderFillRect(renderer, &bodyArea);
-                    }
-                    else
-                    {
-                        int y = m_area.y + (int)(m_area.h / 2);
-                        SDL_FRect nob = SDL_FRect{ (float)(x - 1), (float)(y - 8), (float)2, (float)16 };
-                        tp.SetRenderDrawColor(renderer, ThemeColor::LayoutSplit);
-                        SDL_RenderFillRect(renderer, &nob);
                     }
                 }
                 break;
@@ -544,6 +529,19 @@ WindowBase* WindowLayout::GetActiveWindow()
     return nullptr;
 }
 
+void WindowLayout::ActivateWindow(WindowBase* window)
+{
+    for (size_t i = 0; i < m_tabs.size(); i++)
+    {
+        if (m_tabs[i] == window)
+        {
+            m_activeTab = (int)i;
+            return;
+        }
+    }
+}
+
+
 void WindowLayout::SaveLayout(std::vector<std::string>& layoutTokens)
 {
     switch (m_splitType)
@@ -623,6 +621,7 @@ void WindowLayout::LoadLayout(const std::vector<std::string>& layoutTokens, size
 
 void WindowLayout::Message(struct WindowMessageStruct& msg)
 {
+    msg.m_layout = this;
     if (msg.m_flags & WMF_AreaCheck)
     {
         if (!m_area.Contains(msg.m_x, msg.m_y))
@@ -633,7 +632,7 @@ void WindowLayout::Message(struct WindowMessageStruct& msg)
     {
         switch (msg.m_type)
         {
-            case WindowMessage::Query_LockedLayoutCount:
+            case WindowMessage::Query_FindLockedLayout:
                 if (m_splitType == NoSplit && m_locked)
                     msg.m_response++;
                 break;
@@ -765,4 +764,23 @@ void WindowLayout::Message(struct WindowMessageStruct& msg)
     }
 }
 
+bool WindowLayout::HandleEvent(SDL_Event* e)
+{
+    switch (e->type)
+    {
+        case SDL_EVENT_MOUSE_BUTTON_DOWN:
+        {
+            auto& selection = WindowManager::Instance().GetWindowSelectionQuery();
+            switch (selection.m_highlight)
+            {
+                case WindowHighlightType::WindowLayoutIcon:
+                    m_locked = !m_locked;
+                    selection.m_tree->m_dirty;
+                    return true;
+            }
+        }
+        break;
+    }
+    return false;
+}
 

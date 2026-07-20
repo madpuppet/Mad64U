@@ -6,7 +6,7 @@
 class OutputWindow : public WindowBase
 {
 public:
-    OutputWindow();
+    OutputWindow(LogGroup group);
     void MessageChild(struct WindowLayout* layout, struct WindowMessageStruct& msg) override;
     void Paint(SDL_Renderer* renderer, const Recti& dirtyArea) override;
     bool HandleEvent(SDL_Event* e) override;

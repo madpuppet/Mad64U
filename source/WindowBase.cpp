@@ -145,8 +145,18 @@ WindowBase::~WindowBase()
 
 void WindowBase::Message(WindowLayout *layout, struct WindowMessageStruct& msg)
 {
+    msg.m_window = this;
     switch (msg.m_type)
     {
+        case WindowMessage::Query_FindFileWindow:
+        {
+            if (GetSourceFile() == msg.m_sourceFile)
+            {
+                msg.m_response++;
+            }
+        }
+        return;
+
         case WindowMessage::Query_Highlight:
         {
             auto query = (WindowHighlightQuery*)msg.m_query;

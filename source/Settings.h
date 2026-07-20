@@ -8,6 +8,7 @@
 #define SETTING_ACTIVE_THEME "theme"
 #define SETTING_RENDERER "renderer"
 #define SETTING_WINDOWS "windows"
+#define SETTING_FILES "files"
 
 class Settings : public Singleton<Settings>
 {

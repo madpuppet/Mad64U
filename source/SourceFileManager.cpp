@@ -5,10 +5,12 @@
 #include "Application.h"
 #include "SourceFileWindow.h"
 #include "SourceFileCmdBuffer.h"
+#include "LogManager.h"
 #include <filesystem>
 #include <fstream>
 #include <string>
 #include <vector>
+#include <format>
 #include "Settings.h"
 
 const char* s_keywords_asm[] = { "tax", "eor", "dec", "pla", "rts", "rti", "bcc", "txa", "clc", "sec", "cpx", "cpy", "cmp", "bne", "beq", "bmi", "bpl", "ldx", "ldy", "stx", "sty", "jsr", "jmp", "tay", "tya", "pha", "dey", "dex", "inc", "inx", "iny", "lda", "sta", "adc", "lsr", "asr", "asl", "lsl", "and", "ora", "xor", "sei", "cli", 0};
@@ -227,7 +229,150 @@ bool SourceFileManager::CloseFile(SourceFile* file)
     m_sourceFiles.erase(std::find(m_sourceFiles.begin(), m_sourceFiles.end(), file));
 
     WindowManager::Instance().LayoutWindows();
-    WindowManager::Instance().SaveWindowLayout();
     return true;
 }
 
+std::vector<std::filesystem::path> FindC64Outputs(std::filesystem::path outPath)
+{
+    const std::filesystem::path outputFolder = outPath.parent_path() / "out";
+    std::vector<std::filesystem::path> files;
+
+    if (!std::filesystem::exists(outputFolder) || !std::filesystem::is_directory(outputFolder))
+        return files;
+
+    for (const std::filesystem::directory_entry& entry :
+        std::filesystem::directory_iterator(outputFolder))
+    {
+        if (!entry.is_regular_file())
+            continue;
+
+        std::string extension = entry.path().extension().string();
+
+        std::ranges::transform(
+            extension,
+            extension.begin(),
+            [](unsigned char character)
+            {
+                return static_cast<char>(std::tolower(character));
+            });
+
+        if (extension == ".d64" || extension == ".prg")
+            files.push_back(entry.path());
+    }
+
+    return files;
+}
+
+
+void SourceFileManager::Run(class SourceFile* file)
+{
+    std::filesystem::path path = file->m_path;
+    const std::filesystem::path outputFolder = path.parent_path() / "out";
+    const std::filesystem::path filename = path.stem();
+
+    const std::string d64Path = (outputFolder / filename).replace_extension(".d64").string();
+    const std::string prgPath = (outputFolder / filename).replace_extension(".prg").string();
+
+    if (std::filesystem::exists(d64Path))
+    {
+        std::string cmd = std::format("start F:\\Emulators\\C64\\Vice3.6\\bin\\x64sc.exe {}", d64Path);
+        Application::Instance().SendShellCommand(cmd);
+    }
+    else if (std::filesystem::exists(prgPath))
+    {
+        std::string cmd = std::format("start F:\\Emulators\\C64\\Vice3.6\\bin\\x64sc.exe {}", prgPath);
+        Application::Instance().SendShellCommand(cmd);
+    }
+    else
+    {
+        auto paths = FindC64Outputs(outputFolder);
+        if (!paths.empty())
+        {
+            std::string out = paths[0].string();
+            std::string cmd = std::format("start F:\\Emulators\\C64\\Vice3.6\\bin\\x64sc.exe {}", out);
+            Application::Instance().SendShellCommand(cmd);
+        }
+    }
+}
+
+void SourceFileManager::Compile(SourceFile* file)
+{
+    SaveAll();
+
+    std::filesystem::path path = file->m_path;
+    std::filesystem::path ext = path.extension();
+    if (ext.string() == ".asm")
+    {
+        auto compileKickAss = [file]()
+            {
+                LogManager::Instance().Clear(LogGroup::Build);
+
+                std::filesystem::path workingDir = std::filesystem::path(file->m_path).parent_path() / "out";
+                std::error_code ec;
+                if (!std::filesystem::create_directories(workingDir, ec) && ec)
+                {
+                    Log(LogGroup::Build,
+                        "Failed to create directory '{}': {}\n",
+                        workingDir.string(),
+                        ec.message());
+                    return;
+                }
+
+                std::string cmd = std::format("java -jar kickass\\kickass.jar {} -bytedump -debugdump -odir {}", file->m_path, workingDir.string());
+                Application::Instance().SendShellCommand(cmd);
+            };
+        std::thread(compileKickAss).detach();
+    }
+    else if (ext.string() == ".c")
+    {
+        auto compileCC65 = [file]()
+            {
+                LogManager::Instance().Clear(LogGroup::Build);
+
+                std::filesystem::path path = file->m_path;
+                std::filesystem::path filename = path.filename();
+                std::filesystem::path workingDir = path.parent_path() / "out";
+                std::error_code ec;
+                if (!std::filesystem::create_directories(workingDir, ec) && ec)
+                {
+                    Log(LogGroup::Build, "Failed to create directory '{}': {}\n", workingDir.string(), ec.message());
+                    return;
+                }
+
+                std::string path_c = path.string();;
+                std::string path_s = (workingDir / filename.replace_extension(".s")).string();
+                std::string path_o = (workingDir / filename.replace_extension(".o")).string();
+                std::string path_prg = (workingDir / filename.replace_extension(".prg")).string();
+                std::string path_dbg = (workingDir / filename.replace_extension(".dbg")).string();
+
+                std::string cwd = std::filesystem::current_path().string();
+                std::string cmdCompile = std::format("{}/cc65/bin/cc65.exe -O -t c64 {} -o {} -g", cwd, path_c, path_s);
+                std::string cmdAssembly = std::format("{}/cc65/bin/ca65.exe -t c64 {} -o {} -g", cwd, path_s, path_o);
+                std::string cmdLink = std::format("{}/cc65/bin/ld65.exe -t c64 {} c64.lib -o {} --dbgfile {}", cwd, path_o, path_prg, path_dbg);
+                
+                Application::Instance().SendShellCommand(cmdCompile);
+                Application::Instance().SendShellCommand(cmdAssembly);
+                Application::Instance().SendShellCommand(cmdLink);
+            };
+        std::thread(compileCC65).detach();
+    }
+    else
+    {
+        Log(LogGroup::Build, "Unsupported extension");
+    }
+}
+
+void SourceFileManager::RestoreFilesFromSettings()
+{
+    auto strList = Settings::Instance().GetStringList(SETTING_FILES);
+    RequestLoadFiles(strList);
+    LoadRequestedFiles(false);
+}
+
+void SourceFileManager::SaveFilesToSettings()
+{
+    std::vector<std::string> filelist;
+    for (auto file : m_sourceFiles)
+        filelist.push_back(file->m_path);
+    Settings::Instance().SetStringList(SETTING_FILES, filelist);
+}

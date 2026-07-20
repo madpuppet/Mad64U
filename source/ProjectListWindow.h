@@ -15,14 +15,16 @@ public:
     void SaveTokens(std::vector<std::string>& layoutTokens) override;
     static bool CreateFromLayoutTokens(WindowLayout* layout, const std::vector<std::string>& layoutTokens, size_t& idx);
     void MessageChild(WindowLayout *layout, struct WindowMessageStruct& msg) override;
+    void IconPressed(Icons icon, int itemIdx);
 
 protected:
     void RebuildFolders();
-    struct ProjectLines
+    struct ProjectLine
     {
-        bool m_isFolder;
+        SourceFile *m_file;
+        std::filesystem::path m_display;
         std::filesystem::path m_path;
     };
-    std::vector<ProjectLines> m_lines;
+    std::vector<ProjectLine> m_lines;
 };
 

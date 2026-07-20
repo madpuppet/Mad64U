@@ -40,6 +40,9 @@ public:
     void SetActiveSourceFile(class SourceFile* file) { m_activeSourceFile = file; }
     class SourceFile* GetActiveSourceFile() { return m_activeSourceFile; }
 
+    void Compile(class SourceFile* file);
+    void Run(class SourceFile* file);
+
 protected:
     std::mutex m_lock;
     std::vector<std::string> m_filesToLoad;

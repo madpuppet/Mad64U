@@ -201,11 +201,6 @@ bool WindowTree::CheckForSplit(int x, int y, WindowSplitQuery& query)
     return m_layout.CheckForSplit(x, y, query);
 }
 
-int WindowTree::CountWindows()
-{
-    return m_layout.CountWindows();
-}
-
 void WindowTree::CollapseEmptyLayouts()
 {
     m_layout.CollapseEmptyLayouts();
@@ -290,16 +285,6 @@ void WindowTree::Message(struct WindowMessageStruct& msg)
         Vec2i windowSize;
         SDL_GetWindowSizeInPixels(m_window, &windowSize.x, &windowSize.y);
 
-        Recti titleBarArea{ 0,0,windowSize.x,WINDOW_TITLE_BAR_HEIGHT };
-        if (!m_fullscreen && titleBarArea.Contains(msg.m_x, msg.m_y))
-        {
-            query->m_highlight = WindowHighlightType::WindowTitleBar;
-            query->m_area = titleBarArea;
-            query->m_tree = this;
-            msg.m_response++;
-            return;
-        }
-
         auto testIcon = [query, this, &msg](Icons icon, int x, int y)
             {
                 Recti area = IconRenderer::Instance().CalcIconArea(icon, x, y);
@@ -324,8 +309,19 @@ void WindowTree::Message(struct WindowMessageStruct& msg)
 
         if (msg.m_response > 0)
             return;
+
+        Recti titleBarArea{ 0,0,windowSize.x,WINDOW_TITLE_BAR_HEIGHT };
+        if (!m_fullscreen && titleBarArea.Contains(msg.m_x, msg.m_y))
+        {
+            query->m_highlight = WindowHighlightType::WindowTitleBar;
+            query->m_area = titleBarArea;
+            query->m_tree = this;
+            msg.m_response++;
+            return;
+        }
     }
 
+    msg.m_layout = &m_layout;
     m_layout.Message(msg);
 }
 

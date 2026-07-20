@@ -4,9 +4,21 @@
 #include "LogManager.h"
 #include "Application.h"
 
-OutputWindow::OutputWindow()
+OutputWindow::OutputWindow(LogGroup group) : m_activeGroup(group)
 {
-    m_name = "Output";
+    switch (group)
+    {
+        case LogGroup::Build:
+            m_name = "Build Output";
+            break;
+        case LogGroup::System:
+            m_name = "System Output";
+            break;
+        default:
+            m_activeGroup = LogGroup::System;
+            m_name = "FIXED Output";
+            break;
+    }
 }
 
 void OutputWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
@@ -16,10 +28,8 @@ void OutputWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     auto& lm = LogManager::Instance();
 
     // update content size
-    LogGroup logGroup = LogGroup::System;
     lm.m_lock.lock();
-
-    auto& lines = lm.m_logs[(int)logGroup].m_lines;
+    auto& lines = lm.m_logs[(int)m_activeGroup].m_lines;
     m_clientContentSize.y = (int)lines.size() * LINE_HEIGHT + LINE_HEIGHT;
 
     size_t size = lines.size();
@@ -57,7 +67,7 @@ void OutputWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
         y += LINE_HEIGHT;
     }
 
-    m_clientContentSize.x = w;
+    m_clientContentSize.x = w + 16;
 
     lm.m_lock.unlock();
 }
@@ -79,8 +89,9 @@ bool OutputWindow::CreateFromLayoutTokens(WindowLayout* layout, const std::vecto
         return false;
 
     idx++;
-    auto win = new OutputWindow;
-    win->m_activeGroup = (LogGroup)std::stoi(layoutTokens[idx++]);
+
+    auto group = (LogGroup)std::stoi(layoutTokens[idx++]);
+    auto win = new OutputWindow(group);
     layout->m_tabs.push_back(win);
     return true;
 }

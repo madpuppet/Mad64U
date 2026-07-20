@@ -3,6 +3,7 @@
 #include "SourceFileManager.h"
 #include "FontRenderer.h"
 #include "Application.h"
+#include "SourceFileWindow.h"
 #include <filesystem>
 #include <unordered_map>
 #include <vector>
@@ -45,10 +46,9 @@ void ProjectListWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     for (int i = firstLine; i < lastLine; i++)
     {
         auto line = m_lines[i];
-        if (line.m_isFolder)
+        if (!line.m_file)
         {
-            std::string stem = line.m_path.stem().string();
-            fr.RenderText(renderer, stem, tp.m_colors[(int)ThemeColor::TextOperator], x, y, FontType::Text);
+            fr.RenderText(renderer, line.m_display.string(), tp.m_colors[(int)ThemeColor::TextOperator], x, y, FontType::Text);
             fr.RenderText(renderer, line.m_path.string(), tp.m_colors[(int)ThemeColor::TextComment], x + 200, y, FontType::Text);
             y += LINE_HEIGHT;
         }
@@ -56,7 +56,7 @@ void ProjectListWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
         {
             ir.DrawIcon(renderer, Icons::Build, x + 16, y + 10);
             ir.DrawIcon(renderer, Icons::Run, x + 32 + 8, y + 10);
-            fr.RenderText(renderer, line.m_path.string(), tp.m_colors[(int)ThemeColor::TextGeneral], x + 56, y, FontType::Text);
+            fr.RenderText(renderer, line.m_display.string(), tp.m_colors[(int)ThemeColor::TextGeneral], x + 56, y, FontType::Text);
             y += LINE_HEIGHT;
         }
     }
@@ -74,6 +74,74 @@ ProjectListWindow::~ProjectListWindow()
 
 bool ProjectListWindow::HandleEvent(SDL_Event* e)
 {
+    switch (e->type)
+    {
+        case SDL_EVENT_MOUSE_BUTTON_DOWN:
+        {
+            auto& selected = WindowManager::Instance().GetWindowSelectionQuery();
+            if (selected.m_highlight == WindowHighlightType::ProjectListIcon && selected.m_window == this)
+            {
+                switch (selected.m_projectFiles.m_icon)
+                {
+                    case Icons::Build:
+                        if (m_lines[selected.m_id].m_file)
+                        {
+                            SourceFileManager::Instance().Compile(m_lines[selected.m_id].m_file);
+                        }
+                        break;
+
+                    case Icons::Run:
+                        if (m_lines[selected.m_id].m_file)
+                        {
+                            SourceFileManager::Instance().Run(m_lines[selected.m_id].m_file);
+                        }
+                        break;
+                }
+            }
+            else if (selected.m_highlight == WindowHighlightType::ProjectListFolder)
+            {
+                // load up ALL the files
+            }
+            else if (selected.m_highlight == WindowHighlightType::ProjectListFile)
+            {
+                // check if file has a window
+                auto file = m_lines[selected.m_id].m_file;
+
+                WindowMessageStruct msgFFW;
+                msgFFW.m_type = WindowMessage::Query_FindFileWindow;
+                msgFFW.m_sourceFile = file;
+                msgFFW.m_flags = WMF_EarlyOut | WMF_Window;
+                WindowManager::Instance().Message(msgFFW);
+                if (msgFFW.m_response > 0)
+                {
+                    msgFFW.m_layout->ActivateWindow(msgFFW.m_window);
+                    msgFFW.m_tree->m_dirty = true;
+                    return true;
+                }
+
+                // check if there is a locked layout to open in
+                WindowMessageStruct msgFLL;
+                msgFLL.m_type = WindowMessage::Query_FindLockedLayout;
+                msgFLL.m_flags = WMF_EarlyOut | WMF_Layout;
+                WindowManager::Instance().Message(msgFLL);
+                if (msgFLL.m_response > 0)
+                {
+                    msgFLL.m_layout->m_tabs.push_back(new SourceFileWindow(file));
+                    msgFLL.m_layout->m_activeTab = (int)msgFLL.m_layout->m_tabs.size() - 1;
+                }
+                else
+                {
+                    WindowManager::Instance().AddWindow(new SourceFileWindow(file));
+                }
+                WindowManager::Instance().LayoutWindows();
+                return true;
+            }
+        }
+        break;
+    }
+
+
+
     return WindowBase::HandleEvent(e);
 }
 
@@ -106,14 +174,13 @@ void ProjectListWindow::RebuildFolders()
     struct ProjectFolder
     {
         std::filesystem::path m_path;
-        std::vector<std::filesystem::path> m_files;
+        std::vector<SourceFile *> m_files;
     };
     std::vector<ProjectFolder> folders;
     for (auto file : sm.m_sourceFiles)
     {
         std::filesystem::path p = file->m_path;
         std::filesystem::path dir = p.parent_path();
-        std::filesystem::path filename = p.filename();
 
         auto it = std::find_if(folders.begin(), folders.end(), [dir](const auto& item)->bool { return item.m_path == dir; });
         ProjectFolder* pf;
@@ -128,22 +195,24 @@ void ProjectListWindow::RebuildFolders()
         {
             pf = &(*it);
         }
-        pf->m_files.push_back(filename);
+        pf->m_files.push_back(file);
     }
 
     // flatten this
     m_lines.clear();
     for (auto& folder : folders)
     {
-        ProjectLines pl;
+        ProjectLine pl;
+        pl.m_file = nullptr;
         pl.m_path = folder.m_path;
-        pl.m_isFolder = true;
+        pl.m_display = folder.m_path.stem();
         m_lines.push_back(pl);
         for (auto& file : folder.m_files)
         {
-            ProjectLines pl;
-            pl.m_path = file;
-            pl.m_isFolder = false;
+            ProjectLine pl;
+            pl.m_file = file;
+            pl.m_path = file->m_path;
+            pl.m_display = pl.m_path.filename();
             m_lines.push_back(pl);
         }
     }
@@ -173,7 +242,7 @@ void ProjectListWindow::MessageChild(WindowLayout *layout, struct WindowMessageS
             if (mouseLine >= 0 && mouseLine < m_lines.size())
             {
                 auto line = m_lines[mouseLine];
-                if (line.m_isFolder)
+                if (!line.m_file)
                 {
                     std::string stem = line.m_path.stem().string();
                     Recti folderArea;
@@ -189,24 +258,28 @@ void ProjectListWindow::MessageChild(WindowLayout *layout, struct WindowMessageS
                 }
                 else
                 {
-                    auto testIcon = [query, &msg](Icons icon, int x, int y) -> bool
+                    auto testIcon = [this, layout, query, &msg](Icons icon, int x, int y, int line) -> bool
                         {
                             Recti area = IconRenderer::Instance().CalcIconArea(icon, x, y);
                             if (area.Contains(msg.m_x, msg.m_y))
                             {
                                 query->m_area = area;
                                 query->m_highlight = WindowHighlightType::ProjectListIcon;
-                                query->m_id = (int)Icons::Build;
+                                query->m_id = line;
+                                query->m_projectFiles.m_icon = icon;
+                                query->m_tree = msg.m_tree;
+                                query->m_layout = layout;
+                                query->m_window = this;
                                 msg.m_response++;
                                 return true;
                             }
                             return false;
                         };
 
-                    if (testIcon(Icons::Build, x + 16, y + 10))
+                    if (testIcon(Icons::Build, x + 16, y + 10, mouseLine))
                         return;
 
-                    if (testIcon(Icons::Run, x + 32 + 8, y + 10))
+                    if (testIcon(Icons::Run, x + 32 + 8, y + 10, mouseLine))
                         return;
 
                     Recti fileArea;
@@ -216,6 +289,9 @@ void ProjectListWindow::MessageChild(WindowLayout *layout, struct WindowMessageS
                         query->m_area = fileArea;
                         query->m_highlight = WindowHighlightType::ProjectListFile;
                         query->m_id = mouseLine;
+                        query->m_tree = msg.m_tree;
+                        query->m_layout = layout;
+                        query->m_window = this;
                         msg.m_response++;
                         return;
                     }

@@ -31,7 +31,6 @@ struct WindowTree
     bool CheckForDocking(int x, int y, WindowDockQuery &query);
     void Paint(Recti *area);
     void GatherWindows(std::vector<WindowBase*>& windows);
-    int CountWindows();
     void CollapseEmptyLayouts();
     Icons FindIcon(int x, int y);
     bool CheckForSplit(int x, int y, WindowSplitQuery& query);

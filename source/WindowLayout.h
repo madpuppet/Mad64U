@@ -33,6 +33,7 @@ struct WindowLayout
     bool CheckForSplit(int x, int y, WindowSplitQuery& query);
     bool Tick();
     class WindowBase* GetActiveWindow();
+    void ActivateWindow(WindowBase* window);
 
     WindowLayout* FindFirstNonSplitLayout();
     WindowLayout* FindLayoutFromWindow(WindowBase* window, int& tabIdx);
@@ -41,5 +42,8 @@ struct WindowLayout
     void LoadLayout(const std::vector<std::string>& layoutTokens, size_t& idx);
 
     void Message(struct WindowMessageStruct& msg);
+    bool HandleEvent(SDL_Event* e);
 };
+
+
 
