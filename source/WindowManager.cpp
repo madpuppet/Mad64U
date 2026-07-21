@@ -142,6 +142,7 @@ void WindowManager::HandleEvent(SDL_Event* e)
                                         m_windowTrees.erase(it);
                                     }
                                     delete m_mouseSelectionQuery.m_tree;
+                                    WindowManager::Instance().IndexWindows();
                                 }
                                 m_mouseSelectionQuery.Reset();
                             }
@@ -204,11 +205,12 @@ void WindowManager::HandleEvent(SDL_Event* e)
                         WindowMessageStruct msgLLC;
                         msgLLC.m_type = WindowMessage::Query_FindLockedLayout;
                         msgLLC.m_flags = WMF_Layout | WMF_EarlyOut;
+                        msgLLC.m_tree = m_mouseSelectionQuery.m_tree;
                         Message(msgLLC);
 
                         WindowMessageStruct msgWC;
                         msgWC.m_type = WindowMessage::Query_WindowCount;
-                        msgWC.m_flags = WMF_Layout;
+                        msgWC.m_flags = WMF_Window;
                         msgWC.m_tree = m_mouseSelectionQuery.m_tree;
                         Message(msgWC);
 
@@ -419,6 +421,7 @@ void WindowManager::HandleEvent(SDL_Event* e)
                             m_windowTrees.erase(it);
                             delete m_mouseTree;
                             m_mouseTree = nullptr;
+                            WindowManager::Instance().IndexWindows();
 
                             m_mouseDockQuery.m_tree->LayoutWindows();
                             WindowManager::Instance().SaveWindowLayout();
@@ -512,11 +515,13 @@ void WindowManager::HandleEvent(SDL_Event* e)
                     {
                         // if this isn't the only tab in the tree, then we can drag it out
                         WindowMessageStruct msg;
+                        msg.m_tree = FindWindowByID(e->button.windowID);
                         msg.m_flags = WMF_Layout | WMF_EarlyOut;
                         msg.m_type = WindowMessage::Query_FindLockedLayout;
                         Message(msg);
 
                         WindowMessageStruct msgCW;
+                        msgCW.m_tree = msg.m_tree;
                         msgCW.m_flags = WMF_Window;
                         msgCW.m_type = WindowMessage::Query_WindowCount;
                         Message(msgCW);
@@ -555,6 +560,7 @@ void WindowManager::HandleEvent(SDL_Event* e)
                             m_activeLayout = &tree->m_layout;
                             m_activeWindow = m_activeLayout->GetActiveWindow();
                             m_windowTrees.push_back(tree);
+                            WindowManager::Instance().IndexWindows();
                             m_mouseTree = tree;
                             m_menuList.Layout(tree);
                             tree->LayoutWindows();
@@ -879,6 +885,7 @@ void WindowManager::LoadWindowLayout()
         auto tree = new WindowTree(Recti{ x,y,w,h });
         tree->m_fullscreen = isFullscreen;
         m_windowTrees.push_back(tree);
+        WindowManager::Instance().IndexWindows();
 
         tree->m_layout.LoadLayout(layoutTokens, idx);
 
@@ -886,6 +893,13 @@ void WindowManager::LoadWindowLayout()
         tree->LayoutWindows();
     }
 }
+
+void WindowManager::IndexWindows()
+{
+    for (int i = 0; i < m_windowTrees.size(); i++)
+        m_windowTrees[i]->m_windowIdx = i;
+}
+
 
 void WindowManager::Message(WindowMessageStruct& msg)
 {

@@ -110,6 +110,8 @@ public:
     void SaveWindowLayout();
     void LoadWindowLayout();
 
+    void IndexWindows();
+
     void OnWindowDestruct(WindowBase* win)
     {
         if (m_activeWindow == win)

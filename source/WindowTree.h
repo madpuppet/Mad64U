@@ -23,6 +23,7 @@ struct WindowTree
     u32 m_windowID = 0;
     bool m_dirty = true;
     bool m_fullscreen = false;
+    u32 m_windowIdx = 0;
 
     WindowLayout *FindLayoutFromWindow(WindowBase *window, int &tabIdx);
     void LayoutWindows();

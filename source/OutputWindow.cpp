@@ -51,7 +51,7 @@ void OutputWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     SDL_RenderFillRect(renderer, &body);
 
     int firstLine = Max(m_clientContentOffset.y / LINE_HEIGHT, 0);
-    int lastLine = Min(firstLine + m_clientArea.h / LINE_HEIGHT, (int)lines.size());
+    int lastLine = Min(firstLine + m_clientArea.h / LINE_HEIGHT + 2, (int)lines.size());
     int xBase = m_clientArea.x - m_clientContentOffset.x + BORDER_MARGIN;
     int yBase = m_clientArea.y - m_clientContentOffset.y + BORDER_MARGIN;
     int x = xBase;

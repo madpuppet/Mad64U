@@ -179,13 +179,26 @@ void WindowTree::Paint(Recti* area)
         ir.DrawIcon(m_renderer, Icons::Resize, windowArea.w - 8, windowArea.h - 8);
     }
 
-    NetworkStatus status;
-    NetworkManager::Instance().GetNetworkStatus(status);
-    if (status.m_connected)
+    if (m_windowIdx == 0)
     {
-        std::string statusStr = std::format("connected: {}", status.m_ipAddress);
-        SDL_Color col = tp.m_colors[(int)ThemeColor::TabText];
-        fr.RenderText(m_renderer, statusStr, col, windowArea.w - 400, 2, FontType::UI);
+        NetworkStatus status;
+        NetworkManager::Instance().GetNetworkStatus(status);
+        if (status.m_connected)
+        {
+            std::string statusStr = std::format("{} : {}", status.m_ipAddress, status.m_hostName);
+            SDL_Color col = tp.m_colors[(int)ThemeColor::TabTextSelected];
+            Recti area;
+            fr.CalcTextArea(m_renderer, statusStr, { 0,0 }, FontType::UI, area);
+            fr.RenderText(m_renderer, statusStr, col, windowArea.w - 64 - area.w, 2, FontType::UI);
+        }
+        else
+        {
+            std::string statusStr = std::format("{} : no connection", status.m_ipAddress);
+            SDL_Color col = tp.m_colors[(int)ThemeColor::TabText];
+            Recti area;
+            fr.CalcTextArea(m_renderer, statusStr, { 0,0 }, FontType::UI, area);
+            fr.RenderText(m_renderer, statusStr, col, windowArea.w - 64 - area.w, 2, FontType::UI);
+        }
     }
 
 

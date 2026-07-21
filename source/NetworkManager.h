@@ -2,6 +2,7 @@
 
 #include "Singleton.h"
 #include <semaphore>
+#include <map>
 
 enum class NetworkMessage
 {
@@ -33,9 +34,10 @@ struct NMS_SetIP : public NetworkMessageStruct
 
 struct NMS_Command : public NetworkMessageStruct
 {
-    NMS_Command(const std::string& command, u8 *mem=nullptr, size_t size=0) : NetworkMessageStruct(NetworkMessage::Command), m_command(command), m_contentMem(mem), m_contentSize(size) {}
+    NMS_Command(const std::string& command, u8 *mem=nullptr, size_t size=0, bool isGet=false) : NetworkMessageStruct(NetworkMessage::Command), m_command(command), m_contentMem(mem), m_contentSize(size), m_isGet(isGet) {}
 
     std::string m_command;
+    bool m_isGet = false;
     u8* m_contentMem = nullptr;
     size_t m_contentSize = 0;
 };
@@ -46,6 +48,7 @@ struct NetworkStatus
 {
     bool m_connected;
     std::string m_ipAddress;
+    std::string m_hostName;
 };
 
 class NetworkManager : public Singleton<NetworkManager>
@@ -63,6 +66,8 @@ public:
 protected:
     void Cmd_SetIP(NetworkMessageStruct* msg);
     void Cmd_Command(NetworkMessageStruct* msg);
+    
+    void SendNetworkCommand(NMS_Command* msg, NetworkResult& result);
 
     void Run();
     bool TryConnect();
@@ -73,9 +78,8 @@ protected:
     volatile bool m_terminate = false;
 
     bool m_connected = false;
-    struct NET_StreamSocket* m_socket = nullptr;
     struct NET_Address* m_address = nullptr;
-
+    std::string m_hostName;
 
     static const int MessageListSize = 16384;
     NetworkMessageStruct* m_messageList[MessageListSize];

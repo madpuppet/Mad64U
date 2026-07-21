@@ -82,6 +82,9 @@
     <ClCompile Include="source\NetworkManager.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="source\JSON.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\common.h">
@@ -419,6 +422,9 @@
     </ClInclude>
     <ClInclude Include="include\SDL3_ttf\SDL_ttf.h">
       <Filter>3rdParty\SDL3_ttf</Filter>
+    </ClInclude>
+    <ClInclude Include="source\JSON.h">
+      <Filter>source</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -721,12 +721,6 @@ void WindowLayout::Message(struct WindowMessageStruct& msg)
                     }
                 }
                 break;
-
-                case WindowMessage::Query_WindowCount:
-                {
-                    msg.m_response += (int)m_tabs.size();
-                }
-                break;;
             }
 
             if ((msg.m_flags & WMF_EarlyOut) && msg.m_response > 0)
@@ -742,6 +736,11 @@ void WindowLayout::Message(struct WindowMessageStruct& msg)
             }
             else
             {
+                if (msg.m_type == WindowMessage::Query_WindowCount)
+                {
+                    msg.m_response += (int)m_tabs.size();
+                }
+
                 for (auto tab : m_tabs)
                 {
                     tab->Message(this, msg);
