@@ -68,10 +68,15 @@ public:
 
     bool SendShellCommand(const std::string& command);
 
+    void PostTestNetwork();
+
 protected:
     void CreateShellProcess();
     void ProcessShellOutput();
     void DestroyShellProcess();
+
+    void StartupNetwork();
+    void ShutdownNetwork();
 
     void CreateSettings();
     void CreateMenus();

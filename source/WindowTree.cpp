@@ -1,6 +1,7 @@
 #include "common.h"
 #include "WindowTree.h"
 #include "Settings.h"
+#include "NetworkManager.h"
 #include <format>
 
 #include <dwmapi.h>
@@ -113,6 +114,7 @@ void WindowTree::Paint(Recti* area)
 {
     auto& wm = WindowManager::Instance();
     auto& ir = IconRenderer::Instance();
+    auto& fr = FontRenderer::Instance();
     auto& tp = Application::Instance().GetThemeProperties();
     auto& highlight = wm.GetWindowHighlightQuery();
 
@@ -147,7 +149,7 @@ void WindowTree::Paint(Recti* area)
     SDL_RenderFillRect(m_renderer, &sdlBarRect);
 
     // render dock guide
-    auto &dockQuery = wm.GetWindowDockQuery();
+    auto& dockQuery = wm.GetWindowDockQuery();
     if (dockQuery.m_foundDock && dockQuery.m_tree == this)
     {
         SDL_FRect bodyArea{ (float)dockQuery.m_bodyArea.x,(float)dockQuery.m_bodyArea.y,(float)dockQuery.m_bodyArea.w,(float)dockQuery.m_bodyArea.h };
@@ -168,7 +170,7 @@ void WindowTree::Paint(Recti* area)
         SDL_RenderFillRect(m_renderer, &area);
     }
 
-    ir.DrawIcon(m_renderer, Icons::Close, windowArea.w - 12, WINDOW_TITLE_BAR_HEIGHT/2);
+    ir.DrawIcon(m_renderer, Icons::Close, windowArea.w - 12, WINDOW_TITLE_BAR_HEIGHT / 2);
     if (m_fullscreen)
         ir.DrawIcon(m_renderer, Icons::Windowed, windowArea.w - 30, WINDOW_TITLE_BAR_HEIGHT / 2);
     else
@@ -176,6 +178,16 @@ void WindowTree::Paint(Recti* area)
         ir.DrawIcon(m_renderer, Icons::Fullscreen, windowArea.w - 30, WINDOW_TITLE_BAR_HEIGHT / 2);
         ir.DrawIcon(m_renderer, Icons::Resize, windowArea.w - 8, windowArea.h - 8);
     }
+
+    NetworkStatus status;
+    NetworkManager::Instance().GetNetworkStatus(status);
+    if (status.m_connected)
+    {
+        std::string statusStr = std::format("connected: {}", status.m_ipAddress);
+        SDL_Color col = tp.m_colors[(int)ThemeColor::TabText];
+        fr.RenderText(m_renderer, statusStr, col, windowArea.w - 400, 2, FontType::UI);
+    }
+
 
     if (wm.GetActiveWindowTree() == this)
     {

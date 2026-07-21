@@ -10,6 +10,7 @@
 #include "ProjectListWindow.h"
 #include "OutputWindow.h"
 #include "UndoBufferWindow.h"
+#include "NetworkManager.h"
 #include <filesystem>
 
 u32 CustomEvent_Timer = 0;
@@ -185,7 +186,6 @@ void Application::CreateMenus()
 
     auto styleMenu = new WindowMenu;
     styleMenu->m_name = "Style";
-
     auto themeItem = new WindowMenuItem("Theme");
     for (auto theme : m_themes)
     {
@@ -198,6 +198,26 @@ void Application::CreateMenus()
     }
     styleMenu->m_items.push_back(themeItem);
     wm.AddWindowMenu(styleMenu);
+
+    auto ultimateMenu = new WindowMenu;
+    ultimateMenu->m_name = "C64 Ultimate";
+    ultimateMenu->m_items.push_back(new WindowMenuItem("Reset", []() {NetworkManager::Instance().SendReset(); }));
+
+    auto screenCol = []()
+        {
+            auto& nm = NetworkManager::Instance();
+            for (int i = 0; i < 64; i++)
+            {
+                int border = i & 15;
+                int back = i / 4;
+                std::string str = std::format("machine:writemem?address=D020&data={:02X}{:02X}", border, back);
+                nm.Message(new NMS_Command(str));
+            }
+        };
+
+
+    ultimateMenu->m_items.push_back(new WindowMenuItem("ScreenCol",screenCol));
+    wm.AddWindowMenu(ultimateMenu);
 
     auto newWindowProjectList = []()
         {
@@ -233,7 +253,7 @@ void Application::CreateMenus()
     auto windowMenu = new WindowMenu;
     windowMenu->m_name = "Windows";
     windowMenu->m_items.push_back(new WindowMenuItem("Project Files", newWindowProjectList ));
-    windowMenu->m_items.push_back(new WindowMenuItem("System Output", newWindowSystemOutput));
+    windowMenu->m_items.push_back(new WindowMenuItem("Debug Output", newWindowSystemOutput));
     windowMenu->m_items.push_back(new WindowMenuItem("Build Output", newWindowBuildOutput));
     windowMenu->m_items.push_back(new WindowMenuItem("Undo Buffer", newWindowUndoBuffer));
     windowMenu->m_items.push_back(new WindowMenuItem("- - - - - - - - - -", []() {}));
@@ -506,6 +526,7 @@ int Application::Run()
 
     // create 
     CreateSettings();
+    NetworkManager::Startup();
     FontRenderer::Startup();
     IconRenderer::Startup();
     WindowManager::Startup();
@@ -526,6 +547,9 @@ int Application::Run()
     AddCustomEvents();
 
     wm.LoadWindowLayout();
+
+    auto& nm = NetworkManager::Instance();
+    nm.Message(new NMS_SetIP("192.168.50.15"));
 
     SDL_Event e;
     while (!m_quit)
@@ -553,6 +577,7 @@ int Application::Run()
     WindowManager::Shutdown();
     IconRenderer::Shutdown();
     FontRenderer::Shutdown();
+    NetworkManager::Shutdown();
 
     return 1;
 }
@@ -619,4 +644,20 @@ void Application::ProcessShellOutput()
         }
     }
 }
+
+void Application::StartupNetwork()
+{
+}
+
+void Application::PostTestNetwork()
+{
+}
+
+void Application::ShutdownNetwork()
+{
+}
+
+
+
+
 

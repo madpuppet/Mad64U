@@ -10,7 +10,6 @@ enum class LogGroup
 {
     System,
     Build,
-
     MAX
 };
 constexpr size_t NumLogGroup = static_cast<size_t>(LogGroup::MAX);

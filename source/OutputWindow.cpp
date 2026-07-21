@@ -12,11 +12,11 @@ OutputWindow::OutputWindow(LogGroup group) : m_activeGroup(group)
             m_name = "Build Output";
             break;
         case LogGroup::System:
-            m_name = "System Output";
+            m_name = "Debug Output";
             break;
         default:
-            m_activeGroup = LogGroup::System;
-            m_name = "FIXED Output";
+            m_activeGroup = LogGroup::Build;
+            m_name = "Internal Error";
             break;
     }
 }
