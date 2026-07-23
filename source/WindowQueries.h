@@ -57,7 +57,6 @@ enum class WindowHighlightType
     WindowLayoutIcon,
     ProjectListIcon,
     ScrollBar,
-    ProjectListFolder,
     ProjectListFile,
     ClientArea
 };

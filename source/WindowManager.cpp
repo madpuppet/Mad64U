@@ -105,7 +105,6 @@ void WindowManager::HandleEvent(SDL_Event* e)
                 switch (m_mouseSelectionQuery.m_highlight)
                 {
                     case WindowHighlightType::ProjectListFile:
-                    case WindowHighlightType::ProjectListFolder:
                     case WindowHighlightType::ProjectListIcon:
                         m_mouseSelectionQuery.m_window->HandleEvent(e);
                         return;
@@ -926,6 +925,25 @@ void WindowManager::Message(WindowMessageStruct& msg)
             if ((msg.m_response > 0) && (msg.m_flags & WMF_EarlyOut))
                 return;
         }
+    }
+}
+
+void WindowManager::QueueDeferredMessage(WindowMessageStruct& msg)
+{
+    m_msgQueueLock.lock();
+    m_msgQueue.push_back(msg);
+    m_msgQueueLock.unlock();
+}
+
+void WindowManager::SendDeferredMessages()
+{
+    m_msgQueueLock.lock();
+    auto queue = std::move(m_msgQueue);
+    m_msgQueueLock.unlock();
+
+    for (auto& msg : queue)
+    {
+        Message(msg);
     }
 }
 

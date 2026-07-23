@@ -34,9 +34,11 @@ struct NMS_SetIP : public NetworkMessageStruct
 
 struct NMS_Command : public NetworkMessageStruct
 {
-    NMS_Command(const std::string& command, u8 *mem=nullptr, size_t size=0, bool isGet=false) : NetworkMessageStruct(NetworkMessage::Command), m_command(command), m_contentMem(mem), m_contentSize(size), m_isGet(isGet) {}
+    NMS_Command(const std::string& command, u8 *mem=nullptr, size_t size=0, const std::string &filename="", bool isGet = false)
+        : NetworkMessageStruct(NetworkMessage::Command), m_command(command), m_contentMem(mem), m_filename(filename), m_contentSize(size), m_isGet(isGet) {}
 
     std::string m_command;
+    std::string m_filename;
     bool m_isGet = false;
     u8* m_contentMem = nullptr;
     size_t m_contentSize = 0;
@@ -62,12 +64,16 @@ public:
 
     // helpers
     void SendReset() { Message(new NMS_Command("machine:reset")); }
+    void SendPause() { Message(new NMS_Command("machine:pause")); }
+    void SendResume() { Message(new NMS_Command("machine:resume")); }
+    void SendPowerOff() { Message(new NMS_Command("machine:poweroff")); }
 
 protected:
     void Cmd_SetIP(NetworkMessageStruct* msg);
     void Cmd_Command(NetworkMessageStruct* msg);
     
     void SendNetworkCommand(NMS_Command* msg, NetworkResult& result);
+    void UpdateHostName();
 
     void Run();
     bool TryConnect();

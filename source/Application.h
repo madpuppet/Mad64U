@@ -35,8 +35,13 @@ enum class ThemeColor
     WindowEdgeLightSelected,
     WindowEdgeDarkSelected,
 
+    SearchTitleBack,
+    SearchTextBack,
+
     TextGeneral,
     TextOperator,
+    TextString,
+    TextLabel,
     TextComment,
 
     MAX

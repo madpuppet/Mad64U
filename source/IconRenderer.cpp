@@ -16,6 +16,7 @@ IconRenderer::IconRenderer()
     LoadImage("data/icon_layoutFree.png");
     LoadImage("data/icon_build.png");
     LoadImage("data/icon_run.png");
+    LoadImage("data/icon_deploy.png");
 }
 
 IconRenderer::~IconRenderer()

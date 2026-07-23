@@ -3,6 +3,7 @@
 #include "Singleton.h"
 #include "WindowTree.h"
 #include "WindowMenuList.h"
+#include <mutex>
 
 struct WindowHighlightState
 {
@@ -24,6 +25,7 @@ enum class WindowMessage
     File_Added,
     File_Deleted,
     File_Renamed,
+    File_Compiled,
     Query_FileCount,
     Query_WindowCount,
     Query_Highlight,
@@ -61,6 +63,8 @@ public:
     void HandleEvent(SDL_Event* e);
     WindowTree* FindWindowByID(int id);
 
+    void QueueDeferredMessage(WindowMessageStruct& msg);
+    void SendDeferredMessages();
     void Message(WindowMessageStruct& msg);
 
     const WindowDockQuery& GetWindowDockQuery() { return m_mouseDockQuery; }
@@ -119,6 +123,9 @@ public:
     }
 
 protected:
+    std::vector<WindowMessageStruct> m_msgQueue;
+    std::mutex m_msgQueueLock;
+
     std::vector<WindowTree*> m_windowTrees;
     std::vector<WindowBase*> m_windowsToRemove;
     WindowMenuList m_menuList;

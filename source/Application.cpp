@@ -45,9 +45,12 @@ static const char* s_themecolor_name[NumThemeColor] =
     "WindowEdgeDark",
     "WindowEdgeLightSelected",
     "WindowEdgeDarkSelected",
-
+    "SearchTitleBack",
+    "SearchTextBack",
     "TextGeneral",
     "TextOperator",
+    "TextString",
+    "TextLabel",
     "TextComment"
 };
 
@@ -202,6 +205,15 @@ void Application::CreateMenus()
     auto ultimateMenu = new WindowMenu;
     ultimateMenu->m_name = "C64 Ultimate";
     ultimateMenu->m_items.push_back(new WindowMenuItem("Reset", []() {NetworkManager::Instance().SendReset(); }));
+    ultimateMenu->m_items.push_back(new WindowMenuItem("LoadStar", []()
+        {
+            NetworkManager::Instance().Message(new NMS_Command("machine:writemem?address=0277&data=4CCF222A222C382C310D"));
+            NetworkManager::Instance().Message(new NMS_Command("machine:writemem?address=00C6&data=0A"));
+            
+            NetworkManager::Instance().Message(new NMS_Command("machine:writemem?address=0277&data=52554E0D"));
+            NetworkManager::Instance().Message(new NMS_Command("machine:writemem?address=00C6&data=04"));
+        }));
+
 
     auto screenCol = []()
         {
@@ -214,9 +226,11 @@ void Application::CreateMenus()
                 nm.Message(new NMS_Command(str));
             }
         };
-
-
     ultimateMenu->m_items.push_back(new WindowMenuItem("ScreenCol",screenCol));
+    ultimateMenu->m_items.push_back(new WindowMenuItem("Pause", []() {NetworkManager::Instance().SendPause(); }));
+    ultimateMenu->m_items.push_back(new WindowMenuItem("Resume", []() {NetworkManager::Instance().SendResume(); }));
+    ultimateMenu->m_items.push_back(new WindowMenuItem("Power Off", []() {NetworkManager::Instance().SendPowerOff(); }));
+
     wm.AddWindowMenu(ultimateMenu);
 
     auto newWindowProjectList = []()
@@ -421,8 +435,14 @@ void Application::CreateSettings()
         theme.m_colors[(int)ThemeColor::WindowEdgeDark] = SDL_Color(0, 0, 0, 255);
         theme.m_colors[(int)ThemeColor::WindowEdgeLightSelected] = SDL_Color(96, 96, 96, 255);
         theme.m_colors[(int)ThemeColor::WindowEdgeDarkSelected] = SDL_Color(0, 0, 0, 255);
+
+        theme.m_colors[(int)ThemeColor::SearchTitleBack] = SDL_Color(0, 0, 0, 255);
+        theme.m_colors[(int)ThemeColor::SearchTextBack] = SDL_Color(0, 0, 0, 255);
+
         theme.m_colors[(int)ThemeColor::TextGeneral] = SDL_Color(230, 230, 230, 255);
         theme.m_colors[(int)ThemeColor::TextOperator] = SDL_Color(64, 255, 255, 255);
+        theme.m_colors[(int)ThemeColor::TextString] = SDL_Color(128, 255, 255, 255);
+        theme.m_colors[(int)ThemeColor::TextLabel] = SDL_Color(64, 64, 255, 255);
         theme.m_colors[(int)ThemeColor::TextComment] = SDL_Color(128, 255, 128, 255);
         m_themes.push_back(&theme);
     }
@@ -456,8 +476,14 @@ void Application::CreateSettings()
         theme.m_colors[(int)ThemeColor::WindowEdgeDark] = SDL_Color(0, 0, 0, 255);
         theme.m_colors[(int)ThemeColor::WindowEdgeLightSelected] = SDL_Color(128, 220, 220, 64);
         theme.m_colors[(int)ThemeColor::WindowEdgeDarkSelected] = SDL_Color(0, 0, 0, 255);
+
+        theme.m_colors[(int)ThemeColor::SearchTitleBack] = SDL_Color(16, 32, 64, 255);
+        theme.m_colors[(int)ThemeColor::SearchTextBack] = SDL_Color(8, 16, 32, 255);
+
         theme.m_colors[(int)ThemeColor::TextGeneral] = SDL_Color(0, 200, 255, 255);
         theme.m_colors[(int)ThemeColor::TextOperator] = SDL_Color(255, 128, 64, 255);
+        theme.m_colors[(int)ThemeColor::TextString] = SDL_Color(200, 170, 128, 255);
+        theme.m_colors[(int)ThemeColor::TextLabel] = SDL_Color(255, 240, 64, 255);
         theme.m_colors[(int)ThemeColor::TextComment] = SDL_Color(128, 255, 128, 255);
         m_themes.push_back(&theme);
     }
@@ -491,8 +517,15 @@ void Application::CreateSettings()
         theme.m_colors[(int)ThemeColor::WindowEdgeDark] = SDL_Color(0, 0, 0, 255);
         theme.m_colors[(int)ThemeColor::WindowEdgeLightSelected] = SDL_Color(196, 196, 196, 64);
         theme.m_colors[(int)ThemeColor::WindowEdgeDarkSelected] = SDL_Color(64, 64, 64, 255);
+
+        theme.m_colors[(int)ThemeColor::SearchTitleBack] = SDL_Color(16, 32, 64, 255);
+        theme.m_colors[(int)ThemeColor::SearchTextBack] = SDL_Color(8, 16, 32, 255);
+
+
         theme.m_colors[(int)ThemeColor::TextGeneral] = SDL_Color(0, 0, 0, 255);
         theme.m_colors[(int)ThemeColor::TextOperator] = SDL_Color(0, 0, 255, 255);
+        theme.m_colors[(int)ThemeColor::TextString] = SDL_Color(200, 170, 128, 255);
+        theme.m_colors[(int)ThemeColor::TextLabel] = SDL_Color(64, 64, 255, 255);
         theme.m_colors[(int)ThemeColor::TextComment] = SDL_Color(0, 128, 0, 255);
         m_themes.push_back(&theme);
 
@@ -561,6 +594,7 @@ int Application::Run()
                 SourceFileManager::Instance().Tick();
                 WindowManager::Instance().Tick();
                 ProcessShellOutput();
+                wm.SendDeferredMessages();
             }
             else
                 wm.HandleEvent(&e);
@@ -642,6 +676,15 @@ void Application::ProcessShellOutput()
         {
             m_shellOutputLine.push_back(buffer[i]);
         }
+    }
+
+    if (bytesRead > 0)
+    {
+        // assume if we got output, we might need to refresh the project output list
+        WindowMessageStruct msg;
+        msg.m_type = WindowMessage::File_Compiled;
+        msg.m_flags = WMF_Window;
+        WindowManager::Instance().Message(msg);
     }
 }
 

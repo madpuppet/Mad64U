@@ -3,7 +3,7 @@
 void main()
 {
 	char x = 0;
-	while (1)
+	while (1)			// some comment
 	{
 		for (x=0; x<100; x++)
 		{

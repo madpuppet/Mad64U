@@ -24,6 +24,11 @@ NetworkManager::~NetworkManager()
 
 void NetworkManager::Message(NetworkMessageStruct* msg)
 {
+    if (m_hostName.empty())
+    {
+        UpdateHostName();
+    }
+
     m_messageList[m_writeMsgIdx] = msg;
     m_writeMsgIdx = (m_writeMsgIdx + 1) % MessageListSize;
     m_signalMsg.release();
@@ -89,12 +94,17 @@ void NetworkManager::Cmd_SetIP(NetworkMessageStruct* msg)
         return;
     }
 
+    UpdateHostName();
+}
+
+void NetworkManager::UpdateHostName()
+{
     // query the host info
     NetworkResult result;
-    auto cmd = new NMS_Command("info", nullptr, 0, true);
+    auto cmd = new NMS_Command("info", nullptr, 0, "", true);
     SendNetworkCommand(cmd, result);
 
-    if (result.mem)
+    if (result.mem && *result.mem)
     {
         JSON json;
         json.Parse(result.mem, (int)result.size);
@@ -134,12 +144,27 @@ void NetworkManager::SendNetworkCommand(NMS_Command* msg, NetworkResult &result)
 
     std::string pushtype = msg->m_isGet ? "GET" : (msg->m_contentSize > 0 ? "POST" : "PUT");
 
-    const std::string request = std::format(
-        "{} /v1/{} HTTP/1.1\r\n"
-        "Host: {}\r\n"
-        "Content-Length: {}\r\n"
-        "Connection: close\r\n"
-        "\r\n", pushtype, msg->m_command, m_ipAddress, msg->m_contentSize);
+    std::string request;
+    if (msg->m_filename.empty())
+    {
+        request = std::format(
+            "{} /v1/{} HTTP/1.1\r\n"
+            "Host: {}\r\n"
+            "Content-Length: {}\r\n"
+            "Connection: close\r\n"
+            "\r\n", pushtype, msg->m_command, m_ipAddress, msg->m_contentSize);
+    }
+    else
+    {
+        request = std::format(
+            "{} /v1/{} HTTP/1.1\r\n"
+            "Host: {}\r\n"
+            "Content-Length: {}\r\n"
+            "Content-Type: application/octet-stream\r\n"
+            "Content-Disposition: attachment; filename=\"{}\"\r\n"
+            "Connection: close\r\n"
+            "\r\n", pushtype, msg->m_command, m_ipAddress, msg->m_contentSize, msg->m_filename);
+    }
 
     if (!NET_WriteToStreamSocket(socket, request.data(), static_cast<int>(request.size())))
     {

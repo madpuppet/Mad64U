@@ -5,6 +5,7 @@
 #include "Application.h"
 #include "SourceFileWindow.h"
 #include "SourceFileCmdBuffer.h"
+#include "NetworkManager.h"
 #include "LogManager.h"
 #include <filesystem>
 #include <fstream>
@@ -14,7 +15,9 @@
 #include "Settings.h"
 
 const char* s_keywords_asm[] = { "tax", "eor", "dec", "pla", "rts", "rti", "bcc", "txa", "clc", "sec", "cpx", "cpy", "cmp", "bne", "beq", "bmi", "bpl", "ldx", "ldy", "stx", "sty", "jsr", "jmp", "tay", "tya", "pha", "dey", "dex", "inc", "inx", "iny", "lda", "sta", "adc", "lsr", "asr", "asl", "lsl", "and", "ora", "xor", "sei", "cli", 0};
-const char* s_keywords_c[] = { "void", "for", "if", "else", 0 };
+const char* s_keywords_c[] = { "char", "int", "long", "short", "(", ")", ";", "{", "}", "[", "]",
+            "void", "while", "for", "if", "else", "#define", "#ifdef", "#include", "//",
+            "<", ">", "=", "==", "!=", "+", "-", "*", "/", "++", "--", "+=", "-=", 0};
 
 void SourceFileManager::InitKeywords(const char** keywords, SourceType sourceType, bool caseSensitive)
 {
@@ -22,9 +25,9 @@ void SourceFileManager::InitKeywords(const char** keywords, SourceType sourceTyp
     while (*k)
     {
         if (caseSensitive)
-            m_keywords[(int)SourceType::Asm].insert(HashU8(0, *k));
+            m_keywords[(int)sourceType].insert(HashU8(0, *k));
         else
-            m_keywords[(int)SourceType::Asm].insert(HashU8NoCase(0, *k));
+            m_keywords[(int)sourceType].insert(HashU8NoCase(0, *k));
         k++;
     }
 }
@@ -217,6 +220,8 @@ bool SourceFileManager::CloseFile(SourceFile* file)
     if (m_activeSourceFile == file)
         m_activeSourceFile = nullptr;
 
+    m_sourceFiles.erase(std::find(m_sourceFiles.begin(), m_sourceFiles.end(), file));
+
     WindowMessageStruct msg;
     msg.m_type = WindowMessage::File_Deleted;
     msg.m_flags = WMF_Window;
@@ -226,7 +231,6 @@ bool SourceFileManager::CloseFile(SourceFile* file)
 
     // delete the file
     delete file;
-    m_sourceFiles.erase(std::find(m_sourceFiles.begin(), m_sourceFiles.end(), file));
 
     WindowManager::Instance().LayoutWindows();
     return true;
@@ -256,13 +260,69 @@ std::vector<std::filesystem::path> FindC64Outputs(std::filesystem::path outPath)
                 return static_cast<char>(std::tolower(character));
             });
 
-        if (extension == ".d64" || extension == ".prg")
+        if (extension == ".d64" || extension == ".prg" || extension == ".s")
             files.push_back(entry.path());
     }
 
     return files;
 }
 
+
+bool LoadBinaryFile(const std::filesystem::path& outputFile, u8 * &mem, size_t& outputSize)
+{
+    outputSize = 0;
+
+    std::ifstream file(outputFile, std::ios::binary | std::ios::ate);
+    if (!file)
+        return false;
+
+    const std::streampos endPosition = file.tellg();
+    if (endPosition < 0)
+        return false;
+
+    outputSize = (size_t)endPosition;
+
+    mem = new u8[outputSize];
+    file.seekg(0, std::ios::beg);
+
+    if (outputSize > 0 && !file.read((char*)mem, outputSize))
+        return false;
+
+    return true;
+}
+
+void SourceFileManager::Run(const std::filesystem::path& outputFile)
+{
+    if (outputFile.extension() == ".d64")
+    {
+        std::string cmd = std::format("start F:\\Emulators\\C64\\Vice3.6\\bin\\x64sc.exe {}", outputFile.string());
+        Application::Instance().SendShellCommand(cmd);
+    }
+    else if (outputFile.extension() == ".prg")
+    {
+        std::string cmd = std::format("start F:\\Emulators\\C64\\Vice3.6\\bin\\x64sc.exe {}", outputFile.string());
+        Application::Instance().SendShellCommand(cmd);
+    }
+}
+
+void SourceFileManager::Deploy(const std::filesystem::path& outputFile)
+{
+    u8* mem;
+    size_t size;
+    if (LoadBinaryFile(outputFile, mem, size))
+    {
+        if (outputFile.extension() == ".prg")
+        {
+            auto msg = new NMS_Command("runners:run_prg", mem, size, outputFile.filename().string(), false);
+            NetworkManager::Instance().Message(msg);
+        }
+        else
+        {
+            auto msg = new NMS_Command("drives/{}:mount?type=d64&mode=unlinked", mem, size, outputFile.filename().string(), false);
+            NetworkManager::Instance().Message(msg);
+        }
+    }
+}
 
 void SourceFileManager::Run(class SourceFile* file)
 {
@@ -273,25 +333,10 @@ void SourceFileManager::Run(class SourceFile* file)
     const std::string d64Path = (outputFolder / filename).replace_extension(".d64").string();
     const std::string prgPath = (outputFolder / filename).replace_extension(".prg").string();
 
-    if (std::filesystem::exists(d64Path))
+    auto paths = FindC64Outputs(outputFolder);
+    if (!paths.empty())
     {
-        std::string cmd = std::format("start F:\\Emulators\\C64\\Vice3.6\\bin\\x64sc.exe {}", d64Path);
-        Application::Instance().SendShellCommand(cmd);
-    }
-    else if (std::filesystem::exists(prgPath))
-    {
-        std::string cmd = std::format("start F:\\Emulators\\C64\\Vice3.6\\bin\\x64sc.exe {}", prgPath);
-        Application::Instance().SendShellCommand(cmd);
-    }
-    else
-    {
-        auto paths = FindC64Outputs(outputFolder);
-        if (!paths.empty())
-        {
-            std::string out = paths[0].string();
-            std::string cmd = std::format("start F:\\Emulators\\C64\\Vice3.6\\bin\\x64sc.exe {}", out);
-            Application::Instance().SendShellCommand(cmd);
-        }
+        Run(paths[0]);
     }
 }
 
@@ -300,8 +345,7 @@ void SourceFileManager::Compile(SourceFile* file)
     SaveAll();
 
     std::filesystem::path path = file->m_path;
-    std::filesystem::path ext = path.extension();
-    if (ext.string() == ".asm")
+    if (file->m_sourceType == SourceType::Asm)
     {
         auto compileKickAss = [file]()
             {
@@ -323,7 +367,7 @@ void SourceFileManager::Compile(SourceFile* file)
             };
         std::thread(compileKickAss).detach();
     }
-    else if (ext.string() == ".c")
+    else if (file->m_sourceType == SourceType::C)
     {
         auto compileCC65 = [file]()
             {

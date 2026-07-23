@@ -15,7 +15,8 @@ enum class Icons
     LayoutLocked,
     LayoutFree,
     Build,
-    Run
+    Run,
+    Deploy
 };
 
 class IconRenderer : public Singleton<IconRenderer>

@@ -159,6 +159,9 @@ void SourceFileWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     }
     m_clientContentSize.x = maxWidth + 32;
 
+    // search and replace
+    PaintSearchWindow(renderer);
+
     // draw cursor
     SDL_FRect cursorRect = CalcCursorArea().AsSDLFRect();
     cursorRect.x += (float)xBase;
@@ -169,6 +172,61 @@ void SourceFileWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     SDL_SetRenderDrawColor(renderer, col.r, col.g, col.b, col.a);
     SDL_RenderFillRect(renderer, &cursorRect);
 }
+
+void SourceFileWindow::PaintSearchWindow(SDL_Renderer* renderer)
+{
+    if (m_searchMode == SearchMode::Off)
+        return;
+
+    auto& tp = Application::Instance().GetThemeProperties();
+    auto& fr = FontRenderer::Instance();
+
+    Recti backAreai, titleAreai, searchAreai, replaceAreai;
+    CalcSearchAndReplaceArea(backAreai, titleAreai, searchAreai, replaceAreai);
+
+    SDL_FRect backArea = backAreai.AsSDLFRect();
+    SDL_FRect titleArea = titleAreai.AsSDLFRect();
+    SDL_FRect searchArea = searchAreai.AsSDLFRect();
+    SDL_FRect replaceArea = replaceAreai.AsSDLFRect();
+
+    tp.SetRenderDrawColor(renderer, ThemeColor::SearchTitleBack);
+    SDL_RenderFillRect(renderer, &backArea);
+    tp.SetRenderDrawColor(renderer, ThemeColor::SearchTextBack);
+    SDL_RenderFillRect(renderer, &searchArea);
+    if (m_searchMode == SearchMode::Replace)
+    {
+        tp.SetRenderDrawColor(renderer, ThemeColor::SearchTextBack);
+        SDL_RenderFillRect(renderer, &replaceArea);
+    }
+
+    std::string title;
+    switch (m_searchMode)
+    {
+        case SearchMode::GotoLine:
+            title = "Goto Line";
+            break;
+        case SearchMode::Search:
+            title = "Search";
+            break;
+        case SearchMode::Replace:
+            title = "Search And Replace";
+            break;
+    }
+    SDL_Color titleCol = tp.m_colors[(int)ThemeColor::TextLabel];
+    fr.RenderText(renderer, title, titleCol, (int)titleArea.x, (int)titleArea.y-2, FontType::UI);
+
+    SDL_Color searchCol = tp.m_colors[(int)ThemeColor::TextGeneral];
+    fr.RenderText(renderer, "search", searchCol, (int)searchArea.x, (int)searchArea.y-2, FontType::UI);
+
+    tp.SetRenderDrawColor(renderer, ThemeColor::WindowEdgeLight);
+    SDL_RenderLine(renderer, backArea.x, backArea.y, backArea.x + backArea.w, backArea.y);
+    SDL_RenderLine(renderer, backArea.x, backArea.y, backArea.x, backArea.y + backArea.h);
+    tp.SetRenderDrawColor(renderer, ThemeColor::WindowEdgeDark);
+    SDL_RenderLine(renderer, backArea.x, backArea.y + backArea.h, backArea.x + backArea.w, backArea.y + backArea.h);
+    SDL_RenderLine(renderer, backArea.x + backArea.w, backArea.y, backArea.x + backArea.w, backArea.y + backArea.h);
+}
+
+
 
 const char* operators[] = {
     "lda", "sta", 0
@@ -209,27 +267,92 @@ void SourceFileWindow::BuildFragments(SDL_Renderer* renderer, SourceLine* line)
 
         // gather a fragment
         int c = 0;
-        int wordChIdx = 0;
-        while (i < charCount)
-        {
-            u32 ch = (u32)line->m_chars[i];     //TODO: UTF8 process
-            if (ch == '\t' || ch == ' ')
-                break;
-            if (ch == ';' && c > 0)
-                break;
-            frag[c++] = (u8)ch;
-            i++;
-            wordChIdx++;
-        }
-        frag[c++] = 0;
+        bool alted = false;
+        frag[0] = 0;
 
-        if (frag[0] == ';')
+        if (ft == FragmentType::Operator)
+            ft = FragmentType::General;
+        while (true)
+        {
+            if (i == charCount)
+            {
+                if (c > 0 && ft != FragmentType::String && ft != FragmentType::Comment && sm.IsKeyword(sourceType, frag))
+                {
+                    ft = FragmentType::Operator;
+                }
+                break;
+            }
+
+            char ch = line->m_chars[i];
+            if (ch == '\t' || ch == ' ')
+            {
+                if (ft != FragmentType::String && ft != FragmentType::Comment && sm.IsKeyword(sourceType, frag))
+                {
+                    ft = FragmentType::Operator;
+                }
+                break;
+            }
+
+            if (c > 0 && ft != FragmentType::Comment && ft != FragmentType::String)
+            {
+                char last = tolower(frag[c-1]);
+                char next = tolower(ch);
+                bool lastIsAlphaNumeric = (last >= 'a' && last <= 'z') || (last >= '0' && last <= '9');
+                bool nextIsAlphaNumeric = (next >= 'a' && next <= 'z') || (next >= '0' && next <= '9');
+                if (lastIsAlphaNumeric != nextIsAlphaNumeric)
+                {
+                    if (sm.IsKeyword(sourceType, frag))
+                        ft = FragmentType::Operator;
+                    break;
+                }
+            }
+
+            frag[c++] = (u8)ch;
+            frag[c] = 0;
+            i++;
+
+            // next quote won't start/end a string
+            alted = false;
+            if (ch == '\\')
+            {
+                alted = true;
+            }
+
+            if (ft != FragmentType::Comment && ch == '"' && !alted)
+            {
+                if (ft == FragmentType::String)
+                    break;
+                ft = FragmentType::String;
+            }
+
+            // check for double char tokens
+            if (ft != FragmentType::Comment && ft != FragmentType::String && c == 2)
+            {
+                char oneFrag[2];
+                oneFrag[0] = frag[0];
+                oneFrag[1] = 0;
+
+                if (sm.IsKeyword(sourceType, frag))
+                {
+                    ft = FragmentType::Operator;
+                    break;
+                }
+                else if (sm.IsKeyword(sourceType, oneFrag))
+                {
+                    frag[1] = 0;
+                    --i;
+                    --c;
+                    ft = FragmentType::Operator;
+                    break;
+                }
+            }
+        }
+
+        if (sourceType == SourceType::Asm && strcmp(frag, ";")==0)
             ft = FragmentType::Comment;
 
-        if (ft != FragmentType::Comment)
-        {
-            ft = sm.IsKeyword(sourceType, frag) ? FragmentType::Operator : FragmentType::General;
-        }
+        if (sourceType == SourceType::C && strcmp(frag, "//") == 0)
+            ft = FragmentType::Comment;
 
         SourceLineRenderFragment fragment;
         fragment.m_fragType = ft;
@@ -238,7 +361,7 @@ void SourceFileWindow::BuildFragments(SDL_Renderer* renderer, SourceLine* line)
         fr.CalcTextArea(renderer, fragment.m_chars, Vec2i(x, y), FontType::Text, fragment.m_area);
         x = fragment.m_area.x + fragment.m_area.w;
         line->m_fragments.emplace_back(fragment);
-        chIdx += wordChIdx;
+        chIdx += c;
     }
 }
 
@@ -341,11 +464,12 @@ bool SourceFileWindow::HandleEvent(SDL_Event* e)
                 CalcXYFromClientPos((int)e->button.x, (int)e->button.y, col, row);
                 MoveCursorXY(col, row);
                 m_mouseLeftDown = true;
+                m_mouseDownPos.x = col;
+                m_mouseDownPos.y = row;
                 if (!m_shiftDown)
                 {
                     ClearMarking();
                 }
-                StartMarking();
             }
             return true;
         }
@@ -359,6 +483,12 @@ bool SourceFileWindow::HandleEvent(SDL_Event* e)
                 {
                     int row, col;
                     CalcXYFromClientPos((int)e->button.x, (int)e->button.y, col, row);
+
+                    if (!m_marking && (m_mouseDownPos.x != col || m_mouseDownPos.y != row))
+                    {
+                        StartMarking();
+                    }
+
                     MoveCursorXY(col, row);
                     return true;
                 }
@@ -379,6 +509,39 @@ bool SourceFileWindow::HandleEvent(SDL_Event* e)
             m_shiftDown = (e->key.mod & SDL_KMOD_SHIFT);
             switch (e->key.key)
             {
+                case SDLK_F:
+                    if (e->key.mod & SDL_KMOD_CTRL)
+                    {
+                        if (e->key.mod & SDL_KMOD_SHIFT)
+                        {
+                            m_searchMode = SearchMode::Replace;
+                            Recti fullArea, titleArea, searchArea, replaceArea;
+                            CalcSearchAndReplaceArea(fullArea, titleArea, searchArea, replaceArea);
+                            m_searchBox.Enable(searchArea);
+                            m_replaceBox.Enable(replaceArea);
+                        }
+                        else
+                        {
+                            m_searchMode = SearchMode::Search;
+                            Recti fullArea, titleArea, searchArea, replaceArea;
+                            CalcSearchAndReplaceArea(fullArea, titleArea, searchArea, replaceArea);
+                            m_searchBox.Enable(searchArea);
+                            m_replaceBox.m_focused = false;
+                        }
+                    }
+                    break;
+
+                case SDLK_G:
+                    if (e->key.mod & SDL_KMOD_CTRL)
+                    {
+                        m_searchMode = SearchMode::GotoLine;
+                        Recti fullArea, titleArea, searchArea, replaceArea;
+                        CalcSearchAndReplaceArea(fullArea, titleArea, searchArea, replaceArea);
+                        m_searchBox.Enable(searchArea);
+                        m_replaceBox.m_focused = false;
+                    }
+                break;
+
                 case SDLK_S:
                     if (e->key.mod & SDL_KMOD_CTRL)
                     {
@@ -1160,3 +1323,15 @@ void SourceFileWindow::MessageChild(WindowLayout *layout, struct WindowMessageSt
         break;
     }
 }
+
+void SourceFileWindow::CalcSearchAndReplaceArea(Recti& fullArea, Recti& titleArea, Recti& searchArea, Recti& replaceArea)
+{
+    int width = Min(m_clientArea.w, SearchModeWidth);
+    int height = (m_searchMode == SearchMode::Replace ? 3 * LINE_HEIGHT : 2 * LINE_HEIGHT);
+
+    fullArea = Recti{ (m_clientArea.x + m_clientArea.w - SearchModeWidth), m_clientArea.y, width, height };
+    titleArea = Recti{ fullArea.x + BORDER_MARGIN, fullArea.y + BORDER_MARGIN, fullArea.w - BORDER_MARGIN * 2, LINE_HEIGHT - BORDER_MARGIN * 2 };
+    searchArea = Recti{ fullArea.x + BORDER_MARGIN, fullArea.y + 1 + LINE_HEIGHT, fullArea.w - BORDER_MARGIN * 2, LINE_HEIGHT - 2 };
+    replaceArea = Recti{ fullArea.x + BORDER_MARGIN, fullArea.y + 1 + LINE_HEIGHT * 2, fullArea.w - BORDER_MARGIN * 2, LINE_HEIGHT - 2 };
+}
+

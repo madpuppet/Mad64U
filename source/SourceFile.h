@@ -13,6 +13,8 @@ enum class FragmentType
 {
     General,
     Operator,
+    String,
+    Label,
     Comment
 };
 

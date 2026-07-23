@@ -6,6 +6,7 @@
 #include <set>
 #include <mutex>
 #include <map>
+#include <filesystem>
 
 class SourceFileManager : public Singleton<SourceFileManager>
 {
@@ -42,6 +43,8 @@ public:
 
     void Compile(class SourceFile* file);
     void Run(class SourceFile* file);
+    void Run(const std::filesystem::path &outputFile);
+    void Deploy(const std::filesystem::path& outputFile);
 
 protected:
     std::mutex m_lock;

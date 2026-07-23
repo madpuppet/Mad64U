@@ -3,6 +3,8 @@
 #include "WindowBase.h"
 #include <filesystem>
 
+extern std::vector<std::filesystem::path> FindC64Outputs(std::filesystem::path outPath);
+
 class ProjectListWindow : public WindowBase
 {
 public:
@@ -21,7 +23,18 @@ protected:
     void RebuildFolders();
     struct ProjectLine
     {
-        SourceFile *m_file;
+        enum Type
+        {
+            Folder,
+            Image_D64,
+            Image_PRG,
+            Image_CRT,
+            Source_C,
+            Source_ASM,
+            Source_S,
+            Text
+        } m_type;
+        class SourceFile *m_file;
         std::filesystem::path m_display;
         std::filesystem::path m_path;
     };
