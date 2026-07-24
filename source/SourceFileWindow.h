@@ -2,25 +2,6 @@
 
 #include "WindowBase.h"
 
-class TextBox
-{
-public:
-    void Enable(const Recti& area)
-    {
-        m_area = area;
-        m_focused = true;
-    }
-
-    bool m_focused = false;
-    Recti m_area;
-    std::string m_text;
-    int m_cursor = 0;
-    void Paint(SDL_Renderer *renderer, float m_animateTimer);
-    void HandleEvent(SDL_Event* e);
-};
-
-
-
 class SourceFileWindow : public WindowBase
 {
 public:
@@ -99,19 +80,5 @@ protected:
     bool m_mouseLeftDown = false;
     Vec2i m_markStart{ 0,0 };
     Vec2i m_mouseDownPos{ 0,0 };
-
-    // search/replace
-    const int SearchModeWidth = 300;
-    enum class SearchMode
-    {
-        Off,
-        GotoLine,
-        Search,
-        Replace
-    } m_searchMode = SearchMode::Replace;
-    TextBox m_searchBox;
-    TextBox m_replaceBox;
-    void CalcSearchAndReplaceArea(Recti &fullArea, Recti &titleArea, Recti& searchArea, Recti& replaceArea);
-    void PaintSearchWindow(SDL_Renderer* renderer);
 };
 

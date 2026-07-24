@@ -30,7 +30,6 @@ struct WindowLayout
     void GatherWindows(std::vector<WindowBase*>& windows);
     int CountWindows();
     void CollapseEmptyLayouts();
-    bool CheckForSplit(int x, int y, WindowSplitQuery& query);
     bool Tick();
     class WindowBase* GetActiveWindow();
     void ActivateWindow(WindowBase* window);

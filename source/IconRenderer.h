@@ -16,7 +16,11 @@ enum class Icons
     LayoutFree,
     Build,
     Run,
-    Deploy
+    Deploy,
+    NextItem,
+    PrevItem,
+    ReplaceOne,
+    ReplaceAll
 };
 
 class IconRenderer : public Singleton<IconRenderer>

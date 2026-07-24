@@ -37,6 +37,8 @@ enum class ThemeColor
 
     SearchTitleBack,
     SearchTextBack,
+    SearchTitle,
+    SearchText,
 
     TextGeneral,
     TextOperator,
@@ -54,6 +56,10 @@ struct ThemeProperties
     std::string m_name;
     std::array<SDL_Color, NumThemeColor> m_colors;
 
+    const SDL_Color &Col(ThemeColor col)
+    {
+        return m_colors[(int)col];
+    }
     void SetRenderDrawColor(SDL_Renderer *renderer, ThemeColor tc)
     {
         auto& c = m_colors[(int)tc];

@@ -159,6 +159,7 @@
     <ClCompile Include="source\NetworkManager.cpp" />
     <ClCompile Include="source\OutputWindow.cpp" />
     <ClCompile Include="source\ProjectListWindow.cpp" />
+    <ClCompile Include="source\SearchWindow.cpp" />
     <ClCompile Include="source\Settings.cpp" />
     <ClCompile Include="source\SourceFile.cpp" />
     <ClCompile Include="source\SourceFileCmdBuffer.cpp" />
@@ -272,6 +273,7 @@
     <ClInclude Include="source\NetworkManager.h" />
     <ClInclude Include="source\OutputWIndow.h" />
     <ClInclude Include="source\ProjectListWindow.h" />
+    <ClInclude Include="source\SearchWindow.h" />
     <ClInclude Include="source\Settings.h" />
     <ClInclude Include="source\Singleton.h" />
     <ClInclude Include="source\SourceFile.h" />

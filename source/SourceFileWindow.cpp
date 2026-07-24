@@ -5,6 +5,7 @@
 #include "Application.h"
 #include "SourceFileCmdBuffer.h"
 #include "LogManager.h"
+#include "SearchWindow.h"
 #include <filesystem>
 
 #define TAB_SIZE 4
@@ -159,9 +160,6 @@ void SourceFileWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     }
     m_clientContentSize.x = maxWidth + 32;
 
-    // search and replace
-    PaintSearchWindow(renderer);
-
     // draw cursor
     SDL_FRect cursorRect = CalcCursorArea().AsSDLFRect();
     cursorRect.x += (float)xBase;
@@ -172,65 +170,6 @@ void SourceFileWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     SDL_SetRenderDrawColor(renderer, col.r, col.g, col.b, col.a);
     SDL_RenderFillRect(renderer, &cursorRect);
 }
-
-void SourceFileWindow::PaintSearchWindow(SDL_Renderer* renderer)
-{
-    if (m_searchMode == SearchMode::Off)
-        return;
-
-    auto& tp = Application::Instance().GetThemeProperties();
-    auto& fr = FontRenderer::Instance();
-
-    Recti backAreai, titleAreai, searchAreai, replaceAreai;
-    CalcSearchAndReplaceArea(backAreai, titleAreai, searchAreai, replaceAreai);
-
-    SDL_FRect backArea = backAreai.AsSDLFRect();
-    SDL_FRect titleArea = titleAreai.AsSDLFRect();
-    SDL_FRect searchArea = searchAreai.AsSDLFRect();
-    SDL_FRect replaceArea = replaceAreai.AsSDLFRect();
-
-    tp.SetRenderDrawColor(renderer, ThemeColor::SearchTitleBack);
-    SDL_RenderFillRect(renderer, &backArea);
-    tp.SetRenderDrawColor(renderer, ThemeColor::SearchTextBack);
-    SDL_RenderFillRect(renderer, &searchArea);
-    if (m_searchMode == SearchMode::Replace)
-    {
-        tp.SetRenderDrawColor(renderer, ThemeColor::SearchTextBack);
-        SDL_RenderFillRect(renderer, &replaceArea);
-    }
-
-    std::string title;
-    switch (m_searchMode)
-    {
-        case SearchMode::GotoLine:
-            title = "Goto Line";
-            break;
-        case SearchMode::Search:
-            title = "Search";
-            break;
-        case SearchMode::Replace:
-            title = "Search And Replace";
-            break;
-    }
-    SDL_Color titleCol = tp.m_colors[(int)ThemeColor::TextLabel];
-    fr.RenderText(renderer, title, titleCol, (int)titleArea.x, (int)titleArea.y-2, FontType::UI);
-
-    SDL_Color searchCol = tp.m_colors[(int)ThemeColor::TextGeneral];
-    fr.RenderText(renderer, "search", searchCol, (int)searchArea.x, (int)searchArea.y-2, FontType::UI);
-
-    tp.SetRenderDrawColor(renderer, ThemeColor::WindowEdgeLight);
-    SDL_RenderLine(renderer, backArea.x, backArea.y, backArea.x + backArea.w, backArea.y);
-    SDL_RenderLine(renderer, backArea.x, backArea.y, backArea.x, backArea.y + backArea.h);
-    tp.SetRenderDrawColor(renderer, ThemeColor::WindowEdgeDark);
-    SDL_RenderLine(renderer, backArea.x, backArea.y + backArea.h, backArea.x + backArea.w, backArea.y + backArea.h);
-    SDL_RenderLine(renderer, backArea.x + backArea.w, backArea.y, backArea.x + backArea.w, backArea.y + backArea.h);
-}
-
-
-
-const char* operators[] = {
-    "lda", "sta", 0
-};
 
 void SourceFileWindow::BuildFragments(SDL_Renderer* renderer, SourceLine* line)
 {
@@ -299,6 +238,12 @@ void SourceFileWindow::BuildFragments(SDL_Renderer* renderer, SourceLine* line)
                 char next = tolower(ch);
                 bool lastIsAlphaNumeric = (last >= 'a' && last <= 'z') || (last >= '0' && last <= '9');
                 bool nextIsAlphaNumeric = (next >= 'a' && next <= 'z') || (next >= '0' && next <= '9');
+                if (sourceType == SourceType::Asm || sourceType == SourceType::S)
+                {
+                    lastIsAlphaNumeric |= last == '.';
+                    nextIsAlphaNumeric |= next == '.';
+                }
+
                 if (lastIsAlphaNumeric != nextIsAlphaNumeric)
                 {
                     if (sm.IsKeyword(sourceType, frag))
@@ -348,7 +293,7 @@ void SourceFileWindow::BuildFragments(SDL_Renderer* renderer, SourceLine* line)
             }
         }
 
-        if (sourceType == SourceType::Asm && strcmp(frag, ";")==0)
+        if ((sourceType == SourceType::Asm || sourceType == SourceType::S) && strcmp(frag, ";")==0)
             ft = FragmentType::Comment;
 
         if (sourceType == SourceType::C && strcmp(frag, "//") == 0)
@@ -510,37 +455,53 @@ bool SourceFileWindow::HandleEvent(SDL_Event* e)
             switch (e->key.key)
             {
                 case SDLK_F:
-                    if (e->key.mod & SDL_KMOD_CTRL)
-                    {
-                        if (e->key.mod & SDL_KMOD_SHIFT)
-                        {
-                            m_searchMode = SearchMode::Replace;
-                            Recti fullArea, titleArea, searchArea, replaceArea;
-                            CalcSearchAndReplaceArea(fullArea, titleArea, searchArea, replaceArea);
-                            m_searchBox.Enable(searchArea);
-                            m_replaceBox.Enable(replaceArea);
-                        }
-                        else
-                        {
-                            m_searchMode = SearchMode::Search;
-                            Recti fullArea, titleArea, searchArea, replaceArea;
-                            CalcSearchAndReplaceArea(fullArea, titleArea, searchArea, replaceArea);
-                            m_searchBox.Enable(searchArea);
-                            m_replaceBox.m_focused = false;
-                        }
-                    }
-                    break;
-
                 case SDLK_G:
                     if (e->key.mod & SDL_KMOD_CTRL)
                     {
-                        m_searchMode = SearchMode::GotoLine;
-                        Recti fullArea, titleArea, searchArea, replaceArea;
-                        CalcSearchAndReplaceArea(fullArea, titleArea, searchArea, replaceArea);
-                        m_searchBox.Enable(searchArea);
-                        m_replaceBox.m_focused = false;
+                        WindowMessageStruct msg;
+                        WindowFindQuery query;
+                        query.m_windowName = "Search";
+                        msg.m_type = WindowMessage::Query_FindWindow;
+                        msg.m_flags = WMF_Window;
+                        msg.m_query = &query;
+                        WindowManager::Instance().Message(msg);
+
+                        SearchWindow *searchWindow = nullptr;
+                        if (msg.m_response == 0)
+                        {
+                            // open a new window
+                            searchWindow = new SearchWindow;
+                            WindowManager::Instance().AddWindow(searchWindow);
+                        }
+                        else
+                        {
+                            // check for a search window already targetting this source file
+                            for (auto win : query.m_foundWindows)
+                            {
+                                if (win->GetSourceFile() == m_sourceFile)
+                                    searchWindow = win;
+                            }
+                            if (searchWindow == nullptr)
+                                searchWindow = query.m_foundWindows[0];
+                        }
+
+                        if (e->key.mod & SDL_KMOD_SHIFT)
+                        {
+                            if (e->key.key == SDLK_F)
+                            {
+                                searchWindow->SetMode(SearchWindow::SearchMode::Search);
+                            }
+                            else if (e->key.key == SDLK_G)
+                            {
+                                searchWindow->SetMode(SearchWindow::SearchMode::Goto);
+                            }
+                        }
+                        else
+                        {
+                            searchWindow->SetMode(SearchWindow::SearchMode::Replace);
+                        }
                     }
-                break;
+                    break;
 
                 case SDLK_S:
                     if (e->key.mod & SDL_KMOD_CTRL)
@@ -1323,15 +1284,3 @@ void SourceFileWindow::MessageChild(WindowLayout *layout, struct WindowMessageSt
         break;
     }
 }
-
-void SourceFileWindow::CalcSearchAndReplaceArea(Recti& fullArea, Recti& titleArea, Recti& searchArea, Recti& replaceArea)
-{
-    int width = Min(m_clientArea.w, SearchModeWidth);
-    int height = (m_searchMode == SearchMode::Replace ? 3 * LINE_HEIGHT : 2 * LINE_HEIGHT);
-
-    fullArea = Recti{ (m_clientArea.x + m_clientArea.w - SearchModeWidth), m_clientArea.y, width, height };
-    titleArea = Recti{ fullArea.x + BORDER_MARGIN, fullArea.y + BORDER_MARGIN, fullArea.w - BORDER_MARGIN * 2, LINE_HEIGHT - BORDER_MARGIN * 2 };
-    searchArea = Recti{ fullArea.x + BORDER_MARGIN, fullArea.y + 1 + LINE_HEIGHT, fullArea.w - BORDER_MARGIN * 2, LINE_HEIGHT - 2 };
-    replaceArea = Recti{ fullArea.x + BORDER_MARGIN, fullArea.y + 1 + LINE_HEIGHT * 2, fullArea.w - BORDER_MARGIN * 2, LINE_HEIGHT - 2 };
-}
-

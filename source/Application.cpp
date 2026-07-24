@@ -11,6 +11,7 @@
 #include "OutputWindow.h"
 #include "UndoBufferWindow.h"
 #include "NetworkManager.h"
+#include "SearchWindow.h"
 #include <filesystem>
 
 u32 CustomEvent_Timer = 0;
@@ -47,6 +48,8 @@ static const char* s_themecolor_name[NumThemeColor] =
     "WindowEdgeDarkSelected",
     "SearchTitleBack",
     "SearchTextBack",
+    "SearchTitle",
+    "SearchText",
     "TextGeneral",
     "TextOperator",
     "TextString",
@@ -257,6 +260,12 @@ void Application::CreateMenus()
             WindowManager::Instance().LayoutWindows();
         };
 
+    auto newSearchWindow = []()
+        {
+            WindowManager::Instance().AddWindow(new SearchWindow);
+            WindowManager::Instance().LayoutWindows();
+        };
+
     auto toggleFrameLock = []()
         {
             auto layout = WindowManager::Instance().GetActiveWindowLayout();
@@ -270,6 +279,7 @@ void Application::CreateMenus()
     windowMenu->m_items.push_back(new WindowMenuItem("Debug Output", newWindowSystemOutput));
     windowMenu->m_items.push_back(new WindowMenuItem("Build Output", newWindowBuildOutput));
     windowMenu->m_items.push_back(new WindowMenuItem("Undo Buffer", newWindowUndoBuffer));
+    windowMenu->m_items.push_back(new WindowMenuItem("Search And Replace", newSearchWindow));
     windowMenu->m_items.push_back(new WindowMenuItem("- - - - - - - - - -", []() {}));
     windowMenu->m_items.push_back(new WindowMenuItem("Toggle Frame Lock", toggleFrameLock));
     windowMenu->m_items.push_back(new WindowMenuItem("Save Window Layout", []() { WindowManager::Instance().SaveWindowLayout(); Settings::Instance().Save(); }));
@@ -409,7 +419,7 @@ void Application::CreateSettings()
     {
         auto& theme = *(new ThemeProperties);
         theme.m_system = true;
-        theme.m_name = "dark";
+        theme.m_name = "Dark";
         theme.m_colors[(int)ThemeColor::TitleBar] = SDL_Color(64, 32, 16, 255);
         theme.m_colors[(int)ThemeColor::MenuText] = SDL_Color(255, 255, 255, 255);
         theme.m_colors[(int)ThemeColor::MenuItemText] = SDL_Color(255, 255, 255, 255);
@@ -436,11 +446,13 @@ void Application::CreateSettings()
         theme.m_colors[(int)ThemeColor::WindowEdgeLightSelected] = SDL_Color(96, 96, 96, 255);
         theme.m_colors[(int)ThemeColor::WindowEdgeDarkSelected] = SDL_Color(0, 0, 0, 255);
 
-        theme.m_colors[(int)ThemeColor::SearchTitleBack] = SDL_Color(0, 0, 0, 255);
+        theme.m_colors[(int)ThemeColor::SearchTitleBack] = SDL_Color(32, 32, 32, 255);
         theme.m_colors[(int)ThemeColor::SearchTextBack] = SDL_Color(0, 0, 0, 255);
+        theme.m_colors[(int)ThemeColor::SearchTitle] = SDL_Color(200, 190, 60, 255);
+        theme.m_colors[(int)ThemeColor::SearchText] = SDL_Color(128, 128, 128, 255);
 
-        theme.m_colors[(int)ThemeColor::TextGeneral] = SDL_Color(230, 230, 230, 255);
-        theme.m_colors[(int)ThemeColor::TextOperator] = SDL_Color(64, 255, 255, 255);
+        theme.m_colors[(int)ThemeColor::TextGeneral] = SDL_Color(200, 200, 200, 255);
+        theme.m_colors[(int)ThemeColor::TextOperator] = SDL_Color(240, 220, 100, 255);
         theme.m_colors[(int)ThemeColor::TextString] = SDL_Color(128, 255, 255, 255);
         theme.m_colors[(int)ThemeColor::TextLabel] = SDL_Color(64, 64, 255, 255);
         theme.m_colors[(int)ThemeColor::TextComment] = SDL_Color(128, 255, 128, 255);
@@ -450,7 +462,7 @@ void Application::CreateSettings()
     {
         auto& theme = *(new ThemeProperties);
         theme.m_system = true;
-        theme.m_name = "c64blue";
+        theme.m_name = "C64 Blue";
         theme.m_colors[(int)ThemeColor::TitleBar] = SDL_Color(64, 32, 16, 255);
         theme.m_colors[(int)ThemeColor::MenuText] = SDL_Color(255, 255, 255, 255);
         theme.m_colors[(int)ThemeColor::MenuItemText] = SDL_Color(255, 255, 255, 255);
@@ -479,6 +491,8 @@ void Application::CreateSettings()
 
         theme.m_colors[(int)ThemeColor::SearchTitleBack] = SDL_Color(16, 32, 64, 255);
         theme.m_colors[(int)ThemeColor::SearchTextBack] = SDL_Color(8, 16, 32, 255);
+        theme.m_colors[(int)ThemeColor::SearchTitle] = SDL_Color(240, 220, 60, 255);
+        theme.m_colors[(int)ThemeColor::SearchText] = SDL_Color(128, 140, 128, 255);
 
         theme.m_colors[(int)ThemeColor::TextGeneral] = SDL_Color(0, 200, 255, 255);
         theme.m_colors[(int)ThemeColor::TextOperator] = SDL_Color(255, 128, 64, 255);
@@ -491,7 +505,7 @@ void Application::CreateSettings()
     {
         auto& theme = *(new ThemeProperties);
         theme.m_system = true;
-        theme.m_name = "light";
+        theme.m_name = "Light";
         theme.m_colors[(int)ThemeColor::TitleBar] = SDL_Color(64, 32, 16, 255);
         theme.m_colors[(int)ThemeColor::MenuText] = SDL_Color(255, 255, 255, 255);
         theme.m_colors[(int)ThemeColor::MenuItemText] = SDL_Color(255, 255, 255, 255);
@@ -520,13 +534,15 @@ void Application::CreateSettings()
 
         theme.m_colors[(int)ThemeColor::SearchTitleBack] = SDL_Color(16, 32, 64, 255);
         theme.m_colors[(int)ThemeColor::SearchTextBack] = SDL_Color(8, 16, 32, 255);
+        theme.m_colors[(int)ThemeColor::SearchTitle] = SDL_Color(240, 220, 60, 255);
+        theme.m_colors[(int)ThemeColor::SearchText] = SDL_Color(128, 200, 128, 255);
 
 
         theme.m_colors[(int)ThemeColor::TextGeneral] = SDL_Color(0, 0, 0, 255);
         theme.m_colors[(int)ThemeColor::TextOperator] = SDL_Color(0, 0, 255, 255);
-        theme.m_colors[(int)ThemeColor::TextString] = SDL_Color(200, 170, 128, 255);
+        theme.m_colors[(int)ThemeColor::TextString] = SDL_Color(64, 48, 16, 255);
         theme.m_colors[(int)ThemeColor::TextLabel] = SDL_Color(64, 64, 255, 255);
-        theme.m_colors[(int)ThemeColor::TextComment] = SDL_Color(0, 128, 0, 255);
+        theme.m_colors[(int)ThemeColor::TextComment] = SDL_Color(0, 96, 0, 255);
         m_themes.push_back(&theme);
 
         m_activeTheme = &theme;

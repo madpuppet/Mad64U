@@ -5,6 +5,7 @@ enum class SourceType
     Text,
     C,
     Asm,
+    S,
     MAX
 };
 constexpr size_t NumSourceType = static_cast<size_t>(SourceType::MAX);

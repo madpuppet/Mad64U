@@ -479,49 +479,6 @@ void WindowLayout::CollapseEmptyLayouts()
     }
 }
 
-bool WindowLayout::CheckForSplit(int x, int y, WindowSplitQuery& query)
-{
-    if (!m_area.Contains(x, y))
-        return false;
-
-    if (m_splitType != NoSplit)
-    {
-        switch (m_splitType)
-        {
-            case Horizontal:
-            {
-                int splitX = m_area.x + (int)(m_area.w * m_splitPercentage);
-                if (Abs(x - splitX) < 6)
-                {
-                    query.m_foundSplit = true;
-                    query.m_layout = this;
-                    query.m_splitPos = splitX;
-                    return true;
-                }
-            }
-            break;
-
-            case Vertical:
-            {
-                int splitY = m_area.y + (int)(m_area.h * m_splitPercentage);
-                if (Abs(y - splitY) < 6)
-                {
-                    query.m_foundSplit = true;
-                    query.m_layout = this;
-                    query.m_splitPos = splitY;
-                    return true;
-                }
-            }
-            break;
-        }
-        if (m_splits[0]->CheckForSplit(x, y, query))
-            return true;
-        if (m_splits[1]->CheckForSplit(x, y, query))
-            return true;
-    }
-    return false;
-}
-
 WindowBase* WindowLayout::GetActiveWindow()
 {
     if (m_splitType == NoSplit && m_tabs.size() > 0)

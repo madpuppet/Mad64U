@@ -13,6 +13,8 @@ SourceFile::SourceFile(const std::string& path) : m_path(path)
         m_sourceType = SourceType::Asm;
     else if (ext == ".c")
         m_sourceType = SourceType::C;
+    else if (ext == ".s")
+        m_sourceType = SourceType::S;
     else
         m_sourceType = SourceType::Text;
 }

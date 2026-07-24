@@ -79,7 +79,7 @@ void ProjectListWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
             case ProjectLine::Source_S:
             case ProjectLine::Text:
             {
-                fr.RenderText(renderer, line.m_display.string(), tp.m_colors[(int)ThemeColor::TabText], x + 52, y, FontType::Text);
+                fr.RenderText(renderer, line.m_display.string(), tp.m_colors[(int)ThemeColor::TextString], x + 52, y, FontType::Text);
                 y += LINE_HEIGHT;
             }
             break;
@@ -146,35 +146,46 @@ bool ProjectListWindow::HandleEvent(SDL_Event* e)
                     case ProjectLine::Image_D64:
                         break;
 
+                    case ProjectLine::Text:
                     case ProjectLine::Source_S:
                     case ProjectLine::Source_C:
                     case ProjectLine::Source_ASM:
                     {
-                        WindowMessageStruct msgFFW;
-                        msgFFW.m_type = WindowMessage::Query_FindFileWindow;
-                        msgFFW.m_sourceFile = line.m_file;
-                        msgFFW.m_flags = WMF_EarlyOut | WMF_Window;
-                        WindowManager::Instance().Message(msgFFW);
-                        if (msgFFW.m_response > 0)
+                        if (line.m_file == nullptr)
                         {
-                            msgFFW.m_layout->ActivateWindow(msgFFW.m_window);
-                            msgFFW.m_tree->m_dirty = true;
-                            return true;
-                        }
-
-                        // check if there is a locked layout to open in
-                        WindowMessageStruct msgFLL;
-                        msgFLL.m_type = WindowMessage::Query_FindLockedLayout;
-                        msgFLL.m_flags = WMF_EarlyOut | WMF_Layout;
-                        WindowManager::Instance().Message(msgFLL);
-                        if (msgFLL.m_response > 0)
-                        {
-                            msgFLL.m_layout->m_tabs.push_back(new SourceFileWindow(line.m_file));
-                            msgFLL.m_layout->m_activeTab = (int)msgFLL.m_layout->m_tabs.size() - 1;
+                            std::vector<std::string> paths;
+                            paths.push_back(line.m_path.string());
+                            SourceFileManager::Instance().RequestLoadFiles(paths);
+                            SourceFileManager::Instance().LoadRequestedFiles(true);
                         }
                         else
                         {
-                            WindowManager::Instance().AddWindow(new SourceFileWindow(line.m_file));
+                            WindowMessageStruct msgFFW;
+                            msgFFW.m_type = WindowMessage::Query_FindFileWindow;
+                            msgFFW.m_sourceFile = line.m_file;
+                            msgFFW.m_flags = WMF_EarlyOut | WMF_Window;
+                            WindowManager::Instance().Message(msgFFW);
+                            if (msgFFW.m_response > 0)
+                            {
+                                msgFFW.m_layout->ActivateWindow(msgFFW.m_window);
+                                msgFFW.m_tree->m_dirty = true;
+                                return true;
+                            }
+
+                            // check if there is a locked layout to open in
+                            WindowMessageStruct msgFLL;
+                            msgFLL.m_type = WindowMessage::Query_FindLockedLayout;
+                            msgFLL.m_flags = WMF_EarlyOut | WMF_Layout;
+                            WindowManager::Instance().Message(msgFLL);
+                            if (msgFLL.m_response > 0)
+                            {
+                                msgFLL.m_layout->m_tabs.push_back(new SourceFileWindow(line.m_file));
+                                msgFLL.m_layout->m_activeTab = (int)msgFLL.m_layout->m_tabs.size() - 1;
+                            }
+                            else
+                            {
+                                WindowManager::Instance().AddWindow(new SourceFileWindow(line.m_file));
+                            }
                         }
                         WindowManager::Instance().LayoutWindows();
                     }
@@ -227,6 +238,9 @@ void ProjectListWindow::RebuildFolders()
     {
         std::filesystem::path p = file->m_path;
         std::filesystem::path dir = p.parent_path();
+
+        if (dir.filename() == "out")
+            continue;
 
         auto it = std::find_if(folders.begin(), folders.end(), [dir](const auto& item)->bool { return item.m_path == dir; });
         ProjectFolder* pf;
@@ -405,6 +419,7 @@ void ProjectListWindow::MessageChild(WindowLayout *layout, struct WindowMessageS
                     break;
 
                     case ProjectLine::Source_S:
+                    case ProjectLine::Text:
                     {
                         Recti fileArea;
                         fr.CalcTextArea(msg.m_tree->m_renderer, line.m_path.string(), { x + 16, y }, FontType::Text, fileArea);

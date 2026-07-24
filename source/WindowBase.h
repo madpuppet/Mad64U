@@ -28,6 +28,7 @@ public:
     void Message(struct WindowLayout *layout, struct WindowMessageStruct& msg);
 
     virtual ~WindowBase();
+
     virtual void Paint(SDL_Renderer* renderer, const Recti& dirtyArea) = 0;
     virtual void Close();
     virtual bool Tick() { return false; }

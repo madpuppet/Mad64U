@@ -34,7 +34,6 @@ struct WindowTree
     void GatherWindows(std::vector<WindowBase*>& windows);
     void CollapseEmptyLayouts();
     Icons FindIcon(int x, int y);
-    bool CheckForSplit(int x, int y, WindowSplitQuery& query);
     WindowLayout* FindFirstNonSplitLayout();
     void Tick();
 

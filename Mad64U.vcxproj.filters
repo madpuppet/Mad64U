@@ -85,6 +85,9 @@
     <ClCompile Include="source\JSON.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="source\SearchWindow.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\common.h">
@@ -424,6 +427,9 @@
       <Filter>3rdParty\SDL3_ttf</Filter>
     </ClInclude>
     <ClInclude Include="source\JSON.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="source\SearchWindow.h">
       <Filter>source</Filter>
     </ClInclude>
   </ItemGroup>

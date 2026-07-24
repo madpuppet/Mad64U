@@ -14,7 +14,20 @@
 #include <format>
 #include "Settings.h"
 
-const char* s_keywords_asm[] = { "tax", "eor", "dec", "pla", "rts", "rti", "bcc", "txa", "clc", "sec", "cpx", "cpy", "cmp", "bne", "beq", "bmi", "bpl", "ldx", "ldy", "stx", "sty", "jsr", "jmp", "tay", "tya", "pha", "dey", "dex", "inc", "inx", "iny", "lda", "sta", "adc", "lsr", "asr", "asl", "lsl", "and", "ora", "xor", "sei", "cli", 0};
+const char* s_keywords_asm[] = { "tax", "eor", "dec", "pla", "rts", "rti", "bcc", "bcs", "txa", "clc", "sec",
+            "cpx", "cpy", "cmp", "bne", "beq", "bmi", "bpl", "ldx", "ldy", "stx", "sty", "jsr", "jmp",
+            "tay", "tya", "pha", "dey", "dex", "inc", "inx", "iny", "lda", "sta", "adc", "lsr", "asr",
+        "asl", "lsl", "and", "ora", "xor", "sei", "cli", "//", ";", ":", ".label", "#import", "#", "$",
+    ".word", ".byte", ".import", "binary", "*", "=", ".for", "var", "round", "sin", ",", "%", 0};
+
+const char* s_keywords_s[] = { "tax", "eor", "dec", "pla", "rts", "rti", "bcc", "bcs", "txa", "clc", "sec",
+            "cpx", "cpy", "cmp", "bne", "beq", "bmi", "bpl", "ldx", "ldy", "stx", "sty", "jsr", "jmp",
+            "tay", "tya", "pha", "dey", "dex", "inc", "inx", "iny", "lda", "sta", "adc", "lsr", "asr",
+        "asl", "lsl", "and", "ora", "xor", "sei", "cli", "//", ";", ":", ".label", "#import", "#", "$",
+    ".word", ".byte", ".import", "binary", "*", "=", ".for", "var", "round", "sin", ",", "%",
+    ".fopt", ".setcpu", ".smart", ".autoimport", ".debuginfo", ".importzp", ".dbg", ".forceimport", ".export", ".macpack", ".case",
+    0 };
+
 const char* s_keywords_c[] = { "char", "int", "long", "short", "(", ")", ";", "{", "}", "[", "]",
             "void", "while", "for", "if", "else", "#define", "#ifdef", "#include", "//",
             "<", ">", "=", "==", "!=", "+", "-", "*", "/", "++", "--", "+=", "-=", 0};
@@ -36,6 +49,7 @@ SourceFileManager::SourceFileManager()
 {
     InitKeywords(s_keywords_asm, SourceType::Asm, false);
     InitKeywords(s_keywords_c, SourceType::C, true);
+    InitKeywords(s_keywords_s, SourceType::S, true);
 }
 
 bool SourceFileManager::RenameFile(SourceFile* file, const std::string& path)

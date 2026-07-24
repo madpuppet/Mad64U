@@ -17,6 +17,10 @@ IconRenderer::IconRenderer()
     LoadImage("data/icon_build.png");
     LoadImage("data/icon_run.png");
     LoadImage("data/icon_deploy.png");
+    LoadImage("data/icon_next.png");
+    LoadImage("data/icon_previous.png");
+    LoadImage("data/icon_replace_one.png");
+    LoadImage("data/icon_replace_all.png");
 }
 
 IconRenderer::~IconRenderer()

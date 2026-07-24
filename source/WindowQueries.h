@@ -46,6 +46,12 @@ struct WindowScrollBarQuery
     int m_grabOffset = 0;
 };
 
+struct WindowFindQuery
+{
+    std::string m_windowName;
+    std::vector<class SearchWindow*> m_foundWindows;
+};
+
 enum class WindowHighlightType
 {
     None,

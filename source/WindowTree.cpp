@@ -220,12 +220,6 @@ void WindowTree::GatherWindows(std::vector<WindowBase*>& windows)
     m_layout.GatherWindows(windows);
 }
 
-bool WindowTree::CheckForSplit(int x, int y, WindowSplitQuery& query)
-{
-    query.m_tree = this;
-    return m_layout.CheckForSplit(x, y, query);
-}
-
 void WindowTree::CollapseEmptyLayouts()
 {
     m_layout.CollapseEmptyLayouts();

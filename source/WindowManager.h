@@ -30,7 +30,8 @@ enum class WindowMessage
     Query_WindowCount,
     Query_Highlight,
     Query_FindFileWindow,
-    Query_FindLockedLayout
+    Query_FindLockedLayout,
+    Query_FindWindow
 };
 
 #define WMF_Window 1                // send message to window (layout tabs)
