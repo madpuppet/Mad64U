@@ -6,6 +6,7 @@
 #include "OutputWindow.h"
 #include "UndoBufferWindow.h"
 #include "ProjectListWindow.h"
+#include "SearchWindow.h"
 #include <format>
 
 void WindowLayout::Layout(SDL_Renderer* renderer, const Recti& area)
@@ -353,7 +354,7 @@ void WindowLayout::Paint(SDL_Renderer* renderer, const Recti& area)
 
             if (selection.m_highlight == WindowHighlightType::LayoutSplit && selection.m_layout == this)
             {
-                SDL_SetRenderDrawColor(renderer, 255, 255, 255, 32);
+                tp.SetRenderDrawColor(renderer, ThemeColor::HighlightArea);
                 SDL_FRect fullBody{ (float)m_area.x, (float)m_area.y, (float)m_area.w, (float)m_area.h };
                 SDL_RenderFillRect(renderer, &fullBody);
             }
@@ -545,7 +546,10 @@ void WindowLayout::LoadLayout(const std::vector<std::string>& layoutTokens, size
                     {
                         if (!ProjectListWindow::CreateFromLayoutTokens(this, layoutTokens, idx))
                         {
-                            Log(LogGroup::System, "Unknown window token: {}", layoutTokens[idx]);
+                            if (!SearchWindow::CreateFromLayoutTokens(this, layoutTokens, idx))
+                            {
+                                Log(LogGroup::System, "Unknown window token: {}", layoutTokens[idx]);
+                            }
                         }
                     }
                 }

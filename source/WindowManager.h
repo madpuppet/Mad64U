@@ -26,6 +26,8 @@ enum class WindowMessage
     File_Deleted,
     File_Renamed,
     File_Compiled,
+    File_ChangedActive,
+    Window_Activated,
     Query_FileCount,
     Query_WindowCount,
     Query_Highlight,
@@ -63,6 +65,7 @@ class WindowManager : public Singleton<WindowManager>
 public:
     void HandleEvent(SDL_Event* e);
     WindowTree* FindWindowByID(int id);
+    bool FindWindowByFile(class SourceFile* file, WindowTree*& tree, WindowLayout*& layout, WindowBase*& window);
 
     void QueueDeferredMessage(WindowMessageStruct& msg);
     void SendDeferredMessages();
@@ -122,6 +125,8 @@ public:
         if (m_activeWindow == win)
             m_activeWindow = nullptr;
     }
+
+    void SetActiveWindow(WindowBase* window);
 
 protected:
     std::vector<WindowMessageStruct> m_msgQueue;

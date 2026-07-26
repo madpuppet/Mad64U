@@ -50,7 +50,6 @@ void WindowBase::LayoutScrollbars()
 void WindowBase::PaintScrollbars(SDL_Renderer* renderer)
 {
     auto& tp = Application::Instance().GetThemeProperties();
-
     if (m_horizontalScrollbarVisible)
     {
         SDL_FRect backarea = m_hsbBackgroundArea.AsSDLFRect();
@@ -71,9 +70,8 @@ void WindowBase::PaintScrollbars(SDL_Renderer* renderer)
         tp.SetRenderDrawColor(renderer, ThemeColor::ScrollBar);
         SDL_RenderFillRect(renderer, &bararea);
     }
-
     auto& query = WindowManager::Instance().GetWindowHighlightQuery();
-    if (query.m_highlight == WindowHighlightType::ScrollBar)
+    if (query.m_highlight == WindowHighlightType::ScrollBar && query.m_window == this)
     {
         SDL_FRect area = query.m_area.AsSDLFRect();
         tp.SetRenderDrawColor(renderer, ThemeColor::HighlightArea);

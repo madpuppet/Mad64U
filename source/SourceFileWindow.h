@@ -80,5 +80,8 @@ protected:
     bool m_mouseLeftDown = false;
     Vec2i m_markStart{ 0,0 };
     Vec2i m_mouseDownPos{ 0,0 };
+
+    int m_lineNmbrOffset = 48;
+    int m_disOffset = 124;
 };
 

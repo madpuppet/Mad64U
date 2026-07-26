@@ -98,6 +98,9 @@ int SourceFileWindow::CalcXPos(int x, int y)
 
 void SourceFileWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
 {
+    bool showLineNumbers = true;
+    bool showDisassembly = true;
+
     auto& tp = Application::Instance().GetThemeProperties();
     auto window = WindowManager::Instance().GetActiveWindowBase();
     if (window == this)
@@ -109,13 +112,89 @@ void SourceFileWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     SDL_RenderFillRect(renderer, &body);
 
     auto& fr = FontRenderer::Instance();
-
     int firstLine = Max(m_clientContentOffset.y / LINE_HEIGHT, 0);
     int lastLine = Min(firstLine + m_clientArea.h / LINE_HEIGHT, (int)m_sourceFile->m_lines.size());
-    int x = 0;
     int y = firstLine * LINE_HEIGHT;
     int xBase = m_clientArea.x - m_clientContentOffset.x + BORDER_MARGIN;
     int yBase = m_clientArea.y - m_clientContentOffset.y + BORDER_MARGIN;
+
+    if (showLineNumbers)
+    {
+        SDL_FRect lnBody{ body.x, body.y, (float)(m_lineNmbrOffset - BORDER_MARGIN), body.h };
+        SDL_FRect lnBar{ lnBody.x + m_lineNmbrOffset - BORDER_MARGIN, lnBody.y, BORDER_MARGIN, lnBody.h };
+        tp.SetRenderDrawColor(renderer, ThemeColor::SourceBackground);
+        SDL_RenderFillRect(renderer, &lnBar);
+        tp.SetRenderDrawColor(renderer, ThemeColor::WindowEdgeDark);
+        SDL_RenderLine(renderer, lnBar.x, lnBar.y, lnBar.x, lnBar.y + lnBar.h);
+        tp.SetRenderDrawColor(renderer, ThemeColor::WindowEdgeLight);
+        SDL_RenderLine(renderer, lnBar.x + lnBar.w, lnBar.y, lnBar.x + lnBar.w, lnBar.y + lnBar.h);
+
+        SDL_Rect oldArea;
+        SDL_GetRenderClipRect(renderer, &oldArea);
+        SDL_Rect disClipArea{ (int)lnBody.x, (int)lnBody.y, (int)lnBody.w, (int)lnBody.h };
+        SDL_SetRenderClipRect(renderer, &disClipArea);
+
+        for (int i = firstLine; i < lastLine; i++)
+        {
+            int ly = yBase + i * LINE_HEIGHT;
+            int lx = xBase;
+            fr.RenderText(renderer, std::format("{:4d}", i), tp.m_colors[(int)ThemeColor::TextString], lx, ly, FontType::Text);
+            ly += LINE_HEIGHT;
+        }
+
+        SDL_SetRenderClipRect(renderer, &oldArea);
+        xBase += m_lineNmbrOffset;
+    }
+
+    if (showDisassembly)
+    {
+        auto dis = SourceFileManager::Instance().GetDisassembly(m_sourceFile);
+        if (dis)
+        {
+            SDL_FRect disBody{ body.x, body.y, (float)(m_disOffset - BORDER_MARGIN), body.h };
+            SDL_FRect disBar{ disBody.x + m_disOffset - BORDER_MARGIN, disBody.y, BORDER_MARGIN, disBody.h };
+
+            tp.SetRenderDrawColor(renderer, ThemeColor::SourceBackground);
+            SDL_RenderFillRect(renderer, &disBar);
+            tp.SetRenderDrawColor(renderer, ThemeColor::WindowEdgeDark);
+            SDL_RenderLine(renderer, disBar.x, disBar.y, disBar.x, disBar.y + disBar.h);
+            tp.SetRenderDrawColor(renderer, ThemeColor::WindowEdgeLight);
+            SDL_RenderLine(renderer, disBar.x + disBar.w, disBar.y, disBar.x + disBar.w, disBar.y + disBar.h);
+
+            SDL_Rect oldArea;
+            SDL_GetRenderClipRect(renderer, &oldArea);
+            SDL_Rect disClipArea{ (int)disBody.x, (int)disBody.y, (int)disBody.w, (int)disBody.h };
+            SDL_SetRenderClipRect(renderer, &disClipArea);
+
+            for (int i = firstLine; i < lastLine; i++)
+            {
+                auto srcLine = m_sourceFile->m_lines[i];
+                if (srcLine->m_assembledLine >= dis->m_lines.size())
+                    continue;
+
+                auto& line = dis->m_lines[srcLine->m_assembledLine];
+                if (line.m_addressLength == 0)
+                    continue;
+
+                u32 offsetAddress = line.m_addressStart - dis->m_info->m_memoryAddress;
+                if (offsetAddress > dis->m_info->m_memoryLength)
+                    continue;
+
+                int ly = yBase + i * LINE_HEIGHT;
+                int lx = xBase;
+                int bytes = Min(line.m_addressLength, 3);
+                for (u32 b = 0; b < 3; b++)
+                {
+                    u8 byte = dis->m_info->m_memory[offsetAddress + b];
+                    fr.RenderText(renderer, std::format("{:02x}", byte), tp.m_colors[(int)ThemeColor::TextComment], lx, ly, FontType::Text);
+                    lx += 24;
+                }
+                ly += LINE_HEIGHT;
+            }
+            SDL_SetRenderClipRect(renderer, &oldArea);
+            xBase += m_disOffset;
+        }
+    }
 
     int maxWidth = 0;
 
@@ -368,9 +447,19 @@ bool SourceFileWindow::Tick()
 
 void SourceFileWindow::CalcXYFromClientPos(int x, int y, int& col, int& row)
 {
+    bool showLineNumbers = true;
+    bool showDisassembly = true;
+
     auto &fr = FontRenderer::Instance();
     int xBase = m_clientArea.x - m_clientContentOffset.x + BORDER_MARGIN;
     int yBase = m_clientArea.y - m_clientContentOffset.y + BORDER_MARGIN;
+
+    if (showLineNumbers)
+        xBase += m_lineNmbrOffset;
+    auto dis = SourceFileManager::Instance().GetDisassembly(m_sourceFile);
+    if (dis && showDisassembly)
+        xBase += m_disOffset;
+
     row = Clamp((y - yBase) / LINE_HEIGHT, 0, (int)m_sourceFile->m_lines.size() - 1);
 
     auto line = m_sourceFile->m_lines[row];

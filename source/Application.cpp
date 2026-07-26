@@ -192,7 +192,7 @@ void Application::CreateMenus()
 
     auto styleMenu = new WindowMenu;
     styleMenu->m_name = "Style";
-    auto themeItem = new WindowMenuItem("Theme");
+    m_themeMenu = new WindowMenuItem("Theme");
     for (auto theme : m_themes)
     {
         auto activateTheme = [theme]()
@@ -200,9 +200,9 @@ void Application::CreateMenus()
                 Application::Instance().SelectTheme(theme->m_name.c_str());
                 WindowManager::Instance().PaintAll();
             };
-        themeItem->m_subMenus.push_back(new WindowMenuItem(theme->m_name, activateTheme));
+        m_themeMenu->m_subMenus.push_back(new WindowMenuItem(theme->m_name, activateTheme));
     }
-    styleMenu->m_items.push_back(themeItem);
+    styleMenu->m_items.push_back(m_themeMenu);
     wm.AddWindowMenu(styleMenu);
 
     auto ultimateMenu = new WindowMenu;
@@ -302,7 +302,6 @@ void Application::CreateMenus()
     buildMenu->m_items.push_back(new WindowMenuItem("Run", []() {Log("Run\n"); }));
     buildMenu->m_items.push_back(new WindowMenuItem("Launch on U64", []() {Log("Launch\n"); }));
     wm.AddWindowMenu(buildMenu);
-
     wm.LayoutMenu();
 }
 
@@ -355,9 +354,6 @@ void Application::LoadThemesFromSettings()
             }
         }
     }
-
-    auto themeName = settings.GetString(SETTING_ACTIVE_THEME);
-    SelectTheme(themeName.c_str());
 }
 void Application::SaveThemesToSettings()
 {
@@ -595,6 +591,9 @@ int Application::Run()
     CreateMenus();
     AddCustomEvents();
 
+    auto themeName = Settings::Instance().GetString(SETTING_ACTIVE_THEME);
+    SelectTheme(themeName.c_str());
+
     wm.LoadWindowLayout();
 
     auto& nm = NetworkManager::Instance();
@@ -607,7 +606,6 @@ int Application::Run()
         {
             if (e.type == CustomEvent_Timer)
             {
-                SourceFileManager::Instance().Tick();
                 WindowManager::Instance().Tick();
                 ProcessShellOutput();
                 wm.SendDeferredMessages();
@@ -616,6 +614,9 @@ int Application::Run()
                 wm.HandleEvent(&e);
         }
         wm.Paint();
+
+        SourceFileManager::Instance().LoadRequestedFiles(true);
+        SourceFileManager::Instance().UpdateDisassemblies();
     }
 
     DestroyShellProcess();
@@ -635,11 +636,17 @@ int Application::Run()
 void Application::SelectTheme(const char *themeName)
 {
     auto theme = FindTheme(themeName);
+    if (!theme)
+    {
+        theme = m_themes[1];
+    }
     if (theme)
     {
         m_activeTheme = theme;
+        m_themeMenu->m_name = std::format("Theme : {}", themeName);
         Settings::Instance().SetString(SETTING_ACTIVE_THEME, m_activeTheme->m_name);
         Settings::Instance().Save();
+        WindowManager::Instance().LayoutMenu();
     }
 }
 
@@ -674,6 +681,20 @@ bool Application::SendShellCommand(const std::string& command)
     return written == line.size();
 }
 
+void Application::AddShellWatcher(OutputWatcherFunc watchFunc)
+{
+    m_watcherLock.lock();
+    m_watchers.push_back(watchFunc);
+    m_watcherLock.unlock();
+}
+
+void Application::AddShellWatcherOnce(OutputWatcherFunc watchFunc)
+{
+    m_watcherLock.lock();
+    m_watchersOnce.push_back(watchFunc);
+    m_watcherLock.unlock();
+}
+
 void Application::ProcessShellOutput()
 {
     if (!m_shellOutput)
@@ -686,21 +707,22 @@ void Application::ProcessShellOutput()
         if (buffer[i] == '\n')
         {
             Log(LogGroup::Build, m_shellOutputLine);
+
+            m_watcherLock.lock();
+            std::string line = m_shellOutputLine;
+            for (auto& watch : m_watchers)
+            {
+                watch(line);
+            }
+            std::erase_if(m_watchersOnce, [line](auto watcher)->bool {return watcher(line); });
+            m_watcherLock.unlock();
+ 
             m_shellOutputLine.clear();
         }
         else if (buffer[i] != '\t' && buffer[i] != '\r')
         {
             m_shellOutputLine.push_back(buffer[i]);
         }
-    }
-
-    if (bytesRead > 0)
-    {
-        // assume if we got output, we might need to refresh the project output list
-        WindowMessageStruct msg;
-        msg.m_type = WindowMessage::File_Compiled;
-        msg.m_flags = WMF_Window;
-        WindowManager::Instance().Message(msg);
     }
 }
 

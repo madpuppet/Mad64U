@@ -290,6 +290,12 @@ void WindowManager::HandleEvent(SDL_Event* e)
                             m_activeWindow = m_mouseSelectionQuery.m_window;
                             m_menuList.Layout(m_activeTree);
                             m_mouseSelectionQuery.m_tree->m_dirty;
+
+                            auto file = m_mouseSelectionQuery.m_window->GetSourceFile();
+                            if (file)
+                            {
+                                SourceFileManager::Instance().SetActiveSourceFile(file);
+                            }
                         }
                     }
                     break;
@@ -882,14 +888,15 @@ void WindowManager::LoadWindowLayout()
         int h = std::stoi(layoutTokens[idx++]);
 
         auto tree = new WindowTree(Recti{ x,y,w,h });
-        tree->m_fullscreen = isFullscreen;
+        tree->m_fullscreen = false;
         m_windowTrees.push_back(tree);
         WindowManager::Instance().IndexWindows();
-
         tree->m_layout.LoadLayout(layoutTokens, idx);
-
         SetActiveTree(tree);
-        tree->LayoutWindows();
+        if (isFullscreen)
+            tree->MakeFullscreen();
+        else
+            tree->LayoutWindows();
     }
 }
 
@@ -946,6 +953,32 @@ void WindowManager::SendDeferredMessages()
         Message(msg);
     }
 }
+
+void WindowManager::SetActiveWindow(WindowBase* window)
+{
+    if (m_activeWindow != window)
+    {
+        m_activeWindow = window;
+        WindowMessageStruct msg;
+        msg.m_type = WindowMessage::Window_Activated;
+        msg.m_flags = WMF_Menu | WMF_Layout | WMF_Window;
+        Message(msg);
+    }
+}
+
+bool WindowManager::FindWindowByFile(class SourceFile* file, WindowTree* &tree, WindowLayout* &layout, WindowBase* &window)
+{
+    WindowMessageStruct msg;
+    msg.m_type = WindowMessage::Query_FindFileWindow;
+    msg.m_sourceFile = file;
+    msg.m_flags = WMF_EarlyOut | WMF_Window;
+    WindowManager::Instance().Message(msg);
+    tree = msg.m_tree;
+    layout = msg.m_layout;
+    window = msg.m_window;
+    return msg.m_response > 0;
+}
+
 
 
 

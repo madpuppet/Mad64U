@@ -161,6 +161,7 @@ bool SearchWindow::CreateFromLayoutTokens(struct WindowLayout* layout, const std
 
     auto win = new SearchWindow();
     layout->m_tabs.push_back(win);
+    return true;
 }
 
 

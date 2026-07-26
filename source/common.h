@@ -12,6 +12,7 @@
 #include <string>
 #include <cmath>
 #include <algorithm>
+#include <filesystem>
 
 #define VERSION "1.000"
 
@@ -33,6 +34,7 @@ typedef long long i64;
 extern u32 CustomEvent_Timer;
 
 extern void Log(const char* pFormat, ...);
+extern bool LoadFile(std::filesystem::path& path, u8*&mem, u32 &size);
 
 #define Assert(cond, ...)  if (!(cond)) { Log("ASSERTION FAILURE:\n"); __VA_OPT__(Log(__VA_ARGS__);) __debugbreak(); };
 

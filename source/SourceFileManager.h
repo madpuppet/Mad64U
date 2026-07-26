@@ -8,6 +8,31 @@
 #include <map>
 #include <filesystem>
 
+struct DisassemblyLine
+{
+    u32 m_addressStart = 0;
+    u32 m_addressLength = 0;
+};
+
+struct DisassemblyFile
+{
+    std::filesystem::path m_path;
+    std::vector<DisassemblyLine> m_lines;
+    struct DisassemblyInfo* m_info;
+};
+
+struct DisassemblyInfo
+{
+    std::filesystem::path m_dbgPath;
+    std::vector<DisassemblyFile*> m_files;
+    u8* m_memory;
+    u32 m_memoryAddress;
+    u32 m_memoryLength;
+};
+
+DisassemblyInfo* LoadDisassembly(const std::filesystem::path& path);
+
+
 class SourceFileManager : public Singleton<SourceFileManager>
 {
 public:
@@ -30,7 +55,6 @@ public:
     }
 
     void RequestLoadFiles(std::vector<std::string> paths);
-    void Tick();
 
     void RestoreFilesFromSettings();
     void SaveFilesToSettings();
@@ -38,13 +62,17 @@ public:
     void LoadRequestedFiles(bool addWindow);
     SourceFile* FindFile(const std::string& path);
 
-    void SetActiveSourceFile(class SourceFile* file) { m_activeSourceFile = file; }
+    void SetActiveSourceFile(class SourceFile* file);
     class SourceFile* GetActiveSourceFile() { return m_activeSourceFile; }
 
     void Compile(class SourceFile* file);
     void Run(class SourceFile* file);
     void Run(const std::filesystem::path &outputFile);
     void Deploy(const std::filesystem::path& outputFile);
+
+    void AddDisassembly(DisassemblyInfo* info);
+    void UpdateDisassemblies();
+    DisassemblyFile *GetDisassembly(class SourceFile* file);
 
 protected:
     std::mutex m_lock;
@@ -53,4 +81,8 @@ protected:
 
     void InitKeywords(const char** keywords, SourceType sourceType, bool caseSensitive);
     std::set<size_t> m_keywords[NumSourceType];
+
+    std::mutex m_lockDisassembly;
+    std::vector<DisassemblyInfo*> m_activeDisassemblies;
+    std::vector<DisassemblyInfo*> m_queuedForAddDisassemblies;
 };

@@ -29,6 +29,7 @@ struct SourceLineRenderFragment
 class SourceLine
 {
 public:
+    int m_assembledLine;
     std::string m_chars;
     bool m_fragmentsDirty = true;
     std::vector<SourceLineRenderFragment> m_fragments;

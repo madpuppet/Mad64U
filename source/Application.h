@@ -50,6 +50,8 @@ enum class ThemeColor
 };
 constexpr size_t NumThemeColor = static_cast<size_t>(ThemeColor::MAX);
 
+using OutputWatcherFunc = std::function<bool(const std::string&)>;
+
 struct ThemeProperties
 {
     bool m_system = false;      // system themes don't get written to properties
@@ -78,6 +80,8 @@ public:
     ThemeProperties& GetThemeProperties() { return *m_activeTheme; }
 
     bool SendShellCommand(const std::string& command);
+    void AddShellWatcher(OutputWatcherFunc watchFunc);
+    void AddShellWatcherOnce(OutputWatcherFunc watchFunc);
 
     void PostTestNetwork();
 
@@ -105,5 +109,11 @@ protected:
     SDL_IOStream* m_shellInput;
     SDL_IOStream* m_shellOutput;
     std::string m_shellOutputLine;
+
+    WindowMenuItem* m_themeMenu;
+
+    std::mutex m_watcherLock;
+    std::vector<OutputWatcherFunc> m_watchers;
+    std::vector<OutputWatcherFunc> m_watchersOnce;
 };
 

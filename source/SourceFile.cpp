@@ -25,3 +25,4 @@ SourceFile::~SourceFile()
         delete line;
     delete m_cmdBuffer;
 }
+
