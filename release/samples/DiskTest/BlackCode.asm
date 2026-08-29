@@ -1,6 +1,6 @@
 #import "../includes/c64.asm"
 
-.file [name="blackCode.bin", type="bin", segments="blackCode"]
+.file [name="blackCode.prg", type="prg", segments="blackCode"]
 .segment blackCode[]
 
 * = $c000
@@ -31,6 +31,3 @@ l1:
 }
 
 
-
-
-	

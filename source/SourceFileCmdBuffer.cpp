@@ -9,6 +9,10 @@ void SourceFileCmdBuffer::PushAndExecute(class SourceFile* file, SourceFileCmd* 
         for (int i = m_cmdIndex; i < m_commandList.size(); i++)
             delete m_commandList[i];
         m_commandList.erase(m_commandList.begin() + m_cmdIndex, m_commandList.end());
+
+        // if we clipped off the point from the last save, then we can never get back to unmodified
+        if (m_lastSaveIndex > m_commandList.size())
+            m_lastSaveIndex = -1;
     }
     m_commandList.push_back(cmd);
     m_cmdIndex++;

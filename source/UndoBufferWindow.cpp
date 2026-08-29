@@ -48,6 +48,17 @@ void UndoBufferWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     SDL_FRect selected{ (float)(xBase - BORDER_MARGIN), (float)(yBase + file->m_cmdBuffer->m_cmdIndex * LINE_HEIGHT), (float)m_clientArea.w, 4 };
     SDL_RenderFillRect(renderer, &selected);
 
+    if (file->m_cmdBuffer->m_lastSaveIndex != -1)
+    {
+        tp.SetRenderDrawColor(renderer, ThemeColor::TextComment);
+        float x1 = (float)(xBase - BORDER_MARGIN);
+        float y1 = (float)(yBase + file->m_cmdBuffer->m_lastSaveIndex * LINE_HEIGHT - 2);
+        float x2 = (float)(xBase - BORDER_MARGIN + m_clientArea.w);
+        float y2 = y1 + 8;
+        SDL_RenderLine(renderer, x1, y1, x2, y1);
+        SDL_RenderLine(renderer, x1, y2, x2, y2);
+    }
+
     for (int i = firstLine; i < lastLine; i++)
     {
         auto line = list[i];

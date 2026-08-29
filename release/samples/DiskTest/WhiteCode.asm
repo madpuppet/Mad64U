@@ -1,11 +1,11 @@
 #import "../includes/c64.asm"
 
-.file [name="whiteCode.bin", type="prg", segments="whiteCode"]
+.file [name="whiteCode.prg", type="prg", segments="whiteCode"]
 .segment whiteCode[]
 
 * = $c000
 {
-    lda #0
+    lda #1
     sta vic.backgroundColor0
     sta vic.borderColor
     

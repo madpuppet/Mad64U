@@ -33,6 +33,9 @@ public:
     std::string m_chars;
     bool m_fragmentsDirty = true;
     std::vector<SourceLineRenderFragment> m_fragments;
+
+    void BuildFragments(SDL_Renderer *renderer, SourceType sourceType);
+    int CharIndexToColumn(int index);
 };
 
 class SourceFile

@@ -6,9 +6,8 @@
 #include "SourceFileCmdBuffer.h"
 #include "LogManager.h"
 #include "SearchWindow.h"
+#include "Settings.h"
 #include <filesystem>
-
-#define TAB_SIZE 4
 
 SourceFileWindow::SourceFileWindow(SourceFile* file) : m_sourceFile(file)
 {
@@ -98,8 +97,8 @@ int SourceFileWindow::CalcXPos(int x, int y)
 
 void SourceFileWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
 {
-    bool showLineNumbers = true;
-    bool showDisassembly = true;
+    bool showLineNumbers = Settings::Instance().GetBool(SETTING_SHOW_LINES);
+    bool showDisassembly = Settings::Instance().GetBool(SETTING_SHOW_BYTES);
 
     auto& tp = Application::Instance().GetThemeProperties();
     auto window = WindowManager::Instance().GetActiveWindowBase();
@@ -118,9 +117,14 @@ void SourceFileWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     int xBase = m_clientArea.x - m_clientContentOffset.x + BORDER_MARGIN;
     int yBase = m_clientArea.y - m_clientContentOffset.y + BORDER_MARGIN;
 
+    SDL_FRect highlightRect{ xBase, yBase + m_cursor.y * LINE_HEIGHT, m_clientArea.w, LINE_HEIGHT };
+    tp.SetRenderDrawColor(renderer, ThemeColor::HighlightLine);
+    SDL_RenderFillRect(renderer, &highlightRect);
+
+    int bodyX = m_clientArea.x;
     if (showLineNumbers)
     {
-        SDL_FRect lnBody{ body.x, body.y, (float)(m_lineNmbrOffset - BORDER_MARGIN), body.h };
+        SDL_FRect lnBody{ (float)bodyX, body.y, (float)(m_lineNmbrOffset - BORDER_MARGIN), body.h };
         SDL_FRect lnBar{ lnBody.x + m_lineNmbrOffset - BORDER_MARGIN, lnBody.y, BORDER_MARGIN, lnBody.h };
         tp.SetRenderDrawColor(renderer, ThemeColor::SourceBackground);
         SDL_RenderFillRect(renderer, &lnBar);
@@ -138,12 +142,13 @@ void SourceFileWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
         {
             int ly = yBase + i * LINE_HEIGHT;
             int lx = xBase;
-            fr.RenderText(renderer, std::format("{:4d}", i), tp.m_colors[(int)ThemeColor::TextString], lx, ly, FontType::Text);
+            fr.RenderText(renderer, std::format("{:5d}", i), tp.m_colors[(int)ThemeColor::TextString], lx, ly, FontType::Text);
             ly += LINE_HEIGHT;
         }
 
         SDL_SetRenderClipRect(renderer, &oldArea);
         xBase += m_lineNmbrOffset;
+        bodyX += m_lineNmbrOffset;
     }
 
     if (showDisassembly)
@@ -151,7 +156,7 @@ void SourceFileWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
         auto dis = SourceFileManager::Instance().GetDisassembly(m_sourceFile);
         if (dis)
         {
-            SDL_FRect disBody{ body.x, body.y, (float)(m_disOffset - BORDER_MARGIN), body.h };
+            SDL_FRect disBody{ (float)bodyX, body.y, (float)(m_disOffset - BORDER_MARGIN), body.h };
             SDL_FRect disBar{ disBody.x + m_disOffset - BORDER_MARGIN, disBody.y, BORDER_MARGIN, disBody.h };
 
             tp.SetRenderDrawColor(renderer, ThemeColor::SourceBackground);
@@ -182,8 +187,10 @@ void SourceFileWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
 
                 int ly = yBase + i * LINE_HEIGHT;
                 int lx = xBase;
-                int bytes = Min(line.m_addressLength, 3);
-                for (u32 b = 0; b < 3; b++)
+                u32 bytes = Min(line.m_addressLength, 3);
+                fr.RenderText(renderer, std::format("{:04x}", line.m_addressStart), tp.m_colors[(int)ThemeColor::TextOperator], lx, ly, FontType::Text);
+                lx += 50;
+                for (u32 b = 0; b < bytes; b++)
                 {
                     u8 byte = dis->m_info->m_memory[offsetAddress + b];
                     fr.RenderText(renderer, std::format("{:02x}", byte), tp.m_colors[(int)ThemeColor::TextComment], lx, ly, FontType::Text);
@@ -193,6 +200,7 @@ void SourceFileWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
             }
             SDL_SetRenderClipRect(renderer, &oldArea);
             xBase += m_disOffset;
+            bodyX += m_disOffset;
         }
     }
 
@@ -228,7 +236,7 @@ void SourceFileWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     {
         auto line = m_sourceFile->m_lines[i];
         if (line->m_fragmentsDirty)
-            BuildFragments(renderer, line);
+            line->BuildFragments(renderer, m_sourceFile->m_sourceType);
         for (auto& fragment : line->m_fragments)
         {
             auto& col = tp.m_colors[(int)ThemeColor::TextGeneral + (int)fragment.m_fragType];
@@ -244,149 +252,17 @@ void SourceFileWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     cursorRect.x += (float)xBase;
     cursorRect.y += (float)yBase;
     SDL_Color col = tp.m_colors[(int)ThemeColor::Cursor];
-    col.a = (int)(cosf(m_animTime * 2.0f * SDL_PI_F) * 127) + 128;
+    if (WindowManager::Instance().GetActiveWindowBase() == this)
+    {
+        col.a = (int)(cosf(m_animTime * 2.0f * SDL_PI_F) * 127) + 128;
+    }
+    else
+    {
+        col.a = 160;
+    }
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(renderer, col.r, col.g, col.b, col.a);
     SDL_RenderFillRect(renderer, &cursorRect);
-}
-
-void SourceFileWindow::BuildFragments(SDL_Renderer* renderer, SourceLine* line)
-{
-    int x = 0;
-    int y = 0;
-    SourceType sourceType = m_sourceFile->m_sourceType;
-    auto& sm = SourceFileManager::Instance();
-    line->m_fragmentsDirty = false;
-    auto& fr = FontRenderer::Instance();
-    char frag[1024];
-    line->m_fragments.clear();
-    int i = 0;
-    int charCount = (int)line->m_chars.size();
-    FragmentType ft = FragmentType::General;
-    int chIdx = 0;
-    while (i < charCount)
-    {
-        // skip white space
-        while (i < charCount)
-        {
-            u32 ch = (u32)line->m_chars[i];     //TODO: UTF8 process
-            if (ch == '\t')
-            {
-                chIdx = ((chIdx / TAB_SIZE) + 1) * TAB_SIZE;
-                i++;
-            }
-            else if (ch == ' ')
-            {
-                chIdx++;
-                i++;
-            }
-            else break;
-        }
-
-        // gather a fragment
-        int c = 0;
-        bool alted = false;
-        frag[0] = 0;
-
-        if (ft == FragmentType::Operator)
-            ft = FragmentType::General;
-        while (true)
-        {
-            if (i == charCount)
-            {
-                if (c > 0 && ft != FragmentType::String && ft != FragmentType::Comment && sm.IsKeyword(sourceType, frag))
-                {
-                    ft = FragmentType::Operator;
-                }
-                break;
-            }
-
-            char ch = line->m_chars[i];
-            if (ch == '\t' || ch == ' ')
-            {
-                if (ft != FragmentType::String && ft != FragmentType::Comment && sm.IsKeyword(sourceType, frag))
-                {
-                    ft = FragmentType::Operator;
-                }
-                break;
-            }
-
-            if (c > 0 && ft != FragmentType::Comment && ft != FragmentType::String)
-            {
-                char last = tolower(frag[c-1]);
-                char next = tolower(ch);
-                bool lastIsAlphaNumeric = (last >= 'a' && last <= 'z') || (last >= '0' && last <= '9');
-                bool nextIsAlphaNumeric = (next >= 'a' && next <= 'z') || (next >= '0' && next <= '9');
-                if (sourceType == SourceType::Asm || sourceType == SourceType::S)
-                {
-                    lastIsAlphaNumeric |= last == '.';
-                    nextIsAlphaNumeric |= next == '.';
-                }
-
-                if (lastIsAlphaNumeric != nextIsAlphaNumeric)
-                {
-                    if (sm.IsKeyword(sourceType, frag))
-                        ft = FragmentType::Operator;
-                    break;
-                }
-            }
-
-            frag[c++] = (u8)ch;
-            frag[c] = 0;
-            i++;
-
-            // next quote won't start/end a string
-            alted = false;
-            if (ch == '\\')
-            {
-                alted = true;
-            }
-
-            if (ft != FragmentType::Comment && ch == '"' && !alted)
-            {
-                if (ft == FragmentType::String)
-                    break;
-                ft = FragmentType::String;
-            }
-
-            // check for double char tokens
-            if (ft != FragmentType::Comment && ft != FragmentType::String && c == 2)
-            {
-                char oneFrag[2];
-                oneFrag[0] = frag[0];
-                oneFrag[1] = 0;
-
-                if (sm.IsKeyword(sourceType, frag))
-                {
-                    ft = FragmentType::Operator;
-                    break;
-                }
-                else if (sm.IsKeyword(sourceType, oneFrag))
-                {
-                    frag[1] = 0;
-                    --i;
-                    --c;
-                    ft = FragmentType::Operator;
-                    break;
-                }
-            }
-        }
-
-        if ((sourceType == SourceType::Asm || sourceType == SourceType::S) && strcmp(frag, ";")==0)
-            ft = FragmentType::Comment;
-
-        if (sourceType == SourceType::C && strcmp(frag, "//") == 0)
-            ft = FragmentType::Comment;
-
-        SourceLineRenderFragment fragment;
-        fragment.m_fragType = ft;
-        fragment.m_chars = frag;
-        x = chIdx * m_charWidth;
-        fr.CalcTextArea(renderer, fragment.m_chars, Vec2i(x, y), FontType::Text, fragment.m_area);
-        x = fragment.m_area.x + fragment.m_area.w;
-        line->m_fragments.emplace_back(fragment);
-        chIdx += c;
-    }
 }
 
 void SourceFileWindow::Close()
@@ -544,14 +420,13 @@ bool SourceFileWindow::HandleEvent(SDL_Event* e)
             switch (e->key.key)
             {
                 case SDLK_F:
-                case SDLK_G:
                     if (e->key.mod & SDL_KMOD_CTRL)
                     {
                         WindowMessageStruct msg;
                         WindowFindQuery query;
                         query.m_windowName = "Search";
                         msg.m_type = WindowMessage::Query_FindWindow;
-                        msg.m_flags = WMF_Window;
+                        msg.m_flags = WMF_Window | WMF_EarlyOut;
                         msg.m_query = &query;
                         WindowManager::Instance().Message(msg);
 
@@ -568,27 +443,13 @@ bool SourceFileWindow::HandleEvent(SDL_Event* e)
                             for (auto win : query.m_foundWindows)
                             {
                                 if (win->GetSourceFile() == m_sourceFile)
-                                    searchWindow = win;
+                                    searchWindow = (SearchWindow*)win;
                             }
                             if (searchWindow == nullptr)
-                                searchWindow = query.m_foundWindows[0];
+                                searchWindow = (SearchWindow*)query.m_foundWindows[0];
                         }
 
-                        if (e->key.mod & SDL_KMOD_SHIFT)
-                        {
-                            if (e->key.key == SDLK_F)
-                            {
-                                searchWindow->SetMode(SearchWindow::SearchMode::Search);
-                            }
-                            else if (e->key.key == SDLK_G)
-                            {
-                                searchWindow->SetMode(SearchWindow::SearchMode::Goto);
-                            }
-                        }
-                        else
-                        {
-                            searchWindow->SetMode(SearchWindow::SearchMode::Replace);
-                        }
+                        searchWindow->SetSearchActive();
                     }
                     break;
 
@@ -596,6 +457,9 @@ bool SourceFileWindow::HandleEvent(SDL_Event* e)
                     if (e->key.mod & SDL_KMOD_CTRL)
                     {
                         SourceFileManager::Instance().SaveFile(m_sourceFile);
+
+                        if (m_sourceFile->m_sourceType == SourceType::Asm)
+                            SourceFileManager::Instance().Compile(m_sourceFile);
                     }
                     break;
 
@@ -887,7 +751,7 @@ void SourceFileWindow::MoveCursorStartOfLine()
 
 bool SourceFileWindow::IsModified()
 {
-    return m_sourceFile->m_cmdBuffer->m_cmdIndex > 0;
+    return m_sourceFile->m_cmdBuffer->IsModified();
 }
 
 void SourceFileWindow::MoveCursorEndOfLine()
@@ -1025,7 +889,7 @@ void SourceFileWindow::DeleteCharBeforeCursor()
         Vec2i newCursor = { (int)oldLine.size(), m_cursor.y - 1};
 
         auto sfcDelete = new SFC_DeleteLine(m_cursor.y, removedLine, oldCursor, newCursor);
-        auto sfcReplace = new SFC_ReplaceLine(m_cursor.y - 1, newLine, oldLine, oldCursor, newCursor);
+        auto sfcReplace = new SFC_ReplaceLine(m_cursor.y - 1, oldLine, newLine, oldCursor, newCursor);
         auto sfcGroup = new SFC_Group("Collapse Lines", oldCursor, newCursor);
         sfcGroup->m_cmds.push_back(sfcDelete);
         sfcGroup->m_cmds.push_back(sfcReplace);
@@ -1337,6 +1201,15 @@ void SourceFileWindow::MessageChild(WindowLayout *layout, struct WindowMessageSt
 {
     switch (msg.m_type)
     {
+        case WindowMessage::Window_SetCursor:
+            {
+                m_cursor.x = msg.m_x;
+                m_cursor.y = msg.m_y;
+                ClampCursor();
+                MakeCursorVisible();
+            }
+            break;
+
         case WindowMessage::File_Deleted:
             if (m_sourceFile == msg.m_sourceFile)
             {
@@ -1372,4 +1245,31 @@ void SourceFileWindow::MessageChild(WindowLayout *layout, struct WindowMessageSt
         }
         break;
     }
+}
+
+void SourceFileWindow::ReplaceLines(const std::vector<SearchResult>& lines, const std::string& text)
+{
+    if (lines.empty())
+        return;
+
+    int lastLine = lines.back().m_line;
+    if (lastLine >= m_sourceFile->m_lines.size())
+        return;
+
+    Vec2i oldCursor = m_cursor;
+    Vec2i newCursor = { m_sourceFile->m_lines[lastLine]->m_chars.size(), lastLine};
+
+    auto sfcGroup = new SFC_Group("Search and Replace", oldCursor, newCursor);
+    for (auto line : lines)
+    {
+        std::string oldChars = m_sourceFile->m_lines[line.m_line]->m_chars;
+        std::string newChars = oldChars;
+        newChars.replace(line.m_startChar, line.m_length, text);
+        auto sfcReplace = new SFC_ReplaceLine(line.m_line, oldChars, newChars, oldCursor, newCursor);
+        sfcGroup->m_cmds.push_back(sfcReplace);
+    }
+    m_sourceFile->m_cmdBuffer->PushAndExecute(m_sourceFile, sfcGroup);
+
+    m_cursor = newCursor;
+    m_trackedColumn = m_cursor.x;
 }

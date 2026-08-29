@@ -59,8 +59,15 @@ public:
     NetworkManager();
     ~NetworkManager();
     
+    // send a message. this is done async and is thread safe
     void Message(NetworkMessageStruct *msg);
+
+    // get the network status
     void GetNetworkStatus(NetworkStatus& status);
+
+    // send a network command and wait for a result
+    // this is threadsafe, but synchronous so may take seconds on a timeout 
+    void SendNetworkCommand(NMS_Command* msg, NetworkResult& result);
 
     // helpers
     void SendReset() { Message(new NMS_Command("machine:reset")); }
@@ -72,13 +79,9 @@ protected:
     void Cmd_SetIP(NetworkMessageStruct* msg);
     void Cmd_Command(NetworkMessageStruct* msg);
     
-    void SendNetworkCommand(NMS_Command* msg, NetworkResult& result);
     void UpdateHostName();
 
     void Run();
-    bool TryConnect();
-
-    void GetResults(NetworkResult &result);
 
     std::string m_ipAddress;
     volatile bool m_terminate = false;
@@ -92,4 +95,5 @@ protected:
     volatile int m_writeMsgIdx = 0;
     volatile int m_readMsgIdx = 0;
     std::counting_semaphore<256> m_signalMsg{ 0 };
+    std::mutex m_networkMutex;
 };

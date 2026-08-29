@@ -41,6 +41,7 @@ static const char* s_themecolor_name[NumThemeColor] =
     "ScrollBarSelected",
     "Cursor",
     "TextHighlight",
+    "HighlightLine",
     "HighlightArea",
     "WindowEdgeLight",
     "WindowEdgeDark",
@@ -48,6 +49,7 @@ static const char* s_themecolor_name[NumThemeColor] =
     "WindowEdgeDarkSelected",
     "SearchTitleBack",
     "SearchTextBack",
+    "SearchTextBackSelected",
     "SearchTitle",
     "SearchText",
     "TextGeneral",
@@ -203,6 +205,21 @@ void Application::CreateMenus()
         m_themeMenu->m_subMenus.push_back(new WindowMenuItem(theme->m_name, activateTheme));
     }
     styleMenu->m_items.push_back(m_themeMenu);
+
+    m_showLinesMenu = new WindowMenuItem("Line Numbers");
+    auto showLinesTrue = []() { Application::Instance().ShowLines(true); };
+    auto showLinesFalse = []() { Application::Instance().ShowLines(false); };
+    m_showLinesMenu->m_subMenus.push_back(new WindowMenuItem("Show", showLinesTrue));
+    m_showLinesMenu->m_subMenus.push_back(new WindowMenuItem("Hide", showLinesFalse));
+    styleMenu->m_items.push_back(m_showLinesMenu);
+
+    m_showBytesMenu = new WindowMenuItem("Code Bytes");
+    auto showBytesTrue = []() { Application::Instance().ShowBytes(true); };
+    auto showBytesFalse = []() { Application::Instance().ShowBytes(false); };
+    m_showBytesMenu->m_subMenus.push_back(new WindowMenuItem("Show", showBytesTrue));
+    m_showBytesMenu->m_subMenus.push_back(new WindowMenuItem("Hide", showBytesFalse));
+    styleMenu->m_items.push_back(m_showBytesMenu);
+
     wm.AddWindowMenu(styleMenu);
 
     auto ultimateMenu = new WindowMenu;
@@ -212,7 +229,7 @@ void Application::CreateMenus()
         {
             NetworkManager::Instance().Message(new NMS_Command("machine:writemem?address=0277&data=4CCF222A222C382C310D"));
             NetworkManager::Instance().Message(new NMS_Command("machine:writemem?address=00C6&data=0A"));
-            
+
             NetworkManager::Instance().Message(new NMS_Command("machine:writemem?address=0277&data=52554E0D"));
             NetworkManager::Instance().Message(new NMS_Command("machine:writemem?address=00C6&data=04"));
         }));
@@ -431,12 +448,13 @@ void Application::CreateSettings()
         theme.m_colors[(int)ThemeColor::TabHighlight] = SDL_Color(255, 128, 255, 255);
         theme.m_colors[(int)ThemeColor::SourceBackground] = SDL_Color(16, 16, 16, 255);
         theme.m_colors[(int)ThemeColor::SourceBackgroundSelected] = SDL_Color(24, 24, 24, 255);
-        theme.m_colors[(int)ThemeColor::ScrollBarBackground] = SDL_Color(0, 0, 0, 255);
-        theme.m_colors[(int)ThemeColor::ScrollBar] = SDL_Color(128, 128, 0, 255);
-        theme.m_colors[(int)ThemeColor::ScrollBarSelected] = SDL_Color(255, 255, 0, 255);
+        theme.m_colors[(int)ThemeColor::ScrollBarBackground] = SDL_Color(32, 0, 32, 255);
+        theme.m_colors[(int)ThemeColor::ScrollBar] = SDL_Color(64, 16, 64, 255);
+        theme.m_colors[(int)ThemeColor::ScrollBarSelected] = SDL_Color(128, 128, 128, 255);
         theme.m_colors[(int)ThemeColor::Cursor] = SDL_Color(255, 255, 128, 255);
         theme.m_colors[(int)ThemeColor::TextHighlight] = SDL_Color(128, 128, 128, 255);
-        theme.m_colors[(int)ThemeColor::HighlightArea] = SDL_Color(255, 255, 0, 64);
+        theme.m_colors[(int)ThemeColor::HighlightLine] = SDL_Color(32, 32, 32, 255);
+        theme.m_colors[(int)ThemeColor::HighlightArea] = SDL_Color(255, 255, 0, 32);
         theme.m_colors[(int)ThemeColor::WindowEdgeLight] = SDL_Color(64, 64, 64, 255);
         theme.m_colors[(int)ThemeColor::WindowEdgeDark] = SDL_Color(0, 0, 0, 255);
         theme.m_colors[(int)ThemeColor::WindowEdgeLightSelected] = SDL_Color(96, 96, 96, 255);
@@ -444,6 +462,7 @@ void Application::CreateSettings()
 
         theme.m_colors[(int)ThemeColor::SearchTitleBack] = SDL_Color(32, 32, 32, 255);
         theme.m_colors[(int)ThemeColor::SearchTextBack] = SDL_Color(0, 0, 0, 255);
+        theme.m_colors[(int)ThemeColor::SearchTextBackSelected] = SDL_Color(16, 16, 16, 255);
         theme.m_colors[(int)ThemeColor::SearchTitle] = SDL_Color(200, 190, 60, 255);
         theme.m_colors[(int)ThemeColor::SearchText] = SDL_Color(128, 128, 128, 255);
 
@@ -474,11 +493,12 @@ void Application::CreateSettings()
         theme.m_colors[(int)ThemeColor::TabHighlight] = SDL_Color(255, 128, 255, 255);
         theme.m_colors[(int)ThemeColor::SourceBackground] = SDL_Color(0, 0, 64, 255);
         theme.m_colors[(int)ThemeColor::SourceBackgroundSelected] = SDL_Color(0, 0, 78, 255);
-        theme.m_colors[(int)ThemeColor::ScrollBarBackground] = SDL_Color(0, 0, 0, 255);
-        theme.m_colors[(int)ThemeColor::ScrollBar] = SDL_Color(128, 128, 0, 255);
-        theme.m_colors[(int)ThemeColor::ScrollBarSelected] = SDL_Color(255, 255, 0, 255);
+        theme.m_colors[(int)ThemeColor::ScrollBarBackground] = SDL_Color(0, 32, 132, 255);
+        theme.m_colors[(int)ThemeColor::ScrollBar] = SDL_Color(0, 100, 255, 255);
+        theme.m_colors[(int)ThemeColor::ScrollBarSelected] = SDL_Color(0, 255, 255, 255);
         theme.m_colors[(int)ThemeColor::Cursor] = SDL_Color(255, 255, 128, 255);
         theme.m_colors[(int)ThemeColor::TextHighlight] = SDL_Color(128, 128, 128, 128);
+        theme.m_colors[(int)ThemeColor::HighlightLine] = SDL_Color(0, 16, 96, 255);
         theme.m_colors[(int)ThemeColor::HighlightArea] = SDL_Color(255, 255, 0, 64);
         theme.m_colors[(int)ThemeColor::WindowEdgeLight] = SDL_Color(128, 196, 196, 64);
         theme.m_colors[(int)ThemeColor::WindowEdgeDark] = SDL_Color(0, 0, 0, 255);
@@ -487,6 +507,7 @@ void Application::CreateSettings()
 
         theme.m_colors[(int)ThemeColor::SearchTitleBack] = SDL_Color(16, 32, 64, 255);
         theme.m_colors[(int)ThemeColor::SearchTextBack] = SDL_Color(8, 16, 32, 255);
+        theme.m_colors[(int)ThemeColor::SearchTextBackSelected] = SDL_Color(10, 20, 40, 255);
         theme.m_colors[(int)ThemeColor::SearchTitle] = SDL_Color(240, 220, 60, 255);
         theme.m_colors[(int)ThemeColor::SearchText] = SDL_Color(128, 140, 128, 255);
 
@@ -522,6 +543,7 @@ void Application::CreateSettings()
         theme.m_colors[(int)ThemeColor::ScrollBarSelected] = SDL_Color(255, 255, 0, 255);
         theme.m_colors[(int)ThemeColor::Cursor] = SDL_Color(64, 64, 0, 255);
         theme.m_colors[(int)ThemeColor::TextHighlight] = SDL_Color(128, 128, 128, 255);
+        theme.m_colors[(int)ThemeColor::HighlightLine] = SDL_Color(170, 160, 150, 255);
         theme.m_colors[(int)ThemeColor::HighlightArea] = SDL_Color(255, 255, 0, 64);
         theme.m_colors[(int)ThemeColor::WindowEdgeLight] = SDL_Color(164, 164, 164, 64);
         theme.m_colors[(int)ThemeColor::WindowEdgeDark] = SDL_Color(0, 0, 0, 255);
@@ -530,6 +552,7 @@ void Application::CreateSettings()
 
         theme.m_colors[(int)ThemeColor::SearchTitleBack] = SDL_Color(16, 32, 64, 255);
         theme.m_colors[(int)ThemeColor::SearchTextBack] = SDL_Color(8, 16, 32, 255);
+        theme.m_colors[(int)ThemeColor::SearchTextBackSelected] = SDL_Color(10, 20, 40, 255);
         theme.m_colors[(int)ThemeColor::SearchTitle] = SDL_Color(240, 220, 60, 255);
         theme.m_colors[(int)ThemeColor::SearchText] = SDL_Color(128, 200, 128, 255);
 
@@ -594,6 +617,11 @@ int Application::Run()
     auto themeName = Settings::Instance().GetString(SETTING_ACTIVE_THEME);
     SelectTheme(themeName.c_str());
 
+    bool showLines = Settings::Instance().GetBool(SETTING_SHOW_LINES);
+    bool showBytes = Settings::Instance().GetBool(SETTING_SHOW_BYTES);
+    ShowLines(showLines);
+    ShowBytes(showBytes);
+
     wm.LoadWindowLayout();
 
     auto& nm = NetworkManager::Instance();
@@ -649,6 +677,25 @@ void Application::SelectTheme(const char *themeName)
         WindowManager::Instance().LayoutMenu();
     }
 }
+
+void Application::ShowLines(bool enable)
+{
+    std::string result = enable ? "Show" : "Hide";
+    m_showLinesMenu->m_name = std::format("Line Numbers : {}", result);
+    Settings::Instance().SetBool(SETTING_SHOW_LINES, enable);
+    Settings::Instance().Save();
+    WindowManager::Instance().LayoutMenu();
+}
+
+void Application::ShowBytes(bool enable)
+{
+    std::string result = enable ? "Show" : "Hide";
+    m_showBytesMenu->m_name = std::format("Code Bytes : {}", result);
+    Settings::Instance().SetBool(SETTING_SHOW_BYTES, enable);
+    Settings::Instance().Save();
+    WindowManager::Instance().LayoutMenu();
+}
+
 
 void Application::DestroyShellProcess()
 {
@@ -739,6 +786,13 @@ void Application::ShutdownNetwork()
 }
 
 
-
+bool StrEqualNoCase(const std::string& a, const std::string& b)
+{
+    return std::ranges::equal(a, b,
+        [](unsigned char lhs, unsigned char rhs)
+        {
+            return std::tolower(lhs) == std::tolower(rhs);
+        });
+}
 
 

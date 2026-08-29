@@ -70,11 +70,24 @@ public:
     void Run(const std::filesystem::path &outputFile);
     void Deploy(const std::filesystem::path& outputFile);
 
-    void AddDisassembly(DisassemblyInfo* info);
+    // load a dbg file 
+    // checks that no other loads of this dbg file are in process
+    // if checkNotAlreadyLoaded, then it checks if any added disassembly matches, otherwise added disassemblies will get replaced
+    // safe to call from threads
+    void LoadDisassembly(const std::filesystem::path dbg, bool checkNotAlreadyLoaded);
+
+    // adds any disassemblies that were queued on thread into the active list
+    // should be called by main render thread
     void UpdateDisassemblies();
-    DisassemblyFile *GetDisassembly(class SourceFile* file);
+
+    // gets the disassembly matching this file, if it is active
+    DisassemblyFile* GetDisassembly(class SourceFile* file);
 
 protected:
+    bool StartLoadingDisassembly(const std::filesystem::path dbg);
+    void FinishLoadingDisassembly(const std::filesystem::path dbg);
+    void AddDisassembly(DisassemblyInfo* info);
+
     std::mutex m_lock;
     std::vector<std::string> m_filesToLoad;
     class SourceFile* m_activeSourceFile = nullptr;
@@ -85,4 +98,5 @@ protected:
     std::mutex m_lockDisassembly;
     std::vector<DisassemblyInfo*> m_activeDisassemblies;
     std::vector<DisassemblyInfo*> m_queuedForAddDisassemblies;
+    std::vector<std::filesystem::path> m_loadingDisassemblies;
 };

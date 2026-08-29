@@ -49,7 +49,7 @@ struct WindowScrollBarQuery
 struct WindowFindQuery
 {
     std::string m_windowName;
-    std::vector<class SearchWindow*> m_foundWindows;
+    std::vector<class WindowBase *> m_foundWindows;
 };
 
 enum class WindowHighlightType

@@ -28,7 +28,7 @@ void Log(const char* pFormat, ...)
 #endif
 }
 
-bool LoadFile(std::filesystem::path& path, u8*& mem, u32& size)
+bool LoadFile(const std::filesystem::path& path, u8*& mem, u32& size)
 {
     std::ifstream file(path, std::ios::binary | std::ios::ate);
     if (!file)

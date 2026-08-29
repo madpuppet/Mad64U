@@ -76,11 +76,14 @@ public:
 
     std::vector<SourceFileCmd*> m_commandList;
     int m_cmdIndex = 0;
+    int m_lastSaveIndex = 0;
 
     void PushAndExecute(class SourceFile *file, SourceFileCmd* cmd);
     bool Execute(class SourceFile* file, Vec2i &cursor);
     bool Revert(class SourceFile* file, Vec2i& cursor);
     void Clear();
+    void Mark() { m_lastSaveIndex = m_cmdIndex; }
+    bool IsModified() { return m_lastSaveIndex != m_cmdIndex; }
 };
 
 

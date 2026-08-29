@@ -576,7 +576,7 @@ void WindowLayout::LoadLayout(const std::vector<std::string>& layoutTokens, size
     }
     else
     {
-        Assert(false, "Expected N,V,H");
+        Assert(false, "Expected N,V,H but got {}", typeStr);
     }
 }
 

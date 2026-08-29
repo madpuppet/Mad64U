@@ -40,7 +40,6 @@ struct WindowMenuList
     void Paint();
 
     void Message(struct WindowMessageStruct &msg);
-    bool CheckForMenu(WindowTree *tree, int x, int y, WindowMenuQuery& query);
 
     WindowTree* m_tree = nullptr;
     std::vector<WindowMenu*> m_menus;

@@ -24,14 +24,26 @@ NetworkManager::~NetworkManager()
 
 void NetworkManager::Message(NetworkMessageStruct* msg)
 {
-    if (m_hostName.empty())
-    {
-        UpdateHostName();
-    }
+    auto cmd = [this, msg]()
+        {
+            NetworkStatus status;
+            GetNetworkStatus(status);
+            if (status.m_hostName.empty())
+            {
+                UpdateHostName();
+            }
 
-    m_messageList[m_writeMsgIdx] = msg;
-    m_writeMsgIdx = (m_writeMsgIdx + 1) % MessageListSize;
-    m_signalMsg.release();
+            GetNetworkStatus(status);
+            if (!status.m_hostName.empty())
+            {
+                m_networkMutex.lock();
+                m_messageList[m_writeMsgIdx] = msg;
+                m_writeMsgIdx = (m_writeMsgIdx + 1) % MessageListSize;
+                m_networkMutex.unlock();
+                m_signalMsg.release();
+            }
+        };
+    std::thread(cmd).detach();
 }
 
 void NetworkManager::Run()
@@ -59,6 +71,8 @@ void NetworkManager::Run()
 
 void NetworkManager::GetNetworkStatus(NetworkStatus& status)
 {
+    ScopedMutex lock(m_networkMutex);
+
     status.m_ipAddress = m_ipAddress;
     status.m_connected = m_connected;
     status.m_hostName = m_hostName;
@@ -66,32 +80,36 @@ void NetworkManager::GetNetworkStatus(NetworkStatus& status)
 
 void NetworkManager::Cmd_SetIP(NetworkMessageStruct* msg)
 {
-    auto msgSetIP = (NMS_SetIP*)msg;
-    if (msgSetIP->m_ip == m_ipAddress)
-        return;
-
-    m_connected = false;
-    m_ipAddress = msgSetIP->m_ip;
-
-    if (m_address)
     {
-        NET_UnrefAddress(m_address);
-        m_address = nullptr;
-    }
+        ScopedMutex lock(m_networkMutex);
 
-    m_address = NET_ResolveHostname(m_ipAddress.c_str());
-    if (!m_address)
-    {
-        Log(LogGroup::System, "Could not begin resolving {}: {}", m_ipAddress, SDL_GetError());
-        return;
-    }
+        auto msgSetIP = (NMS_SetIP*)msg;
+        if (msgSetIP->m_ip == m_ipAddress)
+            return;
 
-    const NET_Status resolveStatus = NET_WaitUntilResolved(m_address, 2000);
-    if (resolveStatus != NET_SUCCESS)
-    {
-        Log(LogGroup::System, "Could not resolve {}: {}", m_ipAddress, resolveStatus == NET_WAITING ? "Timed out" : SDL_GetError());
-        NET_UnrefAddress(m_address);
-        return;
+        m_connected = false;
+        m_ipAddress = msgSetIP->m_ip;
+
+        if (m_address)
+        {
+            NET_UnrefAddress(m_address);
+            m_address = nullptr;
+        }
+
+        m_address = NET_ResolveHostname(m_ipAddress.c_str());
+        if (!m_address)
+        {
+            Log(LogGroup::System, "Could not begin resolving {}: {}", m_ipAddress, SDL_GetError());
+            return;
+        }
+
+        const NET_Status resolveStatus = NET_WaitUntilResolved(m_address, 2000);
+        if (resolveStatus != NET_SUCCESS)
+        {
+            Log(LogGroup::System, "Could not resolve {}: {}", m_ipAddress, resolveStatus == NET_WAITING ? "Timed out" : SDL_GetError());
+            NET_UnrefAddress(m_address);
+            return;
+        }
     }
 
     UpdateHostName();
@@ -108,13 +126,18 @@ void NetworkManager::UpdateHostName()
     {
         JSON json;
         json.Parse(result.mem, (int)result.size);
+
+        m_networkMutex.lock();
         m_hostName = json.FindString("hostname");
         m_connected = true;
+        m_networkMutex.unlock();
     }
 }
 
 void NetworkManager::SendNetworkCommand(NMS_Command* msg, NetworkResult &result)
 {
+    ScopedMutex lock(m_networkMutex);
+
     // ABORT if we don't have an address
     if (m_ipAddress.empty())
     {

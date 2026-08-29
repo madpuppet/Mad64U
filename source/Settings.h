@@ -9,6 +9,8 @@
 #define SETTING_RENDERER "renderer"
 #define SETTING_WINDOWS "windows"
 #define SETTING_FILES "files"
+#define SETTING_SHOW_LINES "showlines"
+#define SETTING_SHOW_BYTES "showbytes"
 
 class Settings : public Singleton<Settings>
 {

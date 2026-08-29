@@ -1,6 +1,6 @@
 #import "../includes/c64.asm"
 
-.file [name="Bootcode.bin", type="prg", segments="bootCode"]
+.file [name="Bootcode.prg", type="prg", segments="bootCode"]
 .segment bootCode[]
 
 .label ptr = $fe

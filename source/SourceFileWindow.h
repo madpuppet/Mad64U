@@ -1,6 +1,7 @@
 #pragma once
 
 #include "WindowBase.h"
+#include "SearchWindow.h"
 
 class SourceFileWindow : public WindowBase
 {
@@ -13,7 +14,6 @@ public:
     class SourceFile* GetSourceFile() { return m_sourceFile; }
     void Close() override;
     bool IsModified() override;
-    void BuildFragments(SDL_Renderer* renderer, class SourceLine* line);
     bool HandleEvent(SDL_Event* e) override;
     void CalcXYFromClientPos(int x, int y, int& col, int& row);
     int CalcXPos(int x, int y);
@@ -52,6 +52,9 @@ public:
     void CopySelected();
     void PasteSelected();
 
+    // search & replace
+    void ReplaceLines(const std::vector<SearchResult>& lines, const std::string& text);
+
     void StartMarking()
     {
         if (!m_marking)
@@ -81,7 +84,7 @@ protected:
     Vec2i m_markStart{ 0,0 };
     Vec2i m_mouseDownPos{ 0,0 };
 
-    int m_lineNmbrOffset = 48;
-    int m_disOffset = 124;
+    int m_lineNmbrOffset = 12*5;
+    int m_disOffset = 12*11;
 };
 

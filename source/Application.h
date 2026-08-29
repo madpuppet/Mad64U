@@ -29,6 +29,7 @@ enum class ThemeColor
     ScrollBarSelected,
     Cursor,
     TextHighlight,
+    HighlightLine,
     HighlightArea,
     WindowEdgeLight,
     WindowEdgeDark,
@@ -37,6 +38,7 @@ enum class ThemeColor
 
     SearchTitleBack,
     SearchTextBack,
+    SearchTextBackSelected,
     SearchTitle,
     SearchText,
 
@@ -85,6 +87,9 @@ public:
 
     void PostTestNetwork();
 
+    void ShowLines(bool enable);
+    void ShowBytes(bool enable);
+
 protected:
     void CreateShellProcess();
     void ProcessShellOutput();
@@ -111,6 +116,8 @@ protected:
     std::string m_shellOutputLine;
 
     WindowMenuItem* m_themeMenu;
+    WindowMenuItem* m_showLinesMenu;
+    WindowMenuItem* m_showBytesMenu;
 
     std::mutex m_watcherLock;
     std::vector<OutputWatcherFunc> m_watchers;

@@ -1,4 +1,4 @@
-.file [name="redCode.bin", type="prg", segments="redCode"]
+.file [name="redCode.prg", type="prg", segments="redCode"]
 .segment redCode[]
 
 * = $c000
@@ -16,6 +16,9 @@ loop:
 	bne loop
 	dey
 	bne loop
+    lda #6
+	stx vic.backgroundColor0
+	stx vic.borderColor
 	rts
 }
 

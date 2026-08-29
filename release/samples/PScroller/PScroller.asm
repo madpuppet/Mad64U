@@ -1,6 +1,6 @@
 #import "../includes/c64.asm"
 
-BasicUpstart2(start)
+BasicUpstxrt2(start)
 
 .label nextX = $50
 .label nextY = $51
@@ -17,78 +17,78 @@ BasicUpstart2(start)
 .label textLines = $5c
 .label tempVar = $5d
 
-start:
+stxrt:
     jsr cls
 
-    lda #$1             // enable all the sprites
-    sta vic.spriteEnable
-    lda #1
-    sta vic.spriteMulticolor
-    lda #$0                 // reset sprites to size 0
-    sta vic.spriteXSize
-	sta vic.spriteYSize
+    ldx #$1             // enable all the sprites
+    stx vic.spriteEnable
+    ldx #1
+    stx vic.spriteMulticolor
+    ldx #$0                 // reset sprites to size 0
+    stx vic.spriteXSize
+	stx vic.spriteYSize
 
-    lda #0
+    ldx #0
     ldx #0
     ldy #0
     jsr $1000
 
-    lda #0
-    sta textIn
-    sta colOut
-    sta textLines
-    sta textCol
-    sta anim
-    sta anim2
+    ldx #0
+    stx textIn
+    stx colOut
+    stx textLines
+    stx textCol
+    stx anim
+    stx anim2
     
-   lda #0
-   sta $d020
-   lda #0
-   sta $d021
+   ldx #0
+   stx $d020
+   ldx #0
+   stx $d021
     
-    lda #120
-    sta tempVar
+    ldx #120
+    stx tempVar
 !loop:
     jsr UpdateText
     dec tempVar
-    lda tempVar
+    ldx tempVar
     bne !loop-
 
     sei
     
-   // wait for start of first frame
+   // wait for stxrt of first frame
 frameLoop:
-    lda vic.control1
+    ldx vic.control1
     bmi frameLoop
-    lda vic.rasterCounter
+    ldx vic.rasterCounter
     cmp #20
     bne frameLoop
 
-    lda #21
-    sta vic.sprite0Y
-    sta nextY
-    sta currentRaster
+    ldx #21
+    stx vic.sprite0Y
+    stx nextY
+    stx currentRaster
 
-   // we are at the start of a frame
+   // we are at the stxrt of a frame
     inc anim
     inc anim2
     inc anim2
     inc anim2
-    lda anim2
-    sta nextX
+    ldx anim2
+    stx nextX
 
     ldx anim
     stx nextCol
 
-    lda anim
+    ldx anim
     and #127
     tax
-    lda colors1,x
-    sta vic.spriteMulticolor0
-    lda colors2,x
-    sta vic.sprite0Color
-    lda colors3,x
-    sta vic.spriteMulticolor1
+    ldx colors1,x
+    stx vic.spriteMulticolor0
+    ldx colors2,x
+    stx vic.sprite0Color
+    ldx colors3,x
+    stx vic.spriteMulticolor1
     
     jsr line_x
     jsr line_c
@@ -298,16 +298,16 @@ frameLoop:
     jsr line_c
     jsr line_x
 
-    lda #$10
-    sta $d011
+    ldx #$10
+    stx $d011
 
     jsr line_c
     jsr line_xs
     jsr line_c
     jsr line_x
 
-    lda #$18
-    sta $d011
+    ldx #$18
+    stx $d011
 
     jsr line_c
     jsr line_x
@@ -332,31 +332,31 @@ frameLoop:
     jsr line_c
     jsr line_x
 
-    lda #0
-    sta vic.spriteMulticolor0
-    sta vic.sprite0Color
-    sta vic.spriteMulticolor1
+    ldx #0
+    stx vic.spriteMulticolor0
+    stx vic.sprite0Color
+    stx vic.spriteMulticolor1
 
-    lda anim
+    ldx anim
     lsr
     and #31
     tax
-    lda sprites,x
-    sta sprite0Ptr
+    ldx sprites,x
+    stx sprite0Ptr
     stx spritePattern
     jsr UpdateText
 
-    lda anim
+    ldx anim
     lsr
     tax
-    lda xwave,x
-    sta vic.sprite1Y
-    sta vic.sprite2Y
-    sta vic.sprite3Y
-    sta vic.sprite4Y
-    sta vic.sprite5Y
-    sta vic.sprite6Y
-    sta vic.sprite7Y
+    ldx xwave,x
+    stx vic.sprite1Y
+    stx vic.sprite2Y
+    stx vic.sprite3Y
+    stx vic.sprite4Y
+    stx vic.sprite5Y
+    stx vic.sprite6Y
+    stx vic.sprite7Y
 
     
     jsr $1006
@@ -364,44 +364,44 @@ frameLoop:
 
 cls:
     ldx #0
-    lda #32
+    ldx #32
 cls_loop:
-    sta $0400,x
-    sta $0400+250,x
-    sta $0400+500,x
-    sta $0400+750,x
+    stx $0400,x
+    stx $0400+250,x
+    stx $0400+500,x
+    stx $0400+750,x
     inx
     cpx #250
     bne cls_loop
     rts
 
 extend_borders:
-   lda #$f8
+   ldx #$f8
 !hack:
    cmp vic.rasterCounter
    bne !hack-
 
-    lda #$10
-    sta $d011
+    ldx #$10
+    stx $d011
 
-   lda #$fe
+   ldx #$fe
 !hack:
    cmp vic.rasterCounter
    bne !hack-
 
-    lda #$18
-    sta $d011
+    ldx #$18
+    stx $d011
     rts
 
 
 frame_sync:
-    lda vic.rasterCounter
+    ldx vic.rasterCounter
     cmp #20
     bne frame_sync
     rts
 
 line_x:
-    lda currentRaster
+    ldx currentRaster
 !loop:
     cmp vic.rasterCounter
     beq !loop-
@@ -409,12 +409,12 @@ line_x:
 
     inc nextX
     ldx nextX
-    lda xwave,x
-    sta vic.sprite0X
+    ldx xwave,x
+    stx vic.sprite0X
     rts
 
 line_xs:
-    lda currentRaster
+    ldx currentRaster
 !loop:
     cmp vic.rasterCounter
     beq !loop-
@@ -422,111 +422,111 @@ line_xs:
 
     inc nextX
     ldx nextX
-    lda xwave,x
-    sta vic.sprite0X
+    ldx xwave,x
+    stx vic.sprite0X
 
-    lda spritePattern
+    ldx spritePattern
     and #31
     tax
-    lda sprites,x
-    sta sprite0Ptr
+    ldx sprites,x
+    stx sprite0Ptr
     inc spritePattern
 
-    lda nextY
+    ldx nextY
     adc #21
-    sta nextY
-    sta vic.sprite0Y
+    stx nextY
+    stx vic.sprite0Y
    
     rts
 
 line_c:
-    lda currentRaster
+    ldx currentRaster
 !loop:
     cmp vic.rasterCounter
     beq !loop-
     inc currentRaster
 
-    lda vic.rasterCounter
-    sta currentRaster
+    ldx vic.rasterCounter
+    stx currentRaster
 
-    lda nextCol
+    ldx nextCol
     and #127
     tax
     inc nextCol
     
-    lda colors1,x
-    sta vic.spriteMulticolor0
-    lda colors2,x
-    sta vic.sprite0Color
-    lda colors3,x
-    sta vic.spriteMulticolor1
+    ldx colors1,x
+    stx vic.spriteMulticolor0
+    ldx colors2,x
+    stx vic.sprite0Color
+    ldx colors3,x
+    stx vic.spriteMulticolor1
    
-   lda currentRaster
+   ldx currentRaster
 !wait:
    cmp vic.rasterCounter
    beq !wait-
    rts
 
 line_s:
-    lda currentRaster
+    ldx currentRaster
 !loop:
     cmp vic.rasterCounter
     beq !loop-
     inc currentRaster
 
-    lda nextY
+    ldx nextY
     adc #21
-    sta nextY
-    sta vic.sprite0Y
+    stx nextY
+    stx vic.sprite0Y
     rts
 
 
 UpdateText:
-    lda textLines
+    ldx textLines
     bne moreLines
 
     inc textCol
-    lda textCol
+    ldx textCol
     and #15
     bne colOk
-    lda #1
-    sta textCol
+    ldx #1
+    stx textCol
 colOk:
     // get next text character
     ldx textIn
     inc textIn
-    lda scrollText,x
+    ldx scrollText,x
     bpl moreCharacters
 
     ldx #0
-    lda scrollText,x
+    ldx scrollText,x
     inx
     stx textIn
     
 moreCharacters:
     asl                            // convert character to word offset
     tax
-    lda chars,x
-    sta textVal1
-    lda chars+1,x
-    sta textVal2
-    lda #5
-    sta textLines
+    ldx chars,x
+    stx textVal1
+    ldx chars+1,x
+    stx textVal2
+    ldx #5
+    stx textLines
     
-    // black line to start with
-    lda colOut
+    // black line to stxrt with
+    ldx colOut
     and #127
     tay
-    lda #0
-    sta colors1,y
-    sta colors2,y
-    sta colors3,y
+    ldx #0
+    stx colors1,y
+    stx colors2,y
+    stx colors3,y
     inc colOut
     rts
     
 
 moreLines:
-    lda colOut
+    ldx colOut
     and #127
     tay
     jsr WriteCol1
@@ -540,12 +540,12 @@ WriteCol1:
     ror textVal2
     ror textVal1
     bcc !noCol+
-    lda textCol
-    sta colors1,y
+    ldx textCol
+    stx colors1,y
     jmp !skip+
 !noCol:
-    lda #0
-    sta colors1,y
+    ldx #0
+    stx colors1,y
 !skip:
     rts
     
@@ -553,12 +553,12 @@ WriteCol2:
     ror textVal2
     ror textVal1
     bcc !noCol+
-    lda textCol
-    sta colors2,y
+    ldx textCol
+    stx colors2,y
     jmp !skip+
 !noCol:
-    lda #0
-    sta colors2,y
+    ldx #0
+    stx colors2,y
 !skip:
     rts
     
@@ -566,24 +566,24 @@ WriteCol3:
     ror textVal2
     ror textVal1
     bcc !noCol+
-    lda textCol
-    sta colors3,y
+    ldx textCol
+    stx colors3,y
     jmp !skip+
 !noCol:
-    lda #0
-    sta colors3,y
+    ldx #0
+    stx colors3,y
 !skip:
     rts
     
  error1:
-     lda #1
-     sta $d021
+     ldx #1
+     stx $d021
 error1_forever:
      jmp error1_forever
 
  error2:
-     lda #2
-     sta $d021
+     ldx #2
+     stx $d021
   error2_forever:
      jmp error2_forever
 
