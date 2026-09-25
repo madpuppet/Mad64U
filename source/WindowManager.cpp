@@ -106,11 +106,13 @@ void WindowManager::HandleEvent(SDL_Event* e)
                 {
                     case WindowHighlightType::ProjectListFile:
                     case WindowHighlightType::ProjectListIcon:
-                        m_mouseSelectionQuery.m_window->HandleEvent(e);
+                        if (m_mouseSelectionQuery.m_window)
+                            m_mouseSelectionQuery.m_window->HandleEvent(e);
                         return;
 
                     case WindowHighlightType::WindowLayoutIcon:
-                        m_mouseSelectionQuery.m_layout->HandleEvent(e);
+                        if (m_mouseSelectionQuery.m_layout)
+                            m_mouseSelectionQuery.m_layout->HandleEvent(e);
                         return;
 
                     case WindowHighlightType::WindowTreeIcon:
@@ -118,13 +120,15 @@ void WindowManager::HandleEvent(SDL_Event* e)
                         {
                             case Icons::Fullscreen:
                             {
-                                m_mouseSelectionQuery.m_tree->MakeFullscreen();
+                                if (m_mouseSelectionQuery.m_tree)
+                                    m_mouseSelectionQuery.m_tree->MakeFullscreen();
                             }
                             return;
 
                             case Icons::Windowed:
                             {
-                                m_mouseSelectionQuery.m_tree->MakeWindowed();
+                                if (m_mouseSelectionQuery.m_tree)
+                                    m_mouseSelectionQuery.m_tree->MakeWindowed();
                             }
                             return;
 

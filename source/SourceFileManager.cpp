@@ -777,6 +777,12 @@ void SourceFileManager::LoadRequestedFiles(bool addWindow)
             sourceFile->m_lines.push_back(sl);
             sl->m_assembledLine = (int)sourceFile->m_lines.size();
         }
+        if (sourceFile->m_lines.empty())
+        {
+            SourceLine* sl = new SourceLine;
+            sourceFile->m_lines.push_back(sl);
+            sl->m_assembledLine = (int)sourceFile->m_lines.size();
+        }
         m_sourceFiles.push_back(sourceFile);
         m_activeSourceFile = sourceFile;
 
