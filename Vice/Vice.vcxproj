@@ -1,0 +1,1987 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="config\config.h" />
+    <ClInclude Include="src\6510core.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\acia.h" />
+    <ClInclude Include="src\alarm.h" />
+    <ClInclude Include="src\arch\headless\archdep.h" />
+    <ClInclude Include="src\arch\headless\debug_headless.h" />
+    <ClInclude Include="src\arch\headless\kbd.h" />
+    <ClInclude Include="src\arch\headless\mousedrv.h" />
+    <ClInclude Include="src\arch\headless\ui.h" />
+    <ClInclude Include="src\arch\headless\uistatusbar.h" />
+    <ClInclude Include="src\arch\headless\videoarch.h" />
+    <ClInclude Include="src\arch\shared\archapi.h" />
+    <ClInclude Include="src\arch\shared\archdep_access.h" />
+    <ClInclude Include="src\arch\shared\archdep_beos.h" />
+    <ClInclude Include="src\arch\shared\archdep_boot_path.h" />
+    <ClInclude Include="src\arch\shared\archdep_cbmfont.h" />
+    <ClInclude Include="src\arch\shared\archdep_chdir.h" />
+    <ClInclude Include="src\arch\shared\archdep_close.h" />
+    <ClInclude Include="src\arch\shared\archdep_create_user_cache_dir.h" />
+    <ClInclude Include="src\arch\shared\archdep_create_user_config_dir.h" />
+    <ClInclude Include="src\arch\shared\archdep_create_user_state_dir.h" />
+    <ClInclude Include="src\arch\shared\archdep_current_dir.h" />
+    <ClInclude Include="src\arch\shared\archdep_default_autostart_disk_image_file_name.h" />
+    <ClInclude Include="src\arch\shared\archdep_default_fliplist_file_name.h" />
+    <ClInclude Include="src\arch\shared\archdep_default_joymap_file_name.h" />
+    <ClInclude Include="src\arch\shared\archdep_default_logfile.h" />
+    <ClInclude Include="src\arch\shared\archdep_default_logger.h" />
+    <ClInclude Include="src\arch\shared\archdep_default_portable_resource_file_name.h" />
+    <ClInclude Include="src\arch\shared\archdep_default_resource_file_name.h" />
+    <ClInclude Include="src\arch\shared\archdep_default_rtc_file_name.h" />
+    <ClInclude Include="src\arch\shared\archdep_default_sysfile_pathlist.h" />
+    <ClInclude Include="src\arch\shared\archdep_defs.h" />
+    <ClInclude Include="src\arch\shared\archdep_dir.h" />
+    <ClInclude Include="src\arch\shared\archdep_ethernet_available.h" />
+    <ClInclude Include="src\arch\shared\archdep_exit.h" />
+    <ClInclude Include="src\arch\shared\archdep_expand_path.h" />
+    <ClInclude Include="src\arch\shared\archdep_extra_title_text.h" />
+    <ClInclude Include="src\arch\shared\archdep_fdopen.h" />
+    <ClInclude Include="src\arch\shared\archdep_filename_parameter.h" />
+    <ClInclude Include="src\arch\shared\archdep_file_exists.h" />
+    <ClInclude Include="src\arch\shared\archdep_file_is_blockdev.h" />
+    <ClInclude Include="src\arch\shared\archdep_file_is_chardev.h" />
+    <ClInclude Include="src\arch\shared\archdep_file_size.h" />
+    <ClInclude Include="src\arch\shared\archdep_fix_permissions.h" />
+    <ClInclude Include="src\arch\shared\archdep_fix_streams.h" />
+    <ClInclude Include="src\arch\shared\archdep_fseeko.h" />
+    <ClInclude Include="src\arch\shared\archdep_ftello.h" />
+    <ClInclude Include="src\arch\shared\archdep_getcwd.h" />
+    <ClInclude Include="src\arch\shared\archdep_get_current_drive.h" />
+    <ClInclude Include="src\arch\shared\archdep_get_hvsc_dir.h" />
+    <ClInclude Include="src\arch\shared\archdep_get_runtime_info.h" />
+    <ClInclude Include="src\arch\shared\archdep_get_vice_datadir.h" />
+    <ClInclude Include="src\arch\shared\archdep_get_vice_docsdir.h" />
+    <ClInclude Include="src\arch\shared\archdep_get_vice_drivesdir.h" />
+    <ClInclude Include="src\arch\shared\archdep_get_vice_hotkeysdir.h" />
+    <ClInclude Include="src\arch\shared\archdep_get_vice_machinedir.h" />
+    <ClInclude Include="src\arch\shared\archdep_glob.h" />
+    <ClInclude Include="src\arch\shared\archdep_home_path.h" />
+    <ClInclude Include="src\arch\shared\archdep_icon_path.h" />
+    <ClInclude Include="src\arch\shared\archdep_is_haiku.h" />
+    <ClInclude Include="src\arch\shared\archdep_is_macos_bindist.h" />
+    <ClInclude Include="src\arch\shared\archdep_is_windows_nt.h" />
+    <ClInclude Include="src\arch\shared\archdep_kbd_get_host_mapping.h" />
+    <ClInclude Include="src\arch\shared\archdep_list_drives.h" />
+    <ClInclude Include="src\arch\shared\archdep_make_backup_filename.h" />
+    <ClInclude Include="src\arch\shared\archdep_mkdir.h" />
+    <ClInclude Include="src\arch\shared\archdep_mkstemp_fd.h" />
+    <ClInclude Include="src\arch\shared\archdep_network.h" />
+    <ClInclude Include="src\arch\shared\archdep_open_default_log_file.h" />
+    <ClInclude Include="src\arch\shared\archdep_path_is_relative.h" />
+    <ClInclude Include="src\arch\shared\archdep_program_name.h" />
+    <ClInclude Include="src\arch\shared\archdep_program_path.h" />
+    <ClInclude Include="src\arch\shared\archdep_quote_parameter.h" />
+    <ClInclude Include="src\arch\shared\archdep_quote_unzip.h" />
+    <ClInclude Include="src\arch\shared\archdep_rawnet_capability.h" />
+    <ClInclude Include="src\arch\shared\archdep_real_path.h" />
+    <ClInclude Include="src\arch\shared\archdep_remove.h" />
+    <ClInclude Include="src\arch\shared\archdep_rename.h" />
+    <ClInclude Include="src\arch\shared\archdep_require_vkbd.h" />
+    <ClInclude Include="src\arch\shared\archdep_rmdir.h" />
+    <ClInclude Include="src\arch\shared\archdep_rtc_get_centisecond.h" />
+    <ClInclude Include="src\arch\shared\archdep_sanitize_filename.h" />
+    <ClInclude Include="src\arch\shared\archdep_set_current_drive.h" />
+    <ClInclude Include="src\arch\shared\archdep_set_openmp_wait_policy.h" />
+    <ClInclude Include="src\arch\shared\archdep_signals.h" />
+    <ClInclude Include="src\arch\shared\archdep_sleep.h" />
+    <ClInclude Include="src\arch\shared\archdep_socketpeek.h" />
+    <ClInclude Include="src\arch\shared\archdep_sound.h" />
+    <ClInclude Include="src\arch\shared\archdep_spawn.h" />
+    <ClInclude Include="src\arch\shared\archdep_startup_log_error.h" />
+    <ClInclude Include="src\arch\shared\archdep_stat.h" />
+    <ClInclude Include="src\arch\shared\archdep_tick.h" />
+    <ClInclude Include="src\arch\shared\archdep_tmpnam.h" />
+    <ClInclude Include="src\arch\shared\archdep_unix.h" />
+    <ClInclude Include="src\arch\shared\archdep_user_cache_path.h" />
+    <ClInclude Include="src\arch\shared\archdep_user_config_path.h" />
+    <ClInclude Include="src\arch\shared\archdep_user_state_path.h" />
+    <ClInclude Include="src\arch\shared\archdep_usleep.h" />
+    <ClInclude Include="src\arch\shared\archdep_win32.h" />
+    <ClInclude Include="src\arch\shared\archdep_xdg.h" />
+    <ClInclude Include="src\arch\shared\coproc.h" />
+    <ClInclude Include="src\arch\shared\hotkeys\boolexpr.h" />
+    <ClInclude Include="src\arch\shared\hotkeys\hotkeystypes.h" />
+    <ClInclude Include="src\arch\shared\hotkeys\ifstack.h" />
+    <ClInclude Include="src\arch\shared\hotkeys\parser.h" />
+    <ClInclude Include="src\arch\shared\hotkeys\symtab.h" />
+    <ClInclude Include="src\arch\shared\hotkeys\textfilereader.h" />
+    <ClInclude Include="src\arch\shared\hotkeys\uihotkeys.h" />
+    <ClInclude Include="src\arch\shared\hotkeys\vhkdebug.h" />
+    <ClInclude Include="src\arch\shared\hotkeys\vhkkeysyms.h" />
+    <ClInclude Include="src\arch\shared\hwsiddrv\cw-unix.h" />
+    <ClInclude Include="src\arch\shared\hwsiddrv\cw-win32.h" />
+    <ClInclude Include="src\arch\shared\hwsiddrv\hs-unix.h" />
+    <ClInclude Include="src\arch\shared\hwsiddrv\hs-win32.h" />
+    <ClInclude Include="src\arch\shared\hwsiddrv\ps-unix.h" />
+    <ClInclude Include="src\arch\shared\hwsiddrv\ps-win32.h" />
+    <ClInclude Include="src\arch\shared\hwsiddrv\us-unixwin.h" />
+    <ClInclude Include="src\arch\shared\macOS-util.h" />
+    <ClInclude Include="src\arch\shared\rawnetarch.h" />
+    <ClInclude Include="src\arch\shared\socketdrv\socket-beos-impl.h" />
+    <ClInclude Include="src\arch\shared\socketdrv\socket-unix-impl.h" />
+    <ClInclude Include="src\arch\shared\socketdrv\socket-win32-impl.h" />
+    <ClInclude Include="src\arch\shared\socketdrv\socketimpl.h" />
+    <ClInclude Include="src\arch\shared\sounddrv\lamelib.h" />
+    <ClInclude Include="src\arch\shared\sounddrv\soundmovie.h" />
+    <ClInclude Include="src\arch\shared\uiactions.h" />
+    <ClInclude Include="src\attach.h" />
+    <ClInclude Include="src\autostart-prg.h" />
+    <ClInclude Include="src\autostart.h" />
+    <ClInclude Include="src\c128ui.h" />
+    <ClInclude Include="src\c64ui.h" />
+    <ClInclude Include="src\c64\c64-cmdline-options.h" />
+    <ClInclude Include="src\c64\c64-memory-hacks.h" />
+    <ClInclude Include="src\c64\c64-resources.h" />
+    <ClInclude Include="src\c64\c64-snapshot.h" />
+    <ClInclude Include="src\c64\c64.h" />
+    <ClInclude Include="src\c64\c64cart.h" />
+    <ClInclude Include="src\c64\c64cia.h" />
+    <ClInclude Include="src\c64\c64fastiec.h" />
+    <ClInclude Include="src\c64\c64gluelogic.h" />
+    <ClInclude Include="src\c64\c64iec.h" />
+    <ClInclude Include="src\c64\c64keyboard.h" />
+    <ClInclude Include="src\c64\c64mem.h" />
+    <ClInclude Include="src\c64\c64meminit.h" />
+    <ClInclude Include="src\c64\c64memlimit.h" />
+    <ClInclude Include="src\c64\c64memrom.h" />
+    <ClInclude Include="src\c64\c64memsnapshot.h" />
+    <ClInclude Include="src\c64\c64model.h" />
+    <ClInclude Include="src\c64\c64parallel.h" />
+    <ClInclude Include="src\c64\c64pla.h" />
+    <ClInclude Include="src\c64\c64rom.h" />
+    <ClInclude Include="src\c64\c64rsuser.h" />
+    <ClInclude Include="src\c64\c64_256k.h" />
+    <ClInclude Include="src\c64\cart\actionreplay.h" />
+    <ClInclude Include="src\c64\cart\actionreplay2.h" />
+    <ClInclude Include="src\c64\cart\actionreplay3.h" />
+    <ClInclude Include="src\c64\cart\actionreplay4.h" />
+    <ClInclude Include="src\c64\cart\atomicpower.h" />
+    <ClInclude Include="src\c64\cart\bisplus.h" />
+    <ClInclude Include="src\c64\cart\blackbox3.h" />
+    <ClInclude Include="src\c64\cart\blackbox4.h" />
+    <ClInclude Include="src\c64\cart\blackbox8.h" />
+    <ClInclude Include="src\c64\cart\blackbox9.h" />
+    <ClInclude Include="src\c64\cart\bmpdataturbo.h" />
+    <ClInclude Include="src\c64\cart\c64-generic.h" />
+    <ClInclude Include="src\c64\cart\c64-midi.h" />
+    <ClInclude Include="src\c64\cart\c64acia.h" />
+    <ClInclude Include="src\c64\cart\c64cartmem.h" />
+    <ClInclude Include="src\c64\cart\c64cartsystem.h" />
+    <ClInclude Include="src\c64\cart\c64tpi.h" />
+    <ClInclude Include="src\c64\cart\capture.h" />
+    <ClInclude Include="src\c64\cart\clockport-mp3at64.h" />
+    <ClInclude Include="src\c64\cart\clockport-rrnet.h" />
+    <ClInclude Include="src\c64\cart\clockport.h" />
+    <ClInclude Include="src\c64\cart\comal80.h" />
+    <ClInclude Include="src\c64\cart\cpmcart.h" />
+    <ClInclude Include="src\c64\cart\cs8900io.h" />
+    <ClInclude Include="src\c64\cart\daa.h" />
+    <ClInclude Include="src\c64\cart\debugcart.h" />
+    <ClInclude Include="src\c64\cart\delaep256.h" />
+    <ClInclude Include="src\c64\cart\delaep64.h" />
+    <ClInclude Include="src\c64\cart\delaep7x8.h" />
+    <ClInclude Include="src\c64\cart\diashowmaker.h" />
+    <ClInclude Include="src\c64\cart\digimax.h" />
+    <ClInclude Include="src\c64\cart\dinamic.h" />
+    <ClInclude Include="src\c64\cart\dqbb.h" />
+    <ClInclude Include="src\c64\cart\drean.h" />
+    <ClInclude Include="src\c64\cart\ds12c887rtc.h" />
+    <ClInclude Include="src\c64\cart\easycalc.h" />
+    <ClInclude Include="src\c64\cart\easyflash.h" />
+    <ClInclude Include="src\c64\cart\epyxfastload.h" />
+    <ClInclude Include="src\c64\cart\ethernetcart.h" />
+    <ClInclude Include="src\c64\cart\exos.h" />
+    <ClInclude Include="src\c64\cart\expert.h" />
+    <ClInclude Include="src\c64\cart\final.h" />
+    <ClInclude Include="src\c64\cart\final3.h" />
+    <ClInclude Include="src\c64\cart\finalplus.h" />
+    <ClInclude Include="src\c64\cart\formel64.h" />
+    <ClInclude Include="src\c64\cart\freezeframe.h" />
+    <ClInclude Include="src\c64\cart\freezeframe2.h" />
+    <ClInclude Include="src\c64\cart\freezemachine.h" />
+    <ClInclude Include="src\c64\cart\funplay.h" />
+    <ClInclude Include="src\c64\cart\gamekiller.h" />
+    <ClInclude Include="src\c64\cart\georam.h" />
+    <ClInclude Include="src\c64\cart\gmod2.h" />
+    <ClInclude Include="src\c64\cart\gmod3.h" />
+    <ClInclude Include="src\c64\cart\gs.h" />
+    <ClInclude Include="src\c64\cart\hyperbasic.h" />
+    <ClInclude Include="src\c64\cart\ide64.h" />
+    <ClInclude Include="src\c64\cart\ieeeflash64.h" />
+    <ClInclude Include="src\c64\cart\isepic.h" />
+    <ClInclude Include="src\c64\cart\kcs.h" />
+    <ClInclude Include="src\c64\cart\kingsoft.h" />
+    <ClInclude Include="src\c64\cart\ltkernal.h" />
+    <ClInclude Include="src\c64\cart\mach5.h" />
+    <ClInclude Include="src\c64\cart\magicdesk.h" />
+    <ClInclude Include="src\c64\cart\magicdesk16.h" />
+    <ClInclude Include="src\c64\cart\magicformel.h" />
+    <ClInclude Include="src\c64\cart\magicvoice.h" />
+    <ClInclude Include="src\c64\cart\maxbasic.h" />
+    <ClInclude Include="src\c64\cart\megabyter.h" />
+    <ClInclude Include="src\c64\cart\mikroass.h" />
+    <ClInclude Include="src\c64\cart\mmc64.h" />
+    <ClInclude Include="src\c64\cart\mmcreplay.h" />
+    <ClInclude Include="src\c64\cart\multimax.h" />
+    <ClInclude Include="src\c64\cart\ocean.h" />
+    <ClInclude Include="src\c64\cart\pagefox.h" />
+    <ClInclude Include="src\c64\cart\partner64.h" />
+    <ClInclude Include="src\c64\cart\profidos.h" />
+    <ClInclude Include="src\c64\cart\prophet64.h" />
+    <ClInclude Include="src\c64\cart\ramcart.h" />
+    <ClInclude Include="src\c64\cart\ramlink.h" />
+    <ClInclude Include="src\c64\cart\retroreplay.h" />
+    <ClInclude Include="src\c64\cart\reu.h" />
+    <ClInclude Include="src\c64\cart\rexep256.h" />
+    <ClInclude Include="src\c64\cart\rexramfloppy.h" />
+    <ClInclude Include="src\c64\cart\rexutility.h" />
+    <ClInclude Include="src\c64\cart\rgcd.h" />
+    <ClInclude Include="src\c64\cart\ross.h" />
+    <ClInclude Include="src\c64\cart\rrnetmk3.h" />
+    <ClInclude Include="src\c64\cart\sdbox.h" />
+    <ClInclude Include="src\c64\cart\sfx_soundexpander.h" />
+    <ClInclude Include="src\c64\cart\sfx_soundsampler.h" />
+    <ClInclude Include="src\c64\cart\shortbus.h" />
+    <ClInclude Include="src\c64\cart\shortbus_digimax.h" />
+    <ClInclude Include="src\c64\cart\shortbus_etfe.h" />
+    <ClInclude Include="src\c64\cart\silverrock128.h" />
+    <ClInclude Include="src\c64\cart\simonsbasic.h" />
+    <ClInclude Include="src\c64\cart\snapshot64.h" />
+    <ClInclude Include="src\c64\cart\stardos.h" />
+    <ClInclude Include="src\c64\cart\stb.h" />
+    <ClInclude Include="src\c64\cart\superexplode5.h" />
+    <ClInclude Include="src\c64\cart\supergames.h" />
+    <ClInclude Include="src\c64\cart\supersnapshot.h" />
+    <ClInclude Include="src\c64\cart\supersnapshot4.h" />
+    <ClInclude Include="src\c64\cart\turtlegraphics.h" />
+    <ClInclude Include="src\c64\cart\uc1.h" />
+    <ClInclude Include="src\c64\cart\uc2.h" />
+    <ClInclude Include="src\c64\cart\warpspeed.h" />
+    <ClInclude Include="src\c64\cart\westermann.h" />
+    <ClInclude Include="src\c64\cart\zaxxon.h" />
+    <ClInclude Include="src\c64\cart\zippcode48.h" />
+    <ClInclude Include="src\c64\musdrv.h" />
+    <ClInclude Include="src\c64\plus256k.h" />
+    <ClInclude Include="src\c64\plus60k.h" />
+    <ClInclude Include="src\c64\psid.h" />
+    <ClInclude Include="src\c64\psiddrv.h" />
+    <ClInclude Include="src\c64\vsid-cmdline-options.h" />
+    <ClInclude Include="src\c64\vsid-debugcart.h" />
+    <ClInclude Include="src\cartio.h" />
+    <ClInclude Include="src\cartridge.h" />
+    <ClInclude Include="src\catweaselmkiii.h" />
+    <ClInclude Include="src\cbm2ui.h" />
+    <ClInclude Include="src\cbmdos.h" />
+    <ClInclude Include="src\cbmimage.h" />
+    <ClInclude Include="src\charset.h" />
+    <ClInclude Include="src\cia.h" />
+    <ClInclude Include="src\clipboard.h" />
+    <ClInclude Include="src\cmdline.h" />
+    <ClInclude Include="src\color.h" />
+    <ClInclude Include="src\console.h" />
+    <ClInclude Include="src\core\ata.h" />
+    <ClInclude Include="src\core\ciatimer.h" />
+    <ClInclude Include="src\core\cs8900.h" />
+    <ClInclude Include="src\core\fmopl.h" />
+    <ClInclude Include="src\core\i8255a.h" />
+    <ClInclude Include="src\core\m93c86.h" />
+    <ClInclude Include="src\core\mc6821core.h" />
+    <ClInclude Include="src\core\rtc\bq4830y.h" />
+    <ClInclude Include="src\core\rtc\ds1202_1302.h" />
+    <ClInclude Include="src\core\rtc\ds1216e.h" />
+    <ClInclude Include="src\core\rtc\ds12c887.h" />
+    <ClInclude Include="src\core\rtc\ds1307.h" />
+    <ClInclude Include="src\core\rtc\ds1602.h" />
+    <ClInclude Include="src\core\rtc\pcf8583.h" />
+    <ClInclude Include="src\core\rtc\rtc-58321a.h" />
+    <ClInclude Include="src\core\rtc\rtc-72421.h" />
+    <ClInclude Include="src\core\rtc\rtc.h" />
+    <ClInclude Include="src\core\scsi.h" />
+    <ClInclude Include="src\core\ser-eeprom.h" />
+    <ClInclude Include="src\core\spi-flash.h" />
+    <ClInclude Include="src\core\spi-sdcard.h" />
+    <ClInclude Include="src\core\t6721.h" />
+    <ClInclude Include="src\crc32.h" />
+    <ClInclude Include="src\crt.h" />
+    <ClInclude Include="src\crtc\crtc-cmdline-options.h" />
+    <ClInclude Include="src\crtc\crtc-color.h" />
+    <ClInclude Include="src\crtc\crtc-draw.h" />
+    <ClInclude Include="src\crtc\crtc-mem.h" />
+    <ClInclude Include="src\crtc\crtc-resources.h" />
+    <ClInclude Include="src\crtc\crtc.h" />
+    <ClInclude Include="src\crtc\crtctypes.h" />
+    <ClInclude Include="src\datasette\datasette-sound.h" />
+    <ClInclude Include="src\datasette\datasette.h" />
+    <ClInclude Include="src\debug.h" />
+    <ClInclude Include="src\diag\c64_diag_586220_harness.h" />
+    <ClInclude Include="src\diskconstants.h" />
+    <ClInclude Include="src\diskimage.h" />
+    <ClInclude Include="src\diskimage\fsimage-check.h" />
+    <ClInclude Include="src\diskimage\fsimage-create.h" />
+    <ClInclude Include="src\diskimage\fsimage-dxx.h" />
+    <ClInclude Include="src\diskimage\fsimage-gcr.h" />
+    <ClInclude Include="src\diskimage\fsimage-p64.h" />
+    <ClInclude Include="src\diskimage\fsimage-probe.h" />
+    <ClInclude Include="src\diskimage\fsimage.h" />
+    <ClInclude Include="src\diskimage\realimage.h" />
+    <ClInclude Include="src\diskimage\x64.h" />
+    <ClInclude Include="src\dma.h" />
+    <ClInclude Include="src\drive\drive-check.h" />
+    <ClInclude Include="src\drive\drive-cmdline-options.h" />
+    <ClInclude Include="src\drive\drive-resources.h" />
+    <ClInclude Include="src\drive\drive-snapshot.h" />
+    <ClInclude Include="src\drive\drive-sound.h" />
+    <ClInclude Include="src\drive\drive-writeprotect.h" />
+    <ClInclude Include="src\drive\drive.h" />
+    <ClInclude Include="src\drive\drivecpu.h" />
+    <ClInclude Include="src\drive\drivecpu65c02.h" />
+    <ClInclude Include="src\drive\driveimage.h" />
+    <ClInclude Include="src\drive\drivemem.h" />
+    <ClInclude Include="src\drive\driverom.h" />
+    <ClInclude Include="src\drive\drivesync.h" />
+    <ClInclude Include="src\drive\drivetypes.h" />
+    <ClInclude Include="src\drive\iec-c64exp.h" />
+    <ClInclude Include="src\drive\iec-plus4exp.h" />
+    <ClInclude Include="src\drive\iec.h" />
+    <ClInclude Include="src\drive\iec128dcr.h" />
+    <ClInclude Include="src\drive\iecieee.h" />
+    <ClInclude Include="src\drive\iec\c64exp\c64exp-cmdline-options.h" />
+    <ClInclude Include="src\drive\iec\c64exp\c64exp-resources.h" />
+    <ClInclude Include="src\drive\iec\c64exp\dolphindos3.h" />
+    <ClInclude Include="src\drive\iec\c64exp\profdos.h" />
+    <ClInclude Include="src\drive\iec\c64exp\stardos-exp.h" />
+    <ClInclude Include="src\drive\iec\c64exp\supercard.h" />
+    <ClInclude Include="src\drive\iec\ciad.h" />
+    <ClInclude Include="src\drive\iec\cmdhd.h" />
+    <ClInclude Include="src\drive\iec\fdd.h" />
+    <ClInclude Include="src\drive\iec\glue1571.h" />
+    <ClInclude Include="src\drive\iec\iec-cmdline-options.h" />
+    <ClInclude Include="src\drive\iec\iec-resources.h" />
+    <ClInclude Include="src\drive\iec\iecrom.h" />
+    <ClInclude Include="src\drive\iec\memiec.h" />
+    <ClInclude Include="src\drive\iec\pc8477.h" />
+    <ClInclude Include="src\drive\iec\via1d1541.h" />
+    <ClInclude Include="src\drive\iec\via4000.h" />
+    <ClInclude Include="src\drive\iec\wd1770.h" />
+    <ClInclude Include="src\drive\ieee.h" />
+    <ClInclude Include="src\drive\ieee\fdc.h" />
+    <ClInclude Include="src\drive\ieee\ieee-cmdline-options.h" />
+    <ClInclude Include="src\drive\ieee\ieee-resources.h" />
+    <ClInclude Include="src\drive\ieee\ieeerom.h" />
+    <ClInclude Include="src\drive\ieee\memieee.h" />
+    <ClInclude Include="src\drive\ieee\riotd.h" />
+    <ClInclude Include="src\drive\ieee\via1d2031.h" />
+    <ClInclude Include="src\drive\rotation.h" />
+    <ClInclude Include="src\drive\tcbm.h" />
+    <ClInclude Include="src\drive\tcbm\glue1551.h" />
+    <ClInclude Include="src\drive\tcbm\mem1551.h" />
+    <ClInclude Include="src\drive\tcbm\tcbm-cmdline-options.h" />
+    <ClInclude Include="src\drive\tcbm\tcbm-resources.h" />
+    <ClInclude Include="src\drive\tcbm\tcbmrom.h" />
+    <ClInclude Include="src\drive\tcbm\tpid.h" />
+    <ClInclude Include="src\drive\viad.h" />
+    <ClInclude Include="src\dynlib.h" />
+    <ClInclude Include="src\export.h" />
+    <ClInclude Include="src\fileio.h" />
+    <ClInclude Include="src\fileio\cbmfile.h" />
+    <ClInclude Include="src\fileio\p00.h" />
+    <ClInclude Include="src\findpath.h" />
+    <ClInclude Include="src\fixpoint.h" />
+    <ClInclude Include="src\flash040.h" />
+    <ClInclude Include="src\flash800.h" />
+    <ClInclude Include="src\fliplist.h" />
+    <ClInclude Include="src\fsdevice.h" />
+    <ClInclude Include="src\fsdevice\fsdevice-close.h" />
+    <ClInclude Include="src\fsdevice\fsdevice-cmdline-options.h" />
+    <ClInclude Include="src\fsdevice\fsdevice-filename.h" />
+    <ClInclude Include="src\fsdevice\fsdevice-flush.h" />
+    <ClInclude Include="src\fsdevice\fsdevice-open.h" />
+    <ClInclude Include="src\fsdevice\fsdevice-read.h" />
+    <ClInclude Include="src\fsdevice\fsdevice-resources.h" />
+    <ClInclude Include="src\fsdevice\fsdevice-write.h" />
+    <ClInclude Include="src\fsdevice\fsdevicetypes.h" />
+    <ClInclude Include="src\fullscreen.h" />
+    <ClInclude Include="src\gcr.h" />
+    <ClInclude Include="src\gfxoutput.h" />
+    <ClInclude Include="src\gfxoutputdrv\bmpdrv.h" />
+    <ClInclude Include="src\gfxoutputdrv\ffmpegexedrv.h" />
+    <ClInclude Include="src\gfxoutputdrv\gifdrv.h" />
+    <ClInclude Include="src\gfxoutputdrv\godotdrv.h" />
+    <ClInclude Include="src\gfxoutputdrv\iffdrv.h" />
+    <ClInclude Include="src\gfxoutputdrv\nativedrv.h" />
+    <ClInclude Include="src\gfxoutputdrv\pcxdrv.h" />
+    <ClInclude Include="src\gfxoutputdrv\pngdrv.h" />
+    <ClInclude Include="src\gfxoutputdrv\ppmdrv.h" />
+    <ClInclude Include="src\gfxoutputdrv\zmbvdrv.h" />
+    <ClInclude Include="src\h6809regs.h" />
+    <ClInclude Include="src\hardsid.h" />
+    <ClInclude Include="src\hvsc\base.h" />
+    <ClInclude Include="src\hvsc\bugs.h" />
+    <ClInclude Include="src\hvsc\hvsc.h" />
+    <ClInclude Include="src\hvsc\hvsc_defs.h" />
+    <ClInclude Include="src\hvsc\main.h" />
+    <ClInclude Include="src\hvsc\psid.h" />
+    <ClInclude Include="src\hvsc\sldb.h" />
+    <ClInclude Include="src\hvsc\stil.h" />
+    <ClInclude Include="src\iecbus.h" />
+    <ClInclude Include="src\iecdrive.h" />
+    <ClInclude Include="src\imagecontents.h" />
+    <ClInclude Include="src\imagecontents\diskcontents-block.h" />
+    <ClInclude Include="src\imagecontents\diskcontents-iec.h" />
+    <ClInclude Include="src\imagecontents\diskcontents.h" />
+    <ClInclude Include="src\imagecontents\tapecontents.h" />
+    <ClInclude Include="src\info.h" />
+    <ClInclude Include="src\init.h" />
+    <ClInclude Include="src\initcmdline.h" />
+    <ClInclude Include="src\interrupt.h" />
+    <ClInclude Include="src\joyport\bbrtc.h" />
+    <ClInclude Include="src\joyport\cardkey.h" />
+    <ClInclude Include="src\joyport\coplin_keypad.h" />
+    <ClInclude Include="src\joyport\cx21.h" />
+    <ClInclude Include="src\joyport\cx85.h" />
+    <ClInclude Include="src\joyport\inception.h" />
+    <ClInclude Include="src\joyport\joyport.h" />
+    <ClInclude Include="src\joyport\joyport_diag_586220_harness.h" />
+    <ClInclude Include="src\joyport\joyport_io_sim.h" />
+    <ClInclude Include="src\joyport\joystick.h" />
+    <ClInclude Include="src\joyport\lightpen.h" />
+    <ClInclude Include="src\joyport\mouse.h" />
+    <ClInclude Include="src\joyport\mouse_1351.h" />
+    <ClInclude Include="src\joyport\mouse_neos.h" />
+    <ClInclude Include="src\joyport\mouse_paddle.h" />
+    <ClInclude Include="src\joyport\mouse_quadrature.h" />
+    <ClInclude Include="src\joyport\multijoy.h" />
+    <ClInclude Include="src\joyport\ninja_snespad.h" />
+    <ClInclude Include="src\joyport\paperclip2.h" />
+    <ClInclude Include="src\joyport\paperclip64.h" />
+    <ClInclude Include="src\joyport\paperclip64e.h" />
+    <ClInclude Include="src\joyport\paperclip64sc.h" />
+    <ClInclude Include="src\joyport\powerpad.h" />
+    <ClInclude Include="src\joyport\protopad.h" />
+    <ClInclude Include="src\joyport\rushware_keypad.h" />
+    <ClInclude Include="src\joyport\sampler2bit.h" />
+    <ClInclude Include="src\joyport\sampler4bit.h" />
+    <ClInclude Include="src\joyport\script64_dongle.h" />
+    <ClInclude Include="src\joyport\spaceballs.h" />
+    <ClInclude Include="src\joyport\trapthem_snespad.h" />
+    <ClInclude Include="src\joyport\vizawrite64_dongle.h" />
+    <ClInclude Include="src\joyport\waasoft_dongle.h" />
+    <ClInclude Include="src\kbdbuf.h" />
+    <ClInclude Include="src\keyboard.h" />
+    <ClInclude Include="src\keymap.h" />
+    <ClInclude Include="src\lib.h" />
+    <ClInclude Include="src\lib\libzmbv\zmbv.h" />
+    <ClInclude Include="src\lib\libzmbv\zmbv_avi.h" />
+    <ClInclude Include="src\lib\md5\md5.h" />
+    <ClInclude Include="src\lib\p64\p64.h" />
+    <ClInclude Include="src\lib\p64\p64config.h" />
+    <ClInclude Include="src\log.h" />
+    <ClInclude Include="src\m3u.h" />
+    <ClInclude Include="src\machine-bus.h" />
+    <ClInclude Include="src\machine-drive.h" />
+    <ClInclude Include="src\machine-printer.h" />
+    <ClInclude Include="src\machine-video.h" />
+    <ClInclude Include="src\machine.h" />
+    <ClInclude Include="src\main.h" />
+    <ClInclude Include="src\main65816cpu.h" />
+    <ClInclude Include="src\mainc64cpu.h" />
+    <ClInclude Include="src\maincpu.h" />
+    <ClInclude Include="src\mainlock.h" />
+    <ClInclude Include="src\mem.h" />
+    <ClInclude Include="src\midi.h" />
+    <ClInclude Include="src\mididrv.h" />
+    <ClInclude Include="src\monitor.h" />
+    <ClInclude Include="src\monitor\asm.h" />
+    <ClInclude Include="src\monitor\monitor_binary.h" />
+    <ClInclude Include="src\monitor\monitor_network.h" />
+    <ClInclude Include="src\monitor\montypes.h" />
+    <ClInclude Include="src\monitor\mon_assemble.h" />
+    <ClInclude Include="src\monitor\mon_breakpoint.h" />
+    <ClInclude Include="src\monitor\mon_command.h" />
+    <ClInclude Include="src\monitor\mon_disassemble.h" />
+    <ClInclude Include="src\monitor\mon_drive.h" />
+    <ClInclude Include="src\monitor\mon_file.h" />
+    <ClInclude Include="src\monitor\mon_memmap.h" />
+    <ClInclude Include="src\monitor\mon_memory.h" />
+    <ClInclude Include="src\monitor\mon_parse.h" />
+    <ClInclude Include="src\monitor\mon_profile.h" />
+    <ClInclude Include="src\monitor\mon_register.h" />
+    <ClInclude Include="src\monitor\mon_util.h" />
+    <ClInclude Include="src\mos6510.h" />
+    <ClInclude Include="src\mos6510dtv.h" />
+    <ClInclude Include="src\network.h" />
+    <ClInclude Include="src\opencbmlib.h" />
+    <ClInclude Include="src\palette.h" />
+    <ClInclude Include="src\parallel.h" />
+    <ClInclude Include="src\parallel\parallel-trap.h" />
+    <ClInclude Include="src\parsid.h" />
+    <ClInclude Include="src\petui.h" />
+    <ClInclude Include="src\pet\6809.h" />
+    <ClInclude Include="src\pet\debugcart.h" />
+    <ClInclude Include="src\pet\pet-cmdline-options.h" />
+    <ClInclude Include="src\pet\pet-resources.h" />
+    <ClInclude Include="src\pet\pet-snapshot.h" />
+    <ClInclude Include="src\pet\pet.h" />
+    <ClInclude Include="src\pet\petacia.h" />
+    <ClInclude Include="src\pet\petcolour.h" />
+    <ClInclude Include="src\pet\petdww.h" />
+    <ClInclude Include="src\pet\pethre.h" />
+    <ClInclude Include="src\pet\petiec.h" />
+    <ClInclude Include="src\pet\petmem.h" />
+    <ClInclude Include="src\pet\petmemsnapshot.h" />
+    <ClInclude Include="src\pet\petmodel.h" />
+    <ClInclude Include="src\pet\petpia.h" />
+    <ClInclude Include="src\pet\petreu.h" />
+    <ClInclude Include="src\pet\petrom.h" />
+    <ClInclude Include="src\pet\pets.h" />
+    <ClInclude Include="src\pet\petsound.h" />
+    <ClInclude Include="src\pet\petvia.h" />
+    <ClInclude Include="src\piacore.h" />
+    <ClInclude Include="src\plus4ui.h" />
+    <ClInclude Include="src\printerdrv\driver-select.h" />
+    <ClInclude Include="src\printerdrv\drv-1520.h" />
+    <ClInclude Include="src\printerdrv\drv-ascii.h" />
+    <ClInclude Include="src\printerdrv\drv-mps803.h" />
+    <ClInclude Include="src\printerdrv\drv-nl10.h" />
+    <ClInclude Include="src\printerdrv\drv-raw.h" />
+    <ClInclude Include="src\printerdrv\interface-serial.h" />
+    <ClInclude Include="src\printerdrv\interface-userport.h" />
+    <ClInclude Include="src\printerdrv\output-graphics.h" />
+    <ClInclude Include="src\printerdrv\output-select.h" />
+    <ClInclude Include="src\printerdrv\output-text.h" />
+    <ClInclude Include="src\printerdrv\output.h" />
+    <ClInclude Include="src\printerdrv\printer.h" />
+    <ClInclude Include="src\profiler.h" />
+    <ClInclude Include="src\profiler_data.h" />
+    <ClInclude Include="src\r65c02.h" />
+    <ClInclude Include="src\ram.h" />
+    <ClInclude Include="src\raster\raster-cache-const.h" />
+    <ClInclude Include="src\raster\raster-cache-fill-1fff.h" />
+    <ClInclude Include="src\raster\raster-cache-fill-39ff.h" />
+    <ClInclude Include="src\raster\raster-cache-fill.h" />
+    <ClInclude Include="src\raster\raster-cache-nibbles.h" />
+    <ClInclude Include="src\raster\raster-cache-text-ext.h" />
+    <ClInclude Include="src\raster\raster-cache-text-std.h" />
+    <ClInclude Include="src\raster\raster-cache.h" />
+    <ClInclude Include="src\raster\raster-canvas.h" />
+    <ClInclude Include="src\raster\raster-changes.h" />
+    <ClInclude Include="src\raster\raster-cmdline-options.h" />
+    <ClInclude Include="src\raster\raster-line.h" />
+    <ClInclude Include="src\raster\raster-modes.h" />
+    <ClInclude Include="src\raster\raster-resources.h" />
+    <ClInclude Include="src\raster\raster-snapshot.h" />
+    <ClInclude Include="src\raster\raster-sprite-cache.h" />
+    <ClInclude Include="src\raster\raster-sprite-status.h" />
+    <ClInclude Include="src\raster\raster-sprite.h" />
+    <ClInclude Include="src\raster\raster.h" />
+    <ClInclude Include="src\rawfile.h" />
+    <ClInclude Include="src\rawnet.h" />
+    <ClInclude Include="src\resid\dac.h" />
+    <ClInclude Include="src\resid\envelope.h" />
+    <ClInclude Include="src\resid\extfilt.h" />
+    <ClInclude Include="src\resid\filter.h" />
+    <ClInclude Include="src\resid\filter8580new.h" />
+    <ClInclude Include="src\resid\pot.h" />
+    <ClInclude Include="src\resid\resid-config.h" />
+    <ClInclude Include="src\resid\sid.h" />
+    <ClInclude Include="src\resid\siddefs.h" />
+    <ClInclude Include="src\resid\spline.h" />
+    <ClInclude Include="src\resid\voice.h" />
+    <ClInclude Include="src\resid\wave.h" />
+    <ClInclude Include="src\resid\wave6581_PST.h" />
+    <ClInclude Include="src\resid\wave6581_PS_.h" />
+    <ClInclude Include="src\resid\wave6581_P_T.h" />
+    <ClInclude Include="src\resid\wave6581__ST.h" />
+    <ClInclude Include="src\resid\wave8580_PST.h" />
+    <ClInclude Include="src\resid\wave8580_PS_.h" />
+    <ClInclude Include="src\resid\wave8580_P_T.h" />
+    <ClInclude Include="src\resid\wave8580__ST.h" />
+    <ClInclude Include="src\resources.h" />
+    <ClInclude Include="src\riot.h" />
+    <ClInclude Include="src\romset.h" />
+    <ClInclude Include="src\rs232drv\rs232.h" />
+    <ClInclude Include="src\rs232drv\rs232dev.h" />
+    <ClInclude Include="src\rs232drv\rs232drv.h" />
+    <ClInclude Include="src\rs232drv\rs232net.h" />
+    <ClInclude Include="src\rs232drv\rsuser.h" />
+    <ClInclude Include="src\samplerdrv\file_drv.h" />
+    <ClInclude Include="src\samplerdrv\portaudio_drv.h" />
+    <ClInclude Include="src\samplerdrv\sampler.h" />
+    <ClInclude Include="src\scpu64ui.h" />
+    <ClInclude Include="src\screenshot.h" />
+    <ClInclude Include="src\serial.h" />
+    <ClInclude Include="src\serial\fsdrive.h" />
+    <ClInclude Include="src\serial\iec-ieee488-shared.h" />
+    <ClInclude Include="src\serial\realdevice.h" />
+    <ClInclude Include="src\serial\serial-iec-bus.h" />
+    <ClInclude Include="src\serial\serial-iec-device.h" />
+    <ClInclude Include="src\serial\serial-iec.h" />
+    <ClInclude Include="src\serial\serial-trap.h" />
+    <ClInclude Include="src\sha1.h" />
+    <ClInclude Include="src\sidcart.h" />
+    <ClInclude Include="src\sid\fastsid.h" />
+    <ClInclude Include="src\sid\resid.h" />
+    <ClInclude Include="src\sid\sid-cmdline-options.h" />
+    <ClInclude Include="src\sid\sid-resources.h" />
+    <ClInclude Include="src\sid\sid-snapshot.h" />
+    <ClInclude Include="src\sid\sid.h" />
+    <ClInclude Include="src\sid\wave6581.h" />
+    <ClInclude Include="src\sid\wave8580.h" />
+    <ClInclude Include="src\signals.h" />
+    <ClInclude Include="src\snapshot.h" />
+    <ClInclude Include="src\snespad.h" />
+    <ClInclude Include="src\sound.h" />
+    <ClInclude Include="src\sysfile.h" />
+    <ClInclude Include="src\tap.h" />
+    <ClInclude Include="src\tape.h" />
+    <ClInclude Include="src\tapeport\cp-clockf83.h" />
+    <ClInclude Include="src\tapeport\dtl-basic-dongle.h" />
+    <ClInclude Include="src\tapeport\sense-dongle.h" />
+    <ClInclude Include="src\tapeport\tapecart-loader.h" />
+    <ClInclude Include="src\tapeport\tapecart.h" />
+    <ClInclude Include="src\tapeport\tapeport.h" />
+    <ClInclude Include="src\tapeport\tape_diag_586220_harness.h" />
+    <ClInclude Include="src\tapeport\wordcraft-dongle.h" />
+    <ClInclude Include="src\tape\t64.h" />
+    <ClInclude Include="src\tape\tape-internal.h" />
+    <ClInclude Include="src\tape\tape-snapshot.h" />
+    <ClInclude Include="src\tape\tapeimage.h" />
+    <ClInclude Include="src\tpi.h" />
+    <ClInclude Include="src\traps.h" />
+    <ClInclude Include="src\types.h" />
+    <ClInclude Include="src\uiapi.h" />
+    <ClInclude Include="src\uicmdline.h" />
+    <ClInclude Include="src\uicolor.h" />
+    <ClInclude Include="src\uimon.h" />
+    <ClInclude Include="src\usbsid.h" />
+    <ClInclude Include="src\userport\userport.h" />
+    <ClInclude Include="src\userport\userport_4bit_sampler.h" />
+    <ClInclude Include="src\userport\userport_8bss.h" />
+    <ClInclude Include="src\userport\userport_dac.h" />
+    <ClInclude Include="src\userport\userport_diag_586220_harness.h" />
+    <ClInclude Include="src\userport\userport_diag_pin.h" />
+    <ClInclude Include="src\userport\userport_digimax.h" />
+    <ClInclude Include="src\userport\userport_funmp3.h" />
+    <ClInclude Include="src\userport\userport_hks_joystick.h" />
+    <ClInclude Include="src\userport\userport_hummer_joystick.h" />
+    <ClInclude Include="src\userport\userport_io_sim.h" />
+    <ClInclude Include="src\userport\userport_joystick.h" />
+    <ClInclude Include="src\userport\userport_petscii_snespad.h" />
+    <ClInclude Include="src\userport\userport_ps2mouse.h" />
+    <ClInclude Include="src\userport\userport_rtc_58321a.h" />
+    <ClInclude Include="src\userport\userport_rtc_ds1307.h" />
+    <ClInclude Include="src\userport\userport_spt_joystick.h" />
+    <ClInclude Include="src\userport\userport_superpad64.h" />
+    <ClInclude Include="src\userport\userport_synergy_joystick.h" />
+    <ClInclude Include="src\userport\userport_wic64.h" />
+    <ClInclude Include="src\userport\userport_woj_joystick.h" />
+    <ClInclude Include="src\util.h" />
+    <ClInclude Include="src\vdrive\vdrive-bam.h" />
+    <ClInclude Include="src\vdrive\vdrive-command.h" />
+    <ClInclude Include="src\vdrive\vdrive-dir.h" />
+    <ClInclude Include="src\vdrive\vdrive-iec.h" />
+    <ClInclude Include="src\vdrive\vdrive-internal.h" />
+    <ClInclude Include="src\vdrive\vdrive-rel.h" />
+    <ClInclude Include="src\vdrive\vdrive-snapshot.h" />
+    <ClInclude Include="src\vdrive\vdrive.h" />
+    <ClInclude Include="src\version.h" />
+    <ClInclude Include="src\via.h" />
+    <ClInclude Include="src\vic20ui.h" />
+    <ClInclude Include="src\vice-event.h" />
+    <ClInclude Include="src\vice.h" />
+    <ClInclude Include="src\vicedate.h" />
+    <ClInclude Include="src\vicefeatures.h" />
+    <ClInclude Include="src\vicesocket.h" />
+    <ClInclude Include="src\vicii-colorram.h" />
+    <ClInclude Include="src\vicii.h" />
+    <ClInclude Include="src\viciisc\vicii-chip-model.h" />
+    <ClInclude Include="src\viciisc\vicii-cmdline-options.h" />
+    <ClInclude Include="src\viciisc\vicii-color.h" />
+    <ClInclude Include="src\viciisc\vicii-cycle.h" />
+    <ClInclude Include="src\viciisc\vicii-draw-cycle.h" />
+    <ClInclude Include="src\viciisc\vicii-draw.h" />
+    <ClInclude Include="src\viciisc\vicii-fetch.h" />
+    <ClInclude Include="src\viciisc\vicii-irq.h" />
+    <ClInclude Include="src\viciisc\vicii-lightpen.h" />
+    <ClInclude Include="src\viciisc\vicii-mem.h" />
+    <ClInclude Include="src\viciisc\vicii-phi1.h" />
+    <ClInclude Include="src\viciisc\vicii-resources.h" />
+    <ClInclude Include="src\viciisc\vicii-snapshot.h" />
+    <ClInclude Include="src\viciisc\vicii-timing.h" />
+    <ClInclude Include="src\viciisc\viciitypes.h" />
+    <ClInclude Include="src\video.h" />
+    <ClInclude Include="src\video\render-common.h" />
+    <ClInclude Include="src\video\render1x1.h" />
+    <ClInclude Include="src\video\render1x1ntsc.h" />
+    <ClInclude Include="src\video\render1x1pal.h" />
+    <ClInclude Include="src\video\render1x1rgbi.h" />
+    <ClInclude Include="src\video\render1x2.h" />
+    <ClInclude Include="src\video\render1x2rgbi.h" />
+    <ClInclude Include="src\video\render2x2.h" />
+    <ClInclude Include="src\video\render2x2ntsc.h" />
+    <ClInclude Include="src\video\render2x2pal.h" />
+    <ClInclude Include="src\video\render2x2palu.h" />
+    <ClInclude Include="src\video\render2x2rgbi.h" />
+    <ClInclude Include="src\video\render2x4.h" />
+    <ClInclude Include="src\video\render2x4rgbi.h" />
+    <ClInclude Include="src\video\renderscale2x.h" />
+    <ClInclude Include="src\video\video-canvas.h" />
+    <ClInclude Include="src\video\video-color.h" />
+    <ClInclude Include="src\video\video-render.h" />
+    <ClInclude Include="src\video\video-resources.h" />
+    <ClInclude Include="src\video\video-sound.h" />
+    <ClInclude Include="src\viewport.h" />
+    <ClInclude Include="src\vsidui.h" />
+    <ClInclude Include="src\vsync.h" />
+    <ClInclude Include="src\vsyncapi.h" />
+    <ClInclude Include="src\wdc65816.h" />
+    <ClInclude Include="src\z80regs.h" />
+    <ClInclude Include="src\zfile.h" />
+    <ClInclude Include="src\zipcode.h" />
+    <ClInclude Include="zlib\crc32.h" />
+    <ClInclude Include="zlib\deflate.h" />
+    <ClInclude Include="zlib\gzguts.h" />
+    <ClInclude Include="zlib\inffast.h" />
+    <ClInclude Include="zlib\inffixed.h" />
+    <ClInclude Include="zlib\inflate.h" />
+    <ClInclude Include="zlib\inftrees.h" />
+    <ClInclude Include="zlib\trees.h" />
+    <ClInclude Include="zlib\zconf.h" />
+    <ClInclude Include="zlib\zlib.h" />
+    <ClInclude Include="zlib\zutil.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\6510core.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\6510dtvcore.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\65816core.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\65c02core.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\aciacore.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\alarm.c" />
+    <ClCompile Include="src\arch\headless\archdep.c" />
+    <ClCompile Include="src\arch\headless\c128ui.c" />
+    <ClCompile Include="src\arch\headless\c64dtvui.c" />
+    <ClCompile Include="src\arch\headless\c64scui.c" />
+    <ClCompile Include="src\arch\headless\c64ui.c" />
+    <ClCompile Include="src\arch\headless\cbm2ui.c" />
+    <ClCompile Include="src\arch\headless\cbm5x0ui.c" />
+    <ClCompile Include="src\arch\headless\console.c" />
+    <ClCompile Include="src\arch\headless\kbd.c" />
+    <ClCompile Include="src\arch\headless\main.c" />
+    <ClCompile Include="src\arch\headless\mousedrv.c" />
+    <ClCompile Include="src\arch\headless\petui.c" />
+    <ClCompile Include="src\arch\headless\plus4ui.c" />
+    <ClCompile Include="src\arch\headless\scpu64ui.c" />
+    <ClCompile Include="src\arch\headless\ui.c" />
+    <ClCompile Include="src\arch\headless\uimon.c" />
+    <ClCompile Include="src\arch\headless\uistatusbar.c" />
+    <ClCompile Include="src\arch\headless\vic20ui.c" />
+    <ClCompile Include="src\arch\headless\video.c" />
+    <ClCompile Include="src\arch\headless\vsidui.c" />
+    <ClCompile Include="src\arch\headless\vsyncarch.c" />
+    <ClCompile Include="src\arch\shared\archdep_access.c" />
+    <ClCompile Include="src\arch\shared\archdep_boot_path.c" />
+    <ClCompile Include="src\arch\shared\archdep_cbmfont.c" />
+    <ClCompile Include="src\arch\shared\archdep_chdir.c" />
+    <ClCompile Include="src\arch\shared\archdep_close.c" />
+    <ClCompile Include="src\arch\shared\archdep_create_user_cache_dir.c" />
+    <ClCompile Include="src\arch\shared\archdep_create_user_config_dir.c" />
+    <ClCompile Include="src\arch\shared\archdep_create_user_state_dir.c" />
+    <ClCompile Include="src\arch\shared\archdep_current_dir.c" />
+    <ClCompile Include="src\arch\shared\archdep_default_autostart_disk_image_file_name.c" />
+    <ClCompile Include="src\arch\shared\archdep_default_fliplist_file_name.c" />
+    <ClCompile Include="src\arch\shared\archdep_default_joymap_file_name.c" />
+    <ClCompile Include="src\arch\shared\archdep_default_logfile.c" />
+    <ClCompile Include="src\arch\shared\archdep_default_logger.c" />
+    <ClCompile Include="src\arch\shared\archdep_default_portable_resource_file_name.c" />
+    <ClCompile Include="src\arch\shared\archdep_default_resource_file_name.c" />
+    <ClCompile Include="src\arch\shared\archdep_default_rtc_file_name.c" />
+    <ClCompile Include="src\arch\shared\archdep_default_sysfile_pathlist.c" />
+    <ClCompile Include="src\arch\shared\archdep_dir.c" />
+    <ClCompile Include="src\arch\shared\archdep_ethernet_available.c" />
+    <ClCompile Include="src\arch\shared\archdep_exit.c" />
+    <ClCompile Include="src\arch\shared\archdep_expand_path.c" />
+    <ClCompile Include="src\arch\shared\archdep_extra_title_text.c" />
+    <ClCompile Include="src\arch\shared\archdep_fdopen.c" />
+    <ClCompile Include="src\arch\shared\archdep_filename_parameter.c" />
+    <ClCompile Include="src\arch\shared\archdep_file_exists.c" />
+    <ClCompile Include="src\arch\shared\archdep_file_is_blockdev.c" />
+    <ClCompile Include="src\arch\shared\archdep_file_is_chardev.c" />
+    <ClCompile Include="src\arch\shared\archdep_file_size.c" />
+    <ClCompile Include="src\arch\shared\archdep_fix_permissions.c" />
+    <ClCompile Include="src\arch\shared\archdep_fix_streams.c" />
+    <ClCompile Include="src\arch\shared\archdep_fseeko.c" />
+    <ClCompile Include="src\arch\shared\archdep_ftello.c" />
+    <ClCompile Include="src\arch\shared\archdep_getcwd.c" />
+    <ClCompile Include="src\arch\shared\archdep_get_current_drive.c" />
+    <ClCompile Include="src\arch\shared\archdep_get_hvsc_dir.c" />
+    <ClCompile Include="src\arch\shared\archdep_get_runtime_info.c" />
+    <ClCompile Include="src\arch\shared\archdep_get_vice_datadir.c" />
+    <ClCompile Include="src\arch\shared\archdep_get_vice_docsdir.c" />
+    <ClCompile Include="src\arch\shared\archdep_get_vice_drivesdir.c" />
+    <ClCompile Include="src\arch\shared\archdep_get_vice_hotkeysdir.c" />
+    <ClCompile Include="src\arch\shared\archdep_get_vice_machinedir.c" />
+    <ClCompile Include="src\arch\shared\archdep_glob.c" />
+    <ClCompile Include="src\arch\shared\archdep_home_path.c" />
+    <ClCompile Include="src\arch\shared\archdep_icon_path.c" />
+    <ClCompile Include="src\arch\shared\archdep_is_haiku.c" />
+    <ClCompile Include="src\arch\shared\archdep_is_macos_bindist.c" />
+    <ClCompile Include="src\arch\shared\archdep_is_windows_nt.c" />
+    <ClCompile Include="src\arch\shared\archdep_kbd_get_host_mapping.c" />
+    <ClCompile Include="src\arch\shared\archdep_list_drives.c" />
+    <ClCompile Include="src\arch\shared\archdep_make_backup_filename.c" />
+    <ClCompile Include="src\arch\shared\archdep_mkdir.c" />
+    <ClCompile Include="src\arch\shared\archdep_mkstemp_fd.c" />
+    <ClCompile Include="src\arch\shared\archdep_open_default_log_file.c" />
+    <ClCompile Include="src\arch\shared\archdep_path_is_relative.c" />
+    <ClCompile Include="src\arch\shared\archdep_program_name.c" />
+    <ClCompile Include="src\arch\shared\archdep_program_path.c" />
+    <ClCompile Include="src\arch\shared\archdep_quote_parameter.c" />
+    <ClCompile Include="src\arch\shared\archdep_quote_unzip.c" />
+    <ClCompile Include="src\arch\shared\archdep_rawnet_capability.c" />
+    <ClCompile Include="src\arch\shared\archdep_real_path.c" />
+    <ClCompile Include="src\arch\shared\archdep_remove.c" />
+    <ClCompile Include="src\arch\shared\archdep_rename.c" />
+    <ClCompile Include="src\arch\shared\archdep_require_vkbd.c" />
+    <ClCompile Include="src\arch\shared\archdep_rmdir.c" />
+    <ClCompile Include="src\arch\shared\archdep_rtc_get_centisecond.c" />
+    <ClCompile Include="src\arch\shared\archdep_sanitize_filename.c" />
+    <ClCompile Include="src\arch\shared\archdep_set_current_drive.c" />
+    <ClCompile Include="src\arch\shared\archdep_set_openmp_wait_policy.c" />
+    <ClCompile Include="src\arch\shared\archdep_signals.c" />
+    <ClCompile Include="src\arch\shared\archdep_sleep.c" />
+    <ClCompile Include="src\arch\shared\archdep_socketpeek.c" />
+    <ClCompile Include="src\arch\shared\archdep_sound.c" />
+    <ClCompile Include="src\arch\shared\archdep_spawn.c" />
+    <ClCompile Include="src\arch\shared\archdep_startup_log_error.c" />
+    <ClCompile Include="src\arch\shared\archdep_stat.c" />
+    <ClCompile Include="src\arch\shared\archdep_tick.c" />
+    <ClCompile Include="src\arch\shared\archdep_tmpnam.c" />
+    <ClCompile Include="src\arch\shared\archdep_user_cache_path.c" />
+    <ClCompile Include="src\arch\shared\archdep_user_config_path.c" />
+    <ClCompile Include="src\arch\shared\archdep_user_state_path.c" />
+    <ClCompile Include="src\arch\shared\archdep_usleep.c" />
+    <ClCompile Include="src\arch\shared\archdep_xdg.c" />
+    <ClCompile Include="src\arch\shared\console.c" />
+    <ClCompile Include="src\arch\shared\console_none.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\console_unix.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\coproc.c" />
+    <ClCompile Include="src\arch\shared\dynlib-unix.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\dynlib-win32.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\dynlib.c" />
+    <ClCompile Include="src\arch\shared\hotkeys\boolexpr.c">
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderOutputFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderOutputFile>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\hotkeys\ifstack.c" />
+    <ClCompile Include="src\arch\shared\hotkeys\parser.c" />
+    <ClCompile Include="src\arch\shared\hotkeys\symtab.c" />
+    <ClCompile Include="src\arch\shared\hotkeys\textfilereader.c" />
+    <ClCompile Include="src\arch\shared\hotkeys\uihotkeys.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\hotkeys\vhkdebug.c" />
+    <ClCompile Include="src\arch\shared\hotkeys\vhkkeysyms.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\hwsiddrv\catweaselmkiii-unix-drv.c" />
+    <ClCompile Include="src\arch\shared\hwsiddrv\catweaselmkiii-win32-drv.c" />
+    <ClCompile Include="src\arch\shared\hwsiddrv\cw-unix-device.c" />
+    <ClCompile Include="src\arch\shared\hwsiddrv\cw-win32-dll.c" />
+    <ClCompile Include="src\arch\shared\hwsiddrv\hardsid-unix-drv.c" />
+    <ClCompile Include="src\arch\shared\hwsiddrv\hardsid-win32-drv.c" />
+    <ClCompile Include="src\arch\shared\hwsiddrv\hs-unix-linux.c" />
+    <ClCompile Include="src\arch\shared\hwsiddrv\hs-win32-dll.c" />
+    <ClCompile Include="src\arch\shared\hwsiddrv\parsid-unix-drv.c" />
+    <ClCompile Include="src\arch\shared\hwsiddrv\parsid-win32-drv.c" />
+    <ClCompile Include="src\arch\shared\hwsiddrv\ps-ieee1284.c" />
+    <ClCompile Include="src\arch\shared\hwsiddrv\ps-unix-file.c" />
+    <ClCompile Include="src\arch\shared\hwsiddrv\us-unixwin-device.c" />
+    <ClCompile Include="src\arch\shared\hwsiddrv\usbsid-unixwin-drv.c" />
+    <ClCompile Include="src\arch\shared\macOS-launcher.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\mididrv\midi-osx-drv.c" />
+    <ClCompile Include="src\arch\shared\mididrv\midi-unix-drv.c" />
+    <ClCompile Include="src\arch\shared\mididrv\midi-win32-drv.c" />
+    <ClCompile Include="src\arch\shared\rawnetarch.c" />
+    <ClCompile Include="src\arch\shared\rawnetarch_tuntap.c" />
+    <ClCompile Include="src\arch\shared\rawnetarch_unix.c" />
+    <ClCompile Include="src\arch\shared\rawnetarch_win32.c" />
+    <ClCompile Include="src\arch\shared\rs232-unix-dev.c" />
+    <ClCompile Include="src\arch\shared\rs232-win32-dev.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\rs232dev.c" />
+    <ClCompile Include="src\arch\shared\signals.c" />
+    <ClCompile Include="src\arch\shared\socketdrv\socket-win32-drv.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\socketdrv\socketdrv.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\sounddrv\lamelib.c" />
+    <ClCompile Include="src\arch\shared\sounddrv\soundaiff.c" />
+    <ClCompile Include="src\arch\shared\sounddrv\soundalsa.c" />
+    <ClCompile Include="src\arch\shared\sounddrv\soundbeos.cc" />
+    <ClCompile Include="src\arch\shared\sounddrv\soundbsp.cc" />
+    <ClCompile Include="src\arch\shared\sounddrv\soundcoreaudio.c" />
+    <ClCompile Include="src\arch\shared\sounddrv\sounddummy.c" />
+    <ClCompile Include="src\arch\shared\sounddrv\sounddump.c" />
+    <ClCompile Include="src\arch\shared\sounddrv\sounddx.c" />
+    <ClCompile Include="src\arch\shared\sounddrv\soundflac.c" />
+    <ClCompile Include="src\arch\shared\sounddrv\soundfs.c" />
+    <ClCompile Include="src\arch\shared\sounddrv\soundiff.c" />
+    <ClCompile Include="src\arch\shared\sounddrv\soundmovie.c" />
+    <ClCompile Include="src\arch\shared\sounddrv\soundmp3.c" />
+    <ClCompile Include="src\arch\shared\sounddrv\soundpulse.c" />
+    <ClCompile Include="src\arch\shared\sounddrv\soundsdl.c" />
+    <ClCompile Include="src\arch\shared\sounddrv\soundsun.c" />
+    <ClCompile Include="src\arch\shared\sounddrv\soundvoc.c" />
+    <ClCompile Include="src\arch\shared\sounddrv\soundvorbis.c" />
+    <ClCompile Include="src\arch\shared\sounddrv\soundwav.c" />
+    <ClCompile Include="src\arch\shared\sounddrv\soundwmm.c" />
+    <ClCompile Include="src\arch\shared\uiactions.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\attach.c" />
+    <ClCompile Include="src\autostart-prg.c" />
+    <ClCompile Include="src\autostart.c" />
+    <ClCompile Include="src\c1541-stubs.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\c1541.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64-cmdline-options.c" />
+    <ClCompile Include="src\c64\c64-memory-hacks.c" />
+    <ClCompile Include="src\c64\c64-resources.c" />
+    <ClCompile Include="src\c64\c64-snapshot.c" />
+    <ClCompile Include="src\c64\c64-stubs.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64.c" />
+    <ClCompile Include="src\c64\c64bus.c" />
+    <ClCompile Include="src\c64\c64cia1.c" />
+    <ClCompile Include="src\c64\c64cia2.c" />
+    <ClCompile Include="src\c64\c64cpu.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64cpusc.c" />
+    <ClCompile Include="src\c64\c64datasette.c" />
+    <ClCompile Include="src\c64\c64drive.c" />
+    <ClCompile Include="src\c64\c64export.c" />
+    <ClCompile Include="src\c64\c64fastiec.c" />
+    <ClCompile Include="src\c64\c64gluelogic.c" />
+    <ClCompile Include="src\c64\c64iec.c" />
+    <ClCompile Include="src\c64\c64io.c" />
+    <ClCompile Include="src\c64\c64keyboard.c" />
+    <ClCompile Include="src\c64\c64mem.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64meminit.c" />
+    <ClCompile Include="src\c64\c64memlimit.c" />
+    <ClCompile Include="src\c64\c64memrom.c" />
+    <ClCompile Include="src\c64\c64memsc.c" />
+    <ClCompile Include="src\c64\c64memsnapshot.c" />
+    <ClCompile Include="src\c64\c64model.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64parallel.c" />
+    <ClCompile Include="src\c64\c64pla.c" />
+    <ClCompile Include="src\c64\c64printer.c" />
+    <ClCompile Include="src\c64\c64rom.c" />
+    <ClCompile Include="src\c64\c64romset.c" />
+    <ClCompile Include="src\c64\c64rsuser.c" />
+    <ClCompile Include="src\c64\c64sc-stubs.c" />
+    <ClCompile Include="src\c64\c64scmodel.c" />
+    <ClCompile Include="src\c64\c64sound.c" />
+    <ClCompile Include="src\c64\c64video.c" />
+    <ClCompile Include="src\c64\c64_256k.c" />
+    <ClCompile Include="src\c64\cart\actionreplay.c" />
+    <ClCompile Include="src\c64\cart\actionreplay2.c" />
+    <ClCompile Include="src\c64\cart\actionreplay3.c" />
+    <ClCompile Include="src\c64\cart\actionreplay4.c" />
+    <ClCompile Include="src\c64\cart\atomicpower.c" />
+    <ClCompile Include="src\c64\cart\bisplus.c" />
+    <ClCompile Include="src\c64\cart\blackbox3.c" />
+    <ClCompile Include="src\c64\cart\blackbox4.c" />
+    <ClCompile Include="src\c64\cart\blackbox8.c" />
+    <ClCompile Include="src\c64\cart\blackbox9.c" />
+    <ClCompile Include="src\c64\cart\bmpdataturbo.c" />
+    <ClCompile Include="src\c64\cart\c64-generic.c" />
+    <ClCompile Include="src\c64\cart\c64-midi.c" />
+    <ClCompile Include="src\c64\cart\c64acia1.c" />
+    <ClCompile Include="src\c64\cart\c64cart.c" />
+    <ClCompile Include="src\c64\cart\c64carthooks.c" />
+    <ClCompile Include="src\c64\cart\c64cartmem.c" />
+    <ClCompile Include="src\c64\cart\c64tpi.c" />
+    <ClCompile Include="src\c64\cart\capture.c" />
+    <ClCompile Include="src\c64\cart\clockport-mp3at64.c" />
+    <ClCompile Include="src\c64\cart\clockport-rrnet.c" />
+    <ClCompile Include="src\c64\cart\clockport.c" />
+    <ClCompile Include="src\c64\cart\comal80.c" />
+    <ClCompile Include="src\c64\cart\cpmcart.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\cs8900io.c" />
+    <ClCompile Include="src\c64\cart\daa.c" />
+    <ClCompile Include="src\c64\cart\debugcart.c" />
+    <ClCompile Include="src\c64\cart\delaep256.c" />
+    <ClCompile Include="src\c64\cart\delaep64.c" />
+    <ClCompile Include="src\c64\cart\delaep7x8.c" />
+    <ClCompile Include="src\c64\cart\diashowmaker.c" />
+    <ClCompile Include="src\c64\cart\digimax.c" />
+    <ClCompile Include="src\c64\cart\dinamic.c" />
+    <ClCompile Include="src\c64\cart\dqbb.c" />
+    <ClCompile Include="src\c64\cart\drean.c" />
+    <ClCompile Include="src\c64\cart\ds12c887rtc.c" />
+    <ClCompile Include="src\c64\cart\easycalc.c" />
+    <ClCompile Include="src\c64\cart\easyflash.c" />
+    <ClCompile Include="src\c64\cart\epyxfastload.c" />
+    <ClCompile Include="src\c64\cart\ethernetcart.c" />
+    <ClCompile Include="src\c64\cart\exos.c" />
+    <ClCompile Include="src\c64\cart\expert.c" />
+    <ClCompile Include="src\c64\cart\final.c" />
+    <ClCompile Include="src\c64\cart\final3.c" />
+    <ClCompile Include="src\c64\cart\finalplus.c" />
+    <ClCompile Include="src\c64\cart\formel64.c" />
+    <ClCompile Include="src\c64\cart\freezeframe.c" />
+    <ClCompile Include="src\c64\cart\freezeframe2.c" />
+    <ClCompile Include="src\c64\cart\freezemachine.c" />
+    <ClCompile Include="src\c64\cart\funplay.c" />
+    <ClCompile Include="src\c64\cart\gamekiller.c" />
+    <ClCompile Include="src\c64\cart\georam.c" />
+    <ClCompile Include="src\c64\cart\gmod2.c" />
+    <ClCompile Include="src\c64\cart\gmod3.c" />
+    <ClCompile Include="src\c64\cart\gs.c" />
+    <ClCompile Include="src\c64\cart\hyperbasic.c" />
+    <ClCompile Include="src\c64\cart\ide64.c" />
+    <ClCompile Include="src\c64\cart\ieeeflash64.c" />
+    <ClCompile Include="src\c64\cart\isepic.c" />
+    <ClCompile Include="src\c64\cart\kcs.c" />
+    <ClCompile Include="src\c64\cart\kingsoft.c" />
+    <ClCompile Include="src\c64\cart\ltkernal.c" />
+    <ClCompile Include="src\c64\cart\mach5.c" />
+    <ClCompile Include="src\c64\cart\magicdesk.c" />
+    <ClCompile Include="src\c64\cart\magicdesk16.c" />
+    <ClCompile Include="src\c64\cart\magicformel.c" />
+    <ClCompile Include="src\c64\cart\magicvoice.c" />
+    <ClCompile Include="src\c64\cart\maxbasic.c" />
+    <ClCompile Include="src\c64\cart\megabyter.c" />
+    <ClCompile Include="src\c64\cart\mikroass.c" />
+    <ClCompile Include="src\c64\cart\mmc64.c" />
+    <ClCompile Include="src\c64\cart\mmcreplay.c" />
+    <ClCompile Include="src\c64\cart\multimax.c" />
+    <ClCompile Include="src\c64\cart\ocean.c" />
+    <ClCompile Include="src\c64\cart\pagefox.c" />
+    <ClCompile Include="src\c64\cart\partner64.c" />
+    <ClCompile Include="src\c64\cart\profidos.c" />
+    <ClCompile Include="src\c64\cart\prophet64.c" />
+    <ClCompile Include="src\c64\cart\ramcart.c" />
+    <ClCompile Include="src\c64\cart\ramlink.c" />
+    <ClCompile Include="src\c64\cart\retroreplay.c" />
+    <ClCompile Include="src\c64\cart\reu.c" />
+    <ClCompile Include="src\c64\cart\rexep256.c" />
+    <ClCompile Include="src\c64\cart\rexramfloppy.c" />
+    <ClCompile Include="src\c64\cart\rexutility.c" />
+    <ClCompile Include="src\c64\cart\rgcd.c" />
+    <ClCompile Include="src\c64\cart\ross.c" />
+    <ClCompile Include="src\c64\cart\rrnetmk3.c" />
+    <ClCompile Include="src\c64\cart\sdbox.c" />
+    <ClCompile Include="src\c64\cart\sfx_soundexpander.c" />
+    <ClCompile Include="src\c64\cart\sfx_soundsampler.c" />
+    <ClCompile Include="src\c64\cart\shortbus.c" />
+    <ClCompile Include="src\c64\cart\shortbus_digimax.c" />
+    <ClCompile Include="src\c64\cart\shortbus_etfe.c" />
+    <ClCompile Include="src\c64\cart\silverrock128.c" />
+    <ClCompile Include="src\c64\cart\simonsbasic.c" />
+    <ClCompile Include="src\c64\cart\snapshot64.c" />
+    <ClCompile Include="src\c64\cart\stardos.c" />
+    <ClCompile Include="src\c64\cart\stb.c" />
+    <ClCompile Include="src\c64\cart\superexplode5.c" />
+    <ClCompile Include="src\c64\cart\supergames.c" />
+    <ClCompile Include="src\c64\cart\supersnapshot.c" />
+    <ClCompile Include="src\c64\cart\supersnapshot4.c" />
+    <ClCompile Include="src\c64\cart\turtlegraphics.c" />
+    <ClCompile Include="src\c64\cart\uc1.c" />
+    <ClCompile Include="src\c64\cart\uc2.c" />
+    <ClCompile Include="src\c64\cart\warpspeed.c" />
+    <ClCompile Include="src\c64\cart\westermann.c" />
+    <ClCompile Include="src\c64\cart\zaxxon.c" />
+    <ClCompile Include="src\c64\cart\zippcode48.c" />
+    <ClCompile Include="src\c64\plus256k.c" />
+    <ClCompile Include="src\c64\plus60k.c" />
+    <ClCompile Include="src\c64\psid.c" />
+    <ClCompile Include="src\c64\reloc65.c" />
+    <ClCompile Include="src\c64\vsid-cmdline-options.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\c64\vsid-debugcart.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\c64\vsid-resources.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\c64\vsid-snapshot.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\c64\vsid-stubs.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\c64\vsid.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\c64\vsidcia1.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\c64\vsidcia2.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\c64\vsidcpu.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\c64\vsidmem.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\c64\vsidmeminit.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\c64\vsidmemsnapshot.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\c64\vsidpla.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\c64\vsidsound.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\cbmdos.c" />
+    <ClCompile Include="src\cbmimage.c" />
+    <ClCompile Include="src\charset.c" />
+    <ClCompile Include="src\clipboard.c" />
+    <ClCompile Include="src\cmdline.c" />
+    <ClCompile Include="src\color.c" />
+    <ClCompile Include="src\core\ata.c" />
+    <ClCompile Include="src\core\ciacore.c" />
+    <ClCompile Include="src\core\ciatimer.c" />
+    <ClCompile Include="src\core\cs8900.c" />
+    <ClCompile Include="src\core\flash040core.c" />
+    <ClCompile Include="src\core\flash800core.c" />
+    <ClCompile Include="src\core\fmopl.c" />
+    <ClCompile Include="src\core\i8255a.c" />
+    <ClCompile Include="src\core\m93c86.c" />
+    <ClCompile Include="src\core\mc6821core.c" />
+    <ClCompile Include="src\core\riotcore.c" />
+    <ClCompile Include="src\core\rtc\bq4830y.c" />
+    <ClCompile Include="src\core\rtc\ds1202_1302.c" />
+    <ClCompile Include="src\core\rtc\ds1216e.c" />
+    <ClCompile Include="src\core\rtc\ds12c887.c" />
+    <ClCompile Include="src\core\rtc\ds1307.c" />
+    <ClCompile Include="src\core\rtc\ds1602.c" />
+    <ClCompile Include="src\core\rtc\pcf8583.c" />
+    <ClCompile Include="src\core\rtc\rtc-58321a.c" />
+    <ClCompile Include="src\core\rtc\rtc-72421.c" />
+    <ClCompile Include="src\core\rtc\rtc.c" />
+    <ClCompile Include="src\core\scsi.c" />
+    <ClCompile Include="src\core\ser-eeprom.c" />
+    <ClCompile Include="src\core\spi-flash.c" />
+    <ClCompile Include="src\core\spi-sdcard.c" />
+    <ClCompile Include="src\core\t6721.c" />
+    <ClCompile Include="src\core\tpicore.c" />
+    <ClCompile Include="src\core\viacore.c" />
+    <ClCompile Include="src\crc32.c" />
+    <ClCompile Include="src\crt.c" />
+    <ClCompile Include="src\crtc\crtc-cmdline-options.c" />
+    <ClCompile Include="src\crtc\crtc-color.c" />
+    <ClCompile Include="src\crtc\crtc-draw.c" />
+    <ClCompile Include="src\crtc\crtc-mem.c" />
+    <ClCompile Include="src\crtc\crtc-resources.c" />
+    <ClCompile Include="src\crtc\crtc-snapshot.c" />
+    <ClCompile Include="src\crtc\crtc.c" />
+    <ClCompile Include="src\datasette\datasette-sound.c" />
+    <ClCompile Include="src\datasette\datasette.c" />
+    <ClCompile Include="src\debug.c" />
+    <ClCompile Include="src\diag\c64_diag_586220_harness.c" />
+    <ClCompile Include="src\digimaxcore.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\diskimage\diskimage.c" />
+    <ClCompile Include="src\diskimage\fsimage-check.c" />
+    <ClCompile Include="src\diskimage\fsimage-create.c" />
+    <ClCompile Include="src\diskimage\fsimage-dxx.c" />
+    <ClCompile Include="src\diskimage\fsimage-gcr.c" />
+    <ClCompile Include="src\diskimage\fsimage-p64.c" />
+    <ClCompile Include="src\diskimage\fsimage-probe.c" />
+    <ClCompile Include="src\diskimage\fsimage.c" />
+    <ClCompile Include="src\diskimage\realimage.c" />
+    <ClCompile Include="src\dma.c" />
+    <ClCompile Include="src\drive\drive-check.c" />
+    <ClCompile Include="src\drive\drive-cmdline-options.c" />
+    <ClCompile Include="src\drive\drive-resources.c" />
+    <ClCompile Include="src\drive\drive-snapshot.c" />
+    <ClCompile Include="src\drive\drive-sound.c" />
+    <ClCompile Include="src\drive\drive-writeprotect.c" />
+    <ClCompile Include="src\drive\drive.c" />
+    <ClCompile Include="src\drive\drivecpu.c" />
+    <ClCompile Include="src\drive\drivecpu65c02.c" />
+    <ClCompile Include="src\drive\driveimage.c" />
+    <ClCompile Include="src\drive\drivemem.c" />
+    <ClCompile Include="src\drive\driverom.c" />
+    <ClCompile Include="src\drive\drivesync.c" />
+    <ClCompile Include="src\drive\iecieee\iecieee.c" />
+    <ClCompile Include="src\drive\iecieee\via2d.c" />
+    <ClCompile Include="src\drive\iec\c64exp\c64exp-cmdline-options.c" />
+    <ClCompile Include="src\drive\iec\c64exp\c64exp-resources.c" />
+    <ClCompile Include="src\drive\iec\c64exp\dolphindos3.c" />
+    <ClCompile Include="src\drive\iec\c64exp\iec-c64exp.c" />
+    <ClCompile Include="src\drive\iec\c64exp\profdos.c" />
+    <ClCompile Include="src\drive\iec\c64exp\stardos-exp.c" />
+    <ClCompile Include="src\drive\iec\c64exp\supercard.c" />
+    <ClCompile Include="src\drive\iec\cia1571d.c" />
+    <ClCompile Include="src\drive\iec\cia1581d.c" />
+    <ClCompile Include="src\drive\iec\cmdhd.c" />
+    <ClCompile Include="src\drive\iec\fdd.c" />
+    <ClCompile Include="src\drive\iec\glue1571.c" />
+    <ClCompile Include="src\drive\iec\iec-cmdline-options.c" />
+    <ClCompile Include="src\drive\iec\iec-resources.c" />
+    <ClCompile Include="src\drive\iec\iec.c" />
+    <ClCompile Include="src\drive\iec\iecrom.c" />
+    <ClCompile Include="src\drive\iec\memiec.c" />
+    <ClCompile Include="src\drive\iec\pc8477.c" />
+    <ClCompile Include="src\drive\iec\via1d1541.c" />
+    <ClCompile Include="src\drive\iec\via4000.c" />
+    <ClCompile Include="src\drive\iec\wd1770.c" />
+    <ClCompile Include="src\drive\ieee\fdc.c" />
+    <ClCompile Include="src\drive\ieee\ieee-cmdline-options.c" />
+    <ClCompile Include="src\drive\ieee\ieee-resources.c" />
+    <ClCompile Include="src\drive\ieee\ieee.c" />
+    <ClCompile Include="src\drive\ieee\ieeerom.c" />
+    <ClCompile Include="src\drive\ieee\memieee.c" />
+    <ClCompile Include="src\drive\ieee\riot1d.c" />
+    <ClCompile Include="src\drive\ieee\riot2d.c" />
+    <ClCompile Include="src\drive\ieee\via1d2031.c" />
+    <ClCompile Include="src\drive\rotation.c" />
+    <ClCompile Include="src\drive\tcbm\glue1551.c" />
+    <ClCompile Include="src\drive\tcbm\mem1551.c" />
+    <ClCompile Include="src\drive\tcbm\tcbm-cmdline-options.c" />
+    <ClCompile Include="src\drive\tcbm\tcbm-resources.c" />
+    <ClCompile Include="src\drive\tcbm\tcbm.c" />
+    <ClCompile Include="src\drive\tcbm\tcbmrom.c" />
+    <ClCompile Include="src\drive\tcbm\tpid.c" />
+    <ClCompile Include="src\event.c" />
+    <ClCompile Include="src\fileio\cbmfile.c" />
+    <ClCompile Include="src\fileio\fileio.c" />
+    <ClCompile Include="src\fileio\p00.c" />
+    <ClCompile Include="src\findpath.c" />
+    <ClCompile Include="src\fixpoint.c" />
+    <ClCompile Include="src\fliplist.c" />
+    <ClCompile Include="src\fsdevice\fsdevice-close.c" />
+    <ClCompile Include="src\fsdevice\fsdevice-cmdline-options.c" />
+    <ClCompile Include="src\fsdevice\fsdevice-filename.c" />
+    <ClCompile Include="src\fsdevice\fsdevice-flush.c" />
+    <ClCompile Include="src\fsdevice\fsdevice-open.c" />
+    <ClCompile Include="src\fsdevice\fsdevice-read.c" />
+    <ClCompile Include="src\fsdevice\fsdevice-resources.c" />
+    <ClCompile Include="src\fsdevice\fsdevice-write.c" />
+    <ClCompile Include="src\fsdevice\fsdevice.c" />
+    <ClCompile Include="src\gcr.c" />
+    <ClCompile Include="src\gfxoutputdrv\artstudiodrv.c" />
+    <ClCompile Include="src\gfxoutputdrv\bmpdrv.c" />
+    <ClCompile Include="src\gfxoutputdrv\ffmpegexedrv.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\gfxoutputdrv\gfxoutput.c" />
+    <ClCompile Include="src\gfxoutputdrv\gifdrv.c" />
+    <ClCompile Include="src\gfxoutputdrv\godotdrv.c" />
+    <ClCompile Include="src\gfxoutputdrv\iffdrv.c" />
+    <ClCompile Include="src\gfxoutputdrv\koaladrv.c" />
+    <ClCompile Include="src\gfxoutputdrv\minipaintdrv.c" />
+    <ClCompile Include="src\gfxoutputdrv\nativedrv.c" />
+    <ClCompile Include="src\gfxoutputdrv\pcxdrv.c" />
+    <ClCompile Include="src\gfxoutputdrv\pngdrv.c" />
+    <ClCompile Include="src\gfxoutputdrv\ppmdrv.c" />
+    <ClCompile Include="src\gfxoutputdrv\zmbvdrv.c" />
+    <ClCompile Include="src\hvsc\base.c" />
+    <ClCompile Include="src\hvsc\bugs.c" />
+    <ClCompile Include="src\hvsc\main.c" />
+    <ClCompile Include="src\hvsc\psid.c" />
+    <ClCompile Include="src\hvsc\sldb.c" />
+    <ClCompile Include="src\hvsc\stil.c" />
+    <ClCompile Include="src\iecbus\iecbus.c" />
+    <ClCompile Include="src\imagecontents\diskcontents-block.c" />
+    <ClCompile Include="src\imagecontents\diskcontents-iec.c" />
+    <ClCompile Include="src\imagecontents\diskcontents.c" />
+    <ClCompile Include="src\imagecontents\imagecontents.c" />
+    <ClCompile Include="src\imagecontents\tapecontents.c" />
+    <ClCompile Include="src\info.c" />
+    <ClCompile Include="src\init.c" />
+    <ClCompile Include="src\initcmdline.c" />
+    <ClCompile Include="src\interrupt.c" />
+    <ClCompile Include="src\joyport\bbrtc.c" />
+    <ClCompile Include="src\joyport\cardkey.c" />
+    <ClCompile Include="src\joyport\coplin_keypad.c" />
+    <ClCompile Include="src\joyport\cx21.c" />
+    <ClCompile Include="src\joyport\cx85.c" />
+    <ClCompile Include="src\joyport\inception.c" />
+    <ClCompile Include="src\joyport\joyport.c" />
+    <ClCompile Include="src\joyport\joyport_diag_586220_harness.c" />
+    <ClCompile Include="src\joyport\joyport_io_sim.c" />
+    <ClCompile Include="src\joyport\joystick.c" />
+    <ClCompile Include="src\joyport\lightpen.c" />
+    <ClCompile Include="src\joyport\mouse.c" />
+    <ClCompile Include="src\joyport\mouse_1351.c" />
+    <ClCompile Include="src\joyport\mouse_neos.c" />
+    <ClCompile Include="src\joyport\mouse_paddle.c" />
+    <ClCompile Include="src\joyport\mouse_quadrature.c" />
+    <ClCompile Include="src\joyport\multijoy.c" />
+    <ClCompile Include="src\joyport\ninja_snespad.c" />
+    <ClCompile Include="src\joyport\paperclip2.c" />
+    <ClCompile Include="src\joyport\paperclip64.c" />
+    <ClCompile Include="src\joyport\paperclip64e.c" />
+    <ClCompile Include="src\joyport\paperclip64sc.c" />
+    <ClCompile Include="src\joyport\powerpad.c" />
+    <ClCompile Include="src\joyport\protopad.c" />
+    <ClCompile Include="src\joyport\rushware_keypad.c" />
+    <ClCompile Include="src\joyport\sampler2bit.c" />
+    <ClCompile Include="src\joyport\sampler4bit.c" />
+    <ClCompile Include="src\joyport\script64_dongle.c" />
+    <ClCompile Include="src\joyport\spaceballs.c" />
+    <ClCompile Include="src\joyport\trapthem_snespad.c" />
+    <ClCompile Include="src\joyport\vizawrite64_dongle.c" />
+    <ClCompile Include="src\joyport\waasoft_dongle.c" />
+    <ClCompile Include="src\kbdbuf.c" />
+    <ClCompile Include="src\keyboard.c" />
+    <ClCompile Include="src\keymap.c" />
+    <ClCompile Include="src\lib.c" />
+    <ClCompile Include="src\lib\libzmbv\miniz.c" />
+    <ClCompile Include="src\lib\libzmbv\zmbv.c" />
+    <ClCompile Include="src\lib\libzmbv\zmbv_avi.c" />
+    <ClCompile Include="src\lib\md5\md5.c" />
+    <ClCompile Include="src\lib\p64\p64.c" />
+    <ClCompile Include="src\log.c" />
+    <ClCompile Include="src\m3u.c" />
+    <ClCompile Include="src\machine-bus.c" />
+    <ClCompile Include="src\machine.c" />
+    <ClCompile Include="src\main.c" />
+    <ClCompile Include="src\main65816cpu.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\mainc64cpu.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\maincpu.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\mainlock.c" />
+    <ClCompile Include="src\midi.c" />
+    <ClCompile Include="src\monitor\asm6502.c" />
+    <ClCompile Include="src\monitor\asm6502dtv.c" />
+    <ClCompile Include="src\monitor\asm65816.c" />
+    <ClCompile Include="src\monitor\asm6809.c" />
+    <ClCompile Include="src\monitor\asmR65C02.c" />
+    <ClCompile Include="src\monitor\asmz80.c" />
+    <ClCompile Include="src\monitor\monitor.c" />
+    <ClCompile Include="src\monitor\monitor_binary.c" />
+    <ClCompile Include="src\monitor\monitor_network.c" />
+    <ClCompile Include="src\monitor\mon_assemble6502.c" />
+    <ClCompile Include="src\monitor\mon_assemble65816.c" />
+    <ClCompile Include="src\monitor\mon_assemble6809.c" />
+    <ClCompile Include="src\monitor\mon_assembleR65C02.c" />
+    <ClCompile Include="src\monitor\mon_assemblez80.c" />
+    <ClCompile Include="src\monitor\mon_breakpoint.c" />
+    <ClCompile Include="src\monitor\mon_command.c" />
+    <ClCompile Include="src\monitor\mon_disassemble.c" />
+    <ClCompile Include="src\monitor\mon_drive.c" />
+    <ClCompile Include="src\monitor\mon_file.c" />
+    <ClCompile Include="src\monitor\mon_lex.c" />
+    <ClCompile Include="src\monitor\mon_memmap.c" />
+    <ClCompile Include="src\monitor\mon_memory.c" />
+    <ClCompile Include="src\monitor\mon_parse.c" />
+    <ClCompile Include="src\monitor\mon_profile.c" />
+    <ClCompile Include="src\monitor\mon_register.c" />
+    <ClCompile Include="src\monitor\mon_register6502.c" />
+    <ClCompile Include="src\monitor\mon_register6502dtv.c" />
+    <ClCompile Include="src\monitor\mon_register65816.c" />
+    <ClCompile Include="src\monitor\mon_register6809.c" />
+    <ClCompile Include="src\monitor\mon_registerR65C02.c" />
+    <ClCompile Include="src\monitor\mon_registerz80.c" />
+    <ClCompile Include="src\monitor\mon_util.c" />
+    <ClCompile Include="src\network.c" />
+    <ClCompile Include="src\opencbmlib.c" />
+    <ClCompile Include="src\palette.c" />
+    <ClCompile Include="src\parallel\parallel-trap.c" />
+    <ClCompile Include="src\parallel\parallel.c" />
+    <ClCompile Include="src\pet\6809.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\pet\debugcart.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\pet\pet-cmdline-options.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\pet\pet-resources.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\pet\pet-sidcart.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\pet\pet-snapshot.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\pet\pet-stubs.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\pet\pet.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\pet\petacia1.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\pet\petbus.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\pet\petcolour.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\pet\petcpu.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\pet\petdatasette.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\pet\petdrive.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\pet\petdww.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\pet\pethre.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\pet\petiec.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\pet\petio.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\pet\petmem.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\pet\petmemsnapshot.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\pet\petmodel.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\pet\petpia1.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\pet\petpia2.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\pet\petprinter.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\pet\petreu.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\pet\petrom.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\pet\petromset.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\pet\petsound.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\pet\petvia.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\pet\petvideo.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\piacore.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\printerdrv\driver-select.c" />
+    <ClCompile Include="src\printerdrv\drv-1520.c" />
+    <ClCompile Include="src\printerdrv\drv-ascii.c" />
+    <ClCompile Include="src\printerdrv\drv-mps803.c" />
+    <ClCompile Include="src\printerdrv\drv-nl10.c" />
+    <ClCompile Include="src\printerdrv\drv-raw.c" />
+    <ClCompile Include="src\printerdrv\interface-serial.c" />
+    <ClCompile Include="src\printerdrv\interface-userport.c" />
+    <ClCompile Include="src\printerdrv\output-graphics.c" />
+    <ClCompile Include="src\printerdrv\output-select.c" />
+    <ClCompile Include="src\printerdrv\output-text.c" />
+    <ClCompile Include="src\printerdrv\printer-serial.c" />
+    <ClCompile Include="src\printerdrv\printer-userport.c" />
+    <ClCompile Include="src\printerdrv\printer.c" />
+    <ClCompile Include="src\profiler.c" />
+    <ClCompile Include="src\ram.c" />
+    <ClCompile Include="src\raster\raster-cache.c" />
+    <ClCompile Include="src\raster\raster-canvas.c" />
+    <ClCompile Include="src\raster\raster-changes.c" />
+    <ClCompile Include="src\raster\raster-cmdline-options.c" />
+    <ClCompile Include="src\raster\raster-line-changes-sprite.c" />
+    <ClCompile Include="src\raster\raster-line-changes.c" />
+    <ClCompile Include="src\raster\raster-line.c" />
+    <ClCompile Include="src\raster\raster-modes.c" />
+    <ClCompile Include="src\raster\raster-resources.c" />
+    <ClCompile Include="src\raster\raster-snapshot.c" />
+    <ClCompile Include="src\raster\raster-sprite-cache.c" />
+    <ClCompile Include="src\raster\raster-sprite-status.c" />
+    <ClCompile Include="src\raster\raster-sprite.c" />
+    <ClCompile Include="src\raster\raster.c" />
+    <ClCompile Include="src\rawfile.c" />
+    <ClCompile Include="src\rawnet.c" />
+    <ClCompile Include="src\resid\dac.cc" />
+    <ClCompile Include="src\resid\envelope.cc" />
+    <ClCompile Include="src\resid\extfilt.cc" />
+    <ClCompile Include="src\resid\filter.cc" />
+    <ClCompile Include="src\resid\filter8580new.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\resid\pot.cc" />
+    <ClCompile Include="src\resid\sid.cc" />
+    <ClCompile Include="src\resid\version.cc" />
+    <ClCompile Include="src\resid\voice.cc" />
+    <ClCompile Include="src\resid\wave.cc" />
+    <ClCompile Include="src\resources.c" />
+    <ClCompile Include="src\romset.c" />
+    <ClCompile Include="src\rs232drv\rs232.c" />
+    <ClCompile Include="src\rs232drv\rs232drv.c" />
+    <ClCompile Include="src\rs232drv\rs232net.c" />
+    <ClCompile Include="src\rs232drv\rsuser.c" />
+    <ClCompile Include="src\samplerdrv\file_drv.c" />
+    <ClCompile Include="src\samplerdrv\portaudio_drv.c" />
+    <ClCompile Include="src\samplerdrv\sampler.c" />
+    <ClCompile Include="src\screenshot.c" />
+    <ClCompile Include="src\serial\fsdrive.c" />
+    <ClCompile Include="src\serial\iec-ieee488-shared.c" />
+    <ClCompile Include="src\serial\realdevice.c" />
+    <ClCompile Include="src\serial\serial-device.c" />
+    <ClCompile Include="src\serial\serial-iec-bus.c" />
+    <ClCompile Include="src\serial\serial-iec-device.c" />
+    <ClCompile Include="src\serial\serial-iec-lib.c" />
+    <ClCompile Include="src\serial\serial-iec.c" />
+    <ClCompile Include="src\serial\serial-realdevice.c" />
+    <ClCompile Include="src\serial\serial-trap.c" />
+    <ClCompile Include="src\serial\serial.c" />
+    <ClCompile Include="src\sha1.c" />
+    <ClCompile Include="src\sid\catweaselmkiii.c" />
+    <ClCompile Include="src\sid\fastsid.c" />
+    <ClCompile Include="src\sid\hardsid.c" />
+    <ClCompile Include="src\sid\parsid.c" />
+    <ClCompile Include="src\sid\resid-dtv.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\sid\resid.cc" />
+    <ClCompile Include="src\sid\sid-cmdline-options.c" />
+    <ClCompile Include="src\sid\sid-resources.c" />
+    <ClCompile Include="src\sid\sid-snapshot.c" />
+    <ClCompile Include="src\sid\sid.c" />
+    <ClCompile Include="src\sid\usbsid.c" />
+    <ClCompile Include="src\snapshot.c" />
+    <ClCompile Include="src\socket.c" />
+    <ClCompile Include="src\sound.c" />
+    <ClCompile Include="src\sysfile.c" />
+    <ClCompile Include="src\tapeport\cp-clockf83.c" />
+    <ClCompile Include="src\tapeport\dtl-basic-dongle.c" />
+    <ClCompile Include="src\tapeport\sense-dongle.c" />
+    <ClCompile Include="src\tapeport\tapecart.c" />
+    <ClCompile Include="src\tapeport\tapeport.c" />
+    <ClCompile Include="src\tapeport\tape_diag_586220_harness.c" />
+    <ClCompile Include="src\tapeport\wordcraft-dongle.c" />
+    <ClCompile Include="src\tape\t64.c" />
+    <ClCompile Include="src\tape\tap.c" />
+    <ClCompile Include="src\tape\tape-internal.c" />
+    <ClCompile Include="src\tape\tape-snapshot.c" />
+    <ClCompile Include="src\tape\tape.c" />
+    <ClCompile Include="src\tape\tapeimage.c" />
+    <ClCompile Include="src\traps.c" />
+    <ClCompile Include="src\userport\userport.c" />
+    <ClCompile Include="src\userport\userport_4bit_sampler.c" />
+    <ClCompile Include="src\userport\userport_8bss.c" />
+    <ClCompile Include="src\userport\userport_dac.c" />
+    <ClCompile Include="src\userport\userport_diag_586220_harness.c" />
+    <ClCompile Include="src\userport\userport_diag_pin.c" />
+    <ClCompile Include="src\userport\userport_digimax.c" />
+    <ClCompile Include="src\userport\userport_funmp3.c" />
+    <ClCompile Include="src\userport\userport_hks_joystick.c" />
+    <ClCompile Include="src\userport\userport_hummer_joystick.c" />
+    <ClCompile Include="src\userport\userport_io_sim.c" />
+    <ClCompile Include="src\userport\userport_joystick.c" />
+    <ClCompile Include="src\userport\userport_petscii_snespad.c" />
+    <ClCompile Include="src\userport\userport_ps2mouse.c" />
+    <ClCompile Include="src\userport\userport_rtc_58321a.c" />
+    <ClCompile Include="src\userport\userport_rtc_ds1307.c" />
+    <ClCompile Include="src\userport\userport_spt_joystick.c" />
+    <ClCompile Include="src\userport\userport_superpad64.c" />
+    <ClCompile Include="src\userport\userport_synergy_joystick.c" />
+    <ClCompile Include="src\userport\userport_wic64.c" />
+    <ClCompile Include="src\userport\userport_woj_joystick.c" />
+    <ClCompile Include="src\util.c" />
+    <ClCompile Include="src\vdrive\vdrive-bam.c" />
+    <ClCompile Include="src\vdrive\vdrive-command.c" />
+    <ClCompile Include="src\vdrive\vdrive-dir.c" />
+    <ClCompile Include="src\vdrive\vdrive-iec.c" />
+    <ClCompile Include="src\vdrive\vdrive-internal.c" />
+    <ClCompile Include="src\vdrive\vdrive-rel.c" />
+    <ClCompile Include="src\vdrive\vdrive-snapshot.c" />
+    <ClCompile Include="src\vdrive\vdrive.c" />
+    <ClCompile Include="src\vicefeatures.c" />
+    <ClCompile Include="src\viciisc\vicii-chip-model.c" />
+    <ClCompile Include="src\viciisc\vicii-cmdline-options.c" />
+    <ClCompile Include="src\viciisc\vicii-color.c" />
+    <ClCompile Include="src\viciisc\vicii-cycle.c" />
+    <ClCompile Include="src\viciisc\vicii-draw-cycle.c" />
+    <ClCompile Include="src\viciisc\vicii-draw.c" />
+    <ClCompile Include="src\viciisc\vicii-fetch.c" />
+    <ClCompile Include="src\viciisc\vicii-irq.c" />
+    <ClCompile Include="src\viciisc\vicii-lightpen.c" />
+    <ClCompile Include="src\viciisc\vicii-mem.c" />
+    <ClCompile Include="src\viciisc\vicii-phi1.c" />
+    <ClCompile Include="src\viciisc\vicii-resources.c" />
+    <ClCompile Include="src\viciisc\vicii-snapshot.c" />
+    <ClCompile Include="src\viciisc\vicii-timing.c" />
+    <ClCompile Include="src\viciisc\vicii.c" />
+    <ClCompile Include="src\video\render-common.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\video\render1x1.c" />
+    <ClCompile Include="src\video\render1x1ntsc.c" />
+    <ClCompile Include="src\video\render1x1pal.c" />
+    <ClCompile Include="src\video\render1x1rgbi.c" />
+    <ClCompile Include="src\video\render1x2.c" />
+    <ClCompile Include="src\video\render1x2rgbi.c" />
+    <ClCompile Include="src\video\render2x2.c" />
+    <ClCompile Include="src\video\render2x2ntsc.c" />
+    <ClCompile Include="src\video\render2x2pal.c" />
+    <ClCompile Include="src\video\render2x2palu.c" />
+    <ClCompile Include="src\video\render2x2rgbi.c" />
+    <ClCompile Include="src\video\render2x4.c" />
+    <ClCompile Include="src\video\render2x4rgbi.c" />
+    <ClCompile Include="src\video\renderscale2x.c" />
+    <ClCompile Include="src\video\video-canvas.c" />
+    <ClCompile Include="src\video\video-cmdline-options.c" />
+    <ClCompile Include="src\video\video-color.c" />
+    <ClCompile Include="src\video\video-render-crtmono.c" />
+    <ClCompile Include="src\video\video-render-palntsc.c" />
+    <ClCompile Include="src\video\video-render-rgbi.c" />
+    <ClCompile Include="src\video\video-render.c" />
+    <ClCompile Include="src\video\video-resources.c" />
+    <ClCompile Include="src\video\video-sound.c" />
+    <ClCompile Include="src\video\video-viewport.c" />
+    <ClCompile Include="src\vsync.c" />
+    <ClCompile Include="src\z80core.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\zfile.c" />
+    <ClCompile Include="src\zipcode.c" />
+    <ClCompile Include="zlib\adler32.c" />
+    <ClCompile Include="zlib\compress.c" />
+    <ClCompile Include="zlib\crc32.c" />
+    <ClCompile Include="zlib\deflate.c" />
+    <ClCompile Include="zlib\gzclose.c" />
+    <ClCompile Include="zlib\gzlib.c" />
+    <ClCompile Include="zlib\gzread.c" />
+    <ClCompile Include="zlib\gzwrite.c" />
+    <ClCompile Include="zlib\infback.c" />
+    <ClCompile Include="zlib\inffast.c" />
+    <ClCompile Include="zlib\inflate.c" />
+    <ClCompile Include="zlib\inftrees.c" />
+    <ClCompile Include="zlib\trees.c" />
+    <ClCompile Include="zlib\uncompr.c" />
+    <ClCompile Include="zlib\zutil.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\arch\shared\macOS-launcher.sh" />
+    <None Include="src\arch\shared\macOS-util.m" />
+    <None Include="src\c64\cart\Makefile.am" />
+    <None Include="src\c64\cart\Makefile.in" />
+    <None Include="src\c64\Makefile.am" />
+    <None Include="src\c64\Makefile.in" />
+    <None Include="src\c64\psiddrv.a65" />
+    <None Include="src\core\rtc\Makefile.am" />
+    <None Include="src\core\rtc\Makefile.in" />
+    <None Include="src\monitor\mon_lex.l" />
+    <None Include="src\monitor\mon_parse.y" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{c26e031d-af0b-47f7-83c0-f57f0fd71a61}</ProjectGuid>
+    <RootNamespace>Vice</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>config;src;src\rs232drv;src\arch\shared;src\arch\headless;src\joyport;src\drive;src\core\rtc;src\lib\p64;src\vdrive;src\datasette;src\fsdevice;src\imagecontents;src\monitor;src\tapeport;src\diskimage;src\c64;src\printerdrv;src\arch\shared\hotkeys;src\c64\cart;zlib;src\hvsc;src\sid;src\userport;src\pet;src\core;src\samplerdrv;src\video;src\viciisc;src\raster;src\drive\iec\c64exp;src\tape;src\drive\iec;src\drive\tcbm;src\lib\md5;src\diag;src\crtc;src\arch\shared\sounddrv;src\lib\libzmbv</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>config;src;src\rs232drv;src\arch\shared;src\arch\headless;src\joyport;src\drive;src\core\rtc;src\lib\p64;src\vdrive;src\datasette;src\fsdevice;src\imagecontents;src\monitor;src\tapeport;src\diskimage;src\c64;src\printerdrv;src\arch\shared\hotkeys;src\c64\cart;zlib;src\hvsc;src\sid;src\userport;src\pet;src\core;src\samplerdrv;src\video;src\viciisc;src\raster;src\drive\iec\c64exp;src\tape;src\drive\iec;src\drive\tcbm;src\lib\md5;src\diag;src\crtc;src\arch\shared\sounddrv;src\lib\libzmbv</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile />
+      <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
+      <DisableSpecificWarnings>4996;4102;4101</DisableSpecificWarnings>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <OmitFramePointers>true</OmitFramePointers>
+      <AssemblerListingLocation>$(IntDir)%(RelativeDir)</AssemblerListingLocation>
+      <ModuleOutputFile>$(IntDir)%(RelativeDir)</ModuleOutputFile>
+      <ModuleDependenciesFile>$(IntDir)%(RelativeDir)</ModuleDependenciesFile>
+      <XMLDocumentationFileName>$(IntDir)%(RelativeDir)</XMLDocumentationFileName>
+      <SourceDependenciesFile>$(IntDir)%(RelativeDir)</SourceDependenciesFile>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <Lib />
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile />
+      <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
+      <DisableSpecificWarnings>4996;4102;4101</DisableSpecificWarnings>
+      <AssemblerListingLocation>$(IntDir)%(RelativeDir)</AssemblerListingLocation>
+      <ModuleOutputFile>$(IntDir)%(RelativeDir)</ModuleOutputFile>
+      <ModuleDependenciesFile>$(IntDir)%(RelativeDir)</ModuleDependenciesFile>
+      <XMLDocumentationFileName>$(IntDir)%(RelativeDir)</XMLDocumentationFileName>
+      <SourceDependenciesFile>$(IntDir)%(RelativeDir)</SourceDependenciesFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <Lib>
+      <Verbose>true</Verbose>
+    </Lib>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

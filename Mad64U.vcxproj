@@ -71,13 +71,13 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>include;source;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <IncludePath>include;source;$(VC_IncludePath);$(WindowsSDK_IncludePath);Vice;Vice\config</IncludePath>
     <LibraryPath>lib\x64;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
     <OutDir>Intermediate\$(ShortProjectName)\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>Intermediate\$(ShortProjectName)\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>include;source;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <IncludePath>include;source;$(VC_IncludePath);$(WindowsSDK_IncludePath);Vice</IncludePath>
     <LibraryPath>lib\x64;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
     <OutDir>Intermediate\$(ShortProjectName)\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>Intermediate\$(ShortProjectName)\$(Platform)\$(Configuration)\</IntDir>
@@ -118,14 +118,15 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <UseStandardPreprocessor>true</UseStandardPreprocessor>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL3_net.lib;SDL3.lib;SDL3_ttf.lib;SDL3_image.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL3_net.lib;SDL3.lib;SDL3_ttf.lib;SDL3_image.lib;winmm.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(TargetPath) $(ProjectDir)\release\Mad64U_Debug.exe</Command>
+      <Command>copy $(TargetPath) $(ProjectDir)\release\Mad64U.exe</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -143,7 +144,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL3_net.lib;SDL3.lib;SDL3_ttf.lib;SDL3_image.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL3_net.lib;SDL3.lib;SDL3_ttf.lib;SDL3_image.lib;winmm.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy $(TargetPath) $(ProjectDir)\release\Mad64U.exe</Command>
@@ -151,6 +152,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="source\Application.cpp" />
+    <ClCompile Include="source\EmuScreenWindow.cpp" />
     <ClCompile Include="source\FontRenderer.cpp" />
     <ClCompile Include="source\IconRenderer.cpp" />
     <ClCompile Include="source\JSON.cpp" />
@@ -166,6 +168,7 @@
     <ClCompile Include="source\SourceFileManager.cpp" />
     <ClCompile Include="source\SourceFileWindow.cpp" />
     <ClCompile Include="source\UndoBufferWindow.cpp" />
+    <ClCompile Include="source\ViceBridge.cpp" />
     <ClCompile Include="source\WindowBase.cpp" />
     <ClCompile Include="source\WindowLayout.cpp" />
     <ClCompile Include="source\WindowManager.cpp" />
@@ -265,6 +268,7 @@
     <ClInclude Include="include\SDL3_ttf\SDL_ttf.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="source\Application.h" />
+    <ClInclude Include="source\EmuScreenWindow.h" />
     <ClInclude Include="source\FontRenderer.h" />
     <ClInclude Include="source\common.h" />
     <ClInclude Include="source\IconRenderer.h" />
@@ -281,6 +285,7 @@
     <ClInclude Include="source\SourceFileManager.h" />
     <ClInclude Include="source\SourceFileWindow.h" />
     <ClInclude Include="source\UndoBufferWindow.h" />
+    <ClInclude Include="source\ViceBridge.h" />
     <ClInclude Include="source\WindowLayout.h" />
     <ClInclude Include="source\WindowManager.h" />
     <ClInclude Include="source\WindowMenuList.h" />
@@ -290,6 +295,11 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Mad64.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="Vice\Vice.vcxproj">
+      <Project>{c26e031d-af0b-47f7-83c0-f57f0fd71a61}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

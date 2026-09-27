@@ -1,0 +1,4872 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="src\arch">
+      <UniqueIdentifier>{0ce6d6e1-f563-4e2f-b245-d1eee63f5885}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\c64">
+      <UniqueIdentifier>{dc7cc4f9-c938-467d-9db6-862ecc0ab484}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\rs232drv">
+      <UniqueIdentifier>{8566f6dc-746a-4252-8dba-3369108a64c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\c64\cart">
+      <UniqueIdentifier>{00f58242-4cd7-4d95-9b0b-098ff1189a26}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\arch\headless">
+      <UniqueIdentifier>{1c92d86a-a971-42b7-b97a-3c268e4aebd4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\arch\shared">
+      <UniqueIdentifier>{cb3e1d7a-6002-4036-8608-8b44c6b0d521}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\arch\shared\hotkeys">
+      <UniqueIdentifier>{6ee36c61-d921-485c-ae0f-ab4febc1aac8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\arch\shared\hwsiddrv">
+      <UniqueIdentifier>{29af922f-6288-487e-97a3-a9593d180d1d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\arch\shared\mididrv">
+      <UniqueIdentifier>{ea611f1c-7768-4fe2-81b9-ce99a85bcb9f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\arch\shared\socketdrv">
+      <UniqueIdentifier>{f1c4b1c7-32b5-442c-b83d-a5859693df4c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\arch\shared\sounddrv">
+      <UniqueIdentifier>{54f66852-dd55-43ed-b267-5d7b8b598f5b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="config">
+      <UniqueIdentifier>{377a48a7-ea18-4d27-9cad-64ca3e7ac00e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\monitor">
+      <UniqueIdentifier>{9e57a98e-21dc-4311-8b2c-31103281ca6c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\joyport">
+      <UniqueIdentifier>{1dee5b98-c88d-499b-82bb-19c0740eb663}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\drive">
+      <UniqueIdentifier>{92829698-70cd-4c85-9807-7e24ca8caf57}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\drive\iec">
+      <UniqueIdentifier>{5922adc0-2590-4792-a45c-3b14e0917020}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\drive\iec128dcr">
+      <UniqueIdentifier>{90efb1cb-d224-47ea-b1c1-bd774c534a77}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\drive\iecieee">
+      <UniqueIdentifier>{71bcc4c3-7e14-4269-ad01-e2e51ccde361}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\drive\ieee">
+      <UniqueIdentifier>{e4a59c53-fe43-4b90-bb48-9da7a1c3c655}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\drive\tcbm">
+      <UniqueIdentifier>{fafa4ab4-d071-4325-adfa-d25c8bb92a0d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\drive\iec\c64exp">
+      <UniqueIdentifier>{6a397b43-b172-4798-9204-c95e55c5584d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\core">
+      <UniqueIdentifier>{79657561-f568-46bf-bb11-5192f5cfef0f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\core\rtc">
+      <UniqueIdentifier>{6908f230-6ebf-4d4b-b9dd-511e90b35e31}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\lib">
+      <UniqueIdentifier>{a7c42553-1625-451c-b46f-42ee6a49435c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\lib\p64">
+      <UniqueIdentifier>{61c8b3db-6d77-4285-903b-d7fadf059948}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\vdrive">
+      <UniqueIdentifier>{d8b5b3f4-f6b6-45c2-bc1f-9867daae7cdf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\datasette">
+      <UniqueIdentifier>{f748770e-7823-4789-8a0a-91fea59b4188}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\fsdevice">
+      <UniqueIdentifier>{ac69333f-3617-4da2-aa82-be8e79a02128}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\imagecontents">
+      <UniqueIdentifier>{93c173cd-c328-4c18-9baf-5797f99a0114}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\tapeport">
+      <UniqueIdentifier>{067839e2-c661-4eb4-b4ed-05799547e3fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\diskimage">
+      <UniqueIdentifier>{0e00e2b2-13d5-439b-88bb-337f74d76d50}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\fileio">
+      <UniqueIdentifier>{0bf82d4c-ed63-4c89-ba83-cdf660e59d39}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\printerdrv">
+      <UniqueIdentifier>{96632ef6-d56a-41f5-a905-ee6d95c34ea5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="zlib">
+      <UniqueIdentifier>{45d96e45-e4f2-408f-894d-c8a1979764f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\hvsc">
+      <UniqueIdentifier>{7bc9ca82-3086-4441-a797-76a194079ef4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\sid">
+      <UniqueIdentifier>{e37b74e9-4789-4ad9-9c6b-3fdb3b8554f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\userport">
+      <UniqueIdentifier>{af61bfc5-fce9-457c-b9dc-bd0edcdba6db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\pet">
+      <UniqueIdentifier>{9ff1b9c9-5d81-41f1-b055-18501c7267b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\samplerdrv">
+      <UniqueIdentifier>{97eebfcf-af99-42a7-85c3-81fd9cc31e8e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\video">
+      <UniqueIdentifier>{bac29db9-6b5d-47bf-835f-b467a5193d53}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\viciisc">
+      <UniqueIdentifier>{db8336a5-c26a-4f87-a9c9-00350ecff0aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\raster">
+      <UniqueIdentifier>{f02c218c-c8a9-4802-a91e-d30bd175067e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\tape">
+      <UniqueIdentifier>{e705a534-94e0-4ab0-bd49-6e6b5c49c817}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\lib\md5">
+      <UniqueIdentifier>{22583007-d0f6-437e-8b6d-759ec3c47122}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\diag">
+      <UniqueIdentifier>{c394f7ff-6a4e-4ccb-bf8b-0d772ffc14d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\crtc">
+      <UniqueIdentifier>{2e819103-7786-40a7-969a-4b22b0b144ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\resid">
+      <UniqueIdentifier>{7609e4af-e798-444f-b395-2950f02ee3d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\gfxoutputdrv">
+      <UniqueIdentifier>{063011a9-bddf-49f4-b337-854230b69c9c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\lib\libzmbv">
+      <UniqueIdentifier>{f9bcd615-abcd-49b0-9adb-70aa34b148d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\serial">
+      <UniqueIdentifier>{4d5e8e40-e2d2-4d0e-8da1-1ad977254b08}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\iecbus">
+      <UniqueIdentifier>{ba427928-f250-4629-b941-de8c93c0d6ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\parallel">
+      <UniqueIdentifier>{30595d0a-f865-4165-9b18-89db77877fc8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\6510core.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\acia.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\alarm.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\attach.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\autostart.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\autostart-prg.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64ui.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c128ui.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cartio.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cartridge.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\catweaselmkiii.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cbm2ui.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cbmdos.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cbmimage.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\charset.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cia.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\clipboard.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cmdline.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\color.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\console.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\crc32.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\crt.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\debug.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\diskconstants.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\diskimage.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\dma.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\dynlib.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\export.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fileio.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\findpath.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fixpoint.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\flash040.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\flash800.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fliplist.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fsdevice.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fullscreen.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gcr.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gfxoutput.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\h6809regs.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\hardsid.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\iecbus.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\iecdrive.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\imagecontents.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\info.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\init.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\initcmdline.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\interrupt.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\kbdbuf.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\keyboard.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\keymap.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\lib.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\log.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\m3u.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\machine.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\machine-bus.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\machine-drive.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\machine-printer.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\machine-video.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\main.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\main65816cpu.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\mainc64cpu.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\maincpu.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\mainlock.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\mem.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\midi.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\mididrv.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\monitor.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\mos6510.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\mos6510dtv.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\network.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\opencbmlib.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\palette.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\parallel.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\parsid.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\petui.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\piacore.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\plus4ui.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\profiler.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\profiler_data.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\r65c02.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ram.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\rawfile.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\rawnet.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\resources.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\riot.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\romset.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\scpu64ui.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\screenshot.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\serial.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sha1.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sidcart.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\signals.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\snapshot.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\snespad.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sysfile.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\tap.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\tape.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\tpi.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\traps.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\types.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\uiapi.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\uicmdline.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\uicolor.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\uimon.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\usbsid.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\util.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\version.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\via.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vic20ui.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vice.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vicedate.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vice-event.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vicefeatures.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vicesocket.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vicii.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vicii-colorram.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\video.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\viewport.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vsidui.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vsync.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vsyncapi.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wdc65816.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\z80regs.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\zfile.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\zipcode.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\actionreplay.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\actionreplay2.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\actionreplay3.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\actionreplay4.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\atomicpower.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\bisplus.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\blackbox3.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\blackbox4.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\blackbox8.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\blackbox9.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\bmpdataturbo.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\c64acia.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\c64cartmem.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\c64cartsystem.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\c64-generic.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\c64-midi.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\c64tpi.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\capture.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\clockport.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\clockport-mp3at64.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\clockport-rrnet.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\comal80.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\cpmcart.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\cs8900io.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\daa.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\debugcart.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\delaep7x8.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\delaep64.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\delaep256.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\diashowmaker.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\digimax.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\dinamic.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\dqbb.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\drean.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\ds12c887rtc.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\easycalc.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\easyflash.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\epyxfastload.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\ethernetcart.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\exos.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\expert.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\final.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\final3.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\finalplus.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\formel64.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\freezeframe.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\freezeframe2.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\freezemachine.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\funplay.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\gamekiller.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\georam.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\gmod2.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\gmod3.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\gs.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\hyperbasic.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\ide64.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\ieeeflash64.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\isepic.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\kcs.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\kingsoft.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\ltkernal.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\mach5.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\magicdesk.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\magicdesk16.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\magicformel.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\magicvoice.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\maxbasic.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\megabyter.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\mikroass.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\mmc64.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\mmcreplay.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\multimax.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\ocean.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\pagefox.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\partner64.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\profidos.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\prophet64.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\ramcart.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\ramlink.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\retroreplay.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\reu.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\rexep256.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\rexramfloppy.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\rexutility.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\rgcd.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\ross.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\rrnetmk3.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\sdbox.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\sfx_soundexpander.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\sfx_soundsampler.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\shortbus.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\shortbus_digimax.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\shortbus_etfe.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\silverrock128.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\simonsbasic.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\snapshot64.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\stardos.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\stb.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\superexplode5.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\supergames.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\supersnapshot.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\supersnapshot4.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\turtlegraphics.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\uc1.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\uc2.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\warpspeed.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\westermann.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\zaxxon.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\cart\zippcode48.h">
+      <Filter>src\c64\cart</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\c64.h">
+      <Filter>src\c64</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\c64_256k.h">
+      <Filter>src\c64</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\c64cart.h">
+      <Filter>src\c64</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\c64cia.h">
+      <Filter>src\c64</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\c64-cmdline-options.h">
+      <Filter>src\c64</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\c64fastiec.h">
+      <Filter>src\c64</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\c64gluelogic.h">
+      <Filter>src\c64</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\c64iec.h">
+      <Filter>src\c64</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\c64keyboard.h">
+      <Filter>src\c64</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\c64mem.h">
+      <Filter>src\c64</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\c64meminit.h">
+      <Filter>src\c64</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\c64memlimit.h">
+      <Filter>src\c64</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\c64-memory-hacks.h">
+      <Filter>src\c64</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\c64memrom.h">
+      <Filter>src\c64</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\c64memsnapshot.h">
+      <Filter>src\c64</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\c64model.h">
+      <Filter>src\c64</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\c64parallel.h">
+      <Filter>src\c64</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\c64pla.h">
+      <Filter>src\c64</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\c64-resources.h">
+      <Filter>src\c64</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\c64rom.h">
+      <Filter>src\c64</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\c64rsuser.h">
+      <Filter>src\c64</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\c64-snapshot.h">
+      <Filter>src\c64</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\musdrv.h">
+      <Filter>src\c64</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\plus60k.h">
+      <Filter>src\c64</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\plus256k.h">
+      <Filter>src\c64</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\psid.h">
+      <Filter>src\c64</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\psiddrv.h">
+      <Filter>src\c64</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\vsid-cmdline-options.h">
+      <Filter>src\c64</Filter>
+    </ClInclude>
+    <ClInclude Include="src\c64\vsid-debugcart.h">
+      <Filter>src\c64</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\hotkeys\boolexpr.h">
+      <Filter>src\arch\shared\hotkeys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\hotkeys\hotkeystypes.h">
+      <Filter>src\arch\shared\hotkeys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\hotkeys\ifstack.h">
+      <Filter>src\arch\shared\hotkeys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\hotkeys\parser.h">
+      <Filter>src\arch\shared\hotkeys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\hotkeys\symtab.h">
+      <Filter>src\arch\shared\hotkeys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\hotkeys\textfilereader.h">
+      <Filter>src\arch\shared\hotkeys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\hotkeys\uihotkeys.h">
+      <Filter>src\arch\shared\hotkeys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\hotkeys\vhkdebug.h">
+      <Filter>src\arch\shared\hotkeys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\hotkeys\vhkkeysyms.h">
+      <Filter>src\arch\shared\hotkeys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\hwsiddrv\cw-unix.h">
+      <Filter>src\arch\shared\hwsiddrv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\hwsiddrv\cw-win32.h">
+      <Filter>src\arch\shared\hwsiddrv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\hwsiddrv\hs-unix.h">
+      <Filter>src\arch\shared\hwsiddrv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\hwsiddrv\hs-win32.h">
+      <Filter>src\arch\shared\hwsiddrv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\hwsiddrv\ps-unix.h">
+      <Filter>src\arch\shared\hwsiddrv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\hwsiddrv\ps-win32.h">
+      <Filter>src\arch\shared\hwsiddrv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\hwsiddrv\us-unixwin.h">
+      <Filter>src\arch\shared\hwsiddrv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\sounddrv\lamelib.h">
+      <Filter>src\arch\shared\sounddrv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\sounddrv\soundmovie.h">
+      <Filter>src\arch\shared\sounddrv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\socketdrv\socket-beos-impl.h">
+      <Filter>src\arch\shared\socketdrv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\socketdrv\socketimpl.h">
+      <Filter>src\arch\shared\socketdrv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\socketdrv\socket-unix-impl.h">
+      <Filter>src\arch\shared\socketdrv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\socketdrv\socket-win32-impl.h">
+      <Filter>src\arch\shared\socketdrv</Filter>
+    </ClInclude>
+    <ClInclude Include="config\config.h">
+      <Filter>config</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\headless\archdep.h">
+      <Filter>src\arch\headless</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\headless\debug_headless.h">
+      <Filter>src\arch\headless</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\headless\kbd.h">
+      <Filter>src\arch\headless</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\headless\mousedrv.h">
+      <Filter>src\arch\headless</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\headless\ui.h">
+      <Filter>src\arch\headless</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\headless\uistatusbar.h">
+      <Filter>src\arch\headless</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\headless\videoarch.h">
+      <Filter>src\arch\headless</Filter>
+    </ClInclude>
+    <ClInclude Include="src\rs232drv\rs232.h">
+      <Filter>src\rs232drv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\rs232drv\rs232dev.h">
+      <Filter>src\rs232drv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\rs232drv\rs232drv.h">
+      <Filter>src\rs232drv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\rs232drv\rs232net.h">
+      <Filter>src\rs232drv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\rs232drv\rsuser.h">
+      <Filter>src\rs232drv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\monitor\asm.h">
+      <Filter>src\monitor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\monitor\mon_assemble.h">
+      <Filter>src\monitor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\monitor\mon_breakpoint.h">
+      <Filter>src\monitor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\monitor\mon_command.h">
+      <Filter>src\monitor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\monitor\mon_disassemble.h">
+      <Filter>src\monitor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\monitor\mon_drive.h">
+      <Filter>src\monitor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\monitor\mon_file.h">
+      <Filter>src\monitor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\monitor\mon_memmap.h">
+      <Filter>src\monitor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\monitor\mon_memory.h">
+      <Filter>src\monitor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\monitor\mon_parse.h">
+      <Filter>src\monitor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\monitor\mon_profile.h">
+      <Filter>src\monitor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\monitor\mon_register.h">
+      <Filter>src\monitor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\monitor\mon_util.h">
+      <Filter>src\monitor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\monitor\monitor_binary.h">
+      <Filter>src\monitor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\monitor\monitor_network.h">
+      <Filter>src\monitor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\monitor\montypes.h">
+      <Filter>src\monitor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archapi.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_access.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_beos.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_boot_path.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_cbmfont.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_chdir.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_close.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_create_user_cache_dir.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_create_user_config_dir.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_create_user_state_dir.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_current_dir.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_default_autostart_disk_image_file_name.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_default_fliplist_file_name.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_default_joymap_file_name.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_default_logfile.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_default_logger.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_default_portable_resource_file_name.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_default_resource_file_name.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_default_rtc_file_name.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_default_sysfile_pathlist.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_defs.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_dir.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_ethernet_available.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_exit.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_expand_path.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_extra_title_text.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_fdopen.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_file_exists.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_file_is_blockdev.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_file_is_chardev.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_file_size.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_filename_parameter.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_fix_permissions.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_fix_streams.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_fseeko.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_ftello.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_get_current_drive.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_get_hvsc_dir.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_get_runtime_info.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_get_vice_datadir.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_get_vice_docsdir.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_get_vice_drivesdir.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_get_vice_hotkeysdir.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_get_vice_machinedir.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_getcwd.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_glob.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_home_path.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_icon_path.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_is_haiku.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_is_macos_bindist.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_is_windows_nt.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_kbd_get_host_mapping.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_list_drives.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_make_backup_filename.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_mkdir.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_mkstemp_fd.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_network.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_open_default_log_file.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_path_is_relative.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_program_name.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_program_path.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_quote_parameter.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_quote_unzip.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_rawnet_capability.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_real_path.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_remove.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_rename.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_require_vkbd.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_rmdir.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_rtc_get_centisecond.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_sanitize_filename.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_set_current_drive.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_set_openmp_wait_policy.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_signals.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_sleep.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_socketpeek.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_sound.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_spawn.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_startup_log_error.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_stat.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_tick.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_tmpnam.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_unix.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_user_cache_path.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_user_config_path.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_user_state_path.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_usleep.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_win32.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\archdep_xdg.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\coproc.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\macOS-util.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\rawnetarch.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\shared\uiactions.h">
+      <Filter>src\arch\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="src\joyport\bbrtc.h">
+      <Filter>src\joyport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\joyport\cardkey.h">
+      <Filter>src\joyport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\joyport\coplin_keypad.h">
+      <Filter>src\joyport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\joyport\cx21.h">
+      <Filter>src\joyport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\joyport\cx85.h">
+      <Filter>src\joyport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\joyport\inception.h">
+      <Filter>src\joyport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\joyport\joyport.h">
+      <Filter>src\joyport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\joyport\joyport_diag_586220_harness.h">
+      <Filter>src\joyport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\joyport\joyport_io_sim.h">
+      <Filter>src\joyport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\joyport\joystick.h">
+      <Filter>src\joyport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\joyport\lightpen.h">
+      <Filter>src\joyport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\joyport\mouse.h">
+      <Filter>src\joyport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\joyport\mouse_1351.h">
+      <Filter>src\joyport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\joyport\mouse_neos.h">
+      <Filter>src\joyport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\joyport\mouse_paddle.h">
+      <Filter>src\joyport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\joyport\mouse_quadrature.h">
+      <Filter>src\joyport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\joyport\multijoy.h">
+      <Filter>src\joyport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\joyport\ninja_snespad.h">
+      <Filter>src\joyport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\joyport\paperclip2.h">
+      <Filter>src\joyport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\joyport\paperclip64.h">
+      <Filter>src\joyport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\joyport\paperclip64e.h">
+      <Filter>src\joyport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\joyport\paperclip64sc.h">
+      <Filter>src\joyport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\joyport\powerpad.h">
+      <Filter>src\joyport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\joyport\protopad.h">
+      <Filter>src\joyport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\joyport\rushware_keypad.h">
+      <Filter>src\joyport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\joyport\sampler2bit.h">
+      <Filter>src\joyport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\joyport\sampler4bit.h">
+      <Filter>src\joyport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\joyport\script64_dongle.h">
+      <Filter>src\joyport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\joyport\spaceballs.h">
+      <Filter>src\joyport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\joyport\trapthem_snespad.h">
+      <Filter>src\joyport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\joyport\vizawrite64_dongle.h">
+      <Filter>src\joyport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\joyport\waasoft_dongle.h">
+      <Filter>src\joyport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\drive.h">
+      <Filter>src\drive</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\drive-check.h">
+      <Filter>src\drive</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\drive-cmdline-options.h">
+      <Filter>src\drive</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\drivecpu.h">
+      <Filter>src\drive</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\drivecpu65c02.h">
+      <Filter>src\drive</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\driveimage.h">
+      <Filter>src\drive</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\drivemem.h">
+      <Filter>src\drive</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\drive-resources.h">
+      <Filter>src\drive</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\driverom.h">
+      <Filter>src\drive</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\drive-snapshot.h">
+      <Filter>src\drive</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\drive-sound.h">
+      <Filter>src\drive</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\drivesync.h">
+      <Filter>src\drive</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\drivetypes.h">
+      <Filter>src\drive</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\drive-writeprotect.h">
+      <Filter>src\drive</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\iec.h">
+      <Filter>src\drive</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\iec128dcr.h">
+      <Filter>src\drive</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\iec-c64exp.h">
+      <Filter>src\drive</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\iecieee.h">
+      <Filter>src\drive</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\iec-plus4exp.h">
+      <Filter>src\drive</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\ieee.h">
+      <Filter>src\drive</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\rotation.h">
+      <Filter>src\drive</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\tcbm.h">
+      <Filter>src\drive</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\viad.h">
+      <Filter>src\drive</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\ata.h">
+      <Filter>src\core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\ciatimer.h">
+      <Filter>src\core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\cs8900.h">
+      <Filter>src\core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\fmopl.h">
+      <Filter>src\core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\i8255a.h">
+      <Filter>src\core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\m93c86.h">
+      <Filter>src\core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\mc6821core.h">
+      <Filter>src\core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\scsi.h">
+      <Filter>src\core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\ser-eeprom.h">
+      <Filter>src\core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\spi-flash.h">
+      <Filter>src\core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\spi-sdcard.h">
+      <Filter>src\core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\t6721.h">
+      <Filter>src\core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\rtc\bq4830y.h">
+      <Filter>src\core\rtc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\rtc\ds12c887.h">
+      <Filter>src\core\rtc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\rtc\ds1202_1302.h">
+      <Filter>src\core\rtc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\rtc\ds1216e.h">
+      <Filter>src\core\rtc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\rtc\ds1307.h">
+      <Filter>src\core\rtc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\rtc\ds1602.h">
+      <Filter>src\core\rtc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\rtc\pcf8583.h">
+      <Filter>src\core\rtc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\rtc\rtc.h">
+      <Filter>src\core\rtc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\rtc\rtc-58321a.h">
+      <Filter>src\core\rtc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\rtc\rtc-72421.h">
+      <Filter>src\core\rtc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\lib\p64\p64.h">
+      <Filter>src\lib\p64</Filter>
+    </ClInclude>
+    <ClInclude Include="src\lib\p64\p64config.h">
+      <Filter>src\lib\p64</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vdrive\vdrive.h">
+      <Filter>src\vdrive</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vdrive\vdrive-bam.h">
+      <Filter>src\vdrive</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vdrive\vdrive-command.h">
+      <Filter>src\vdrive</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vdrive\vdrive-dir.h">
+      <Filter>src\vdrive</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vdrive\vdrive-iec.h">
+      <Filter>src\vdrive</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vdrive\vdrive-internal.h">
+      <Filter>src\vdrive</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vdrive\vdrive-rel.h">
+      <Filter>src\vdrive</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vdrive\vdrive-snapshot.h">
+      <Filter>src\vdrive</Filter>
+    </ClInclude>
+    <ClInclude Include="src\datasette\datasette.h">
+      <Filter>src\datasette</Filter>
+    </ClInclude>
+    <ClInclude Include="src\datasette\datasette-sound.h">
+      <Filter>src\datasette</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fsdevice\fsdevice-close.h">
+      <Filter>src\fsdevice</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fsdevice\fsdevice-cmdline-options.h">
+      <Filter>src\fsdevice</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fsdevice\fsdevice-filename.h">
+      <Filter>src\fsdevice</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fsdevice\fsdevice-flush.h">
+      <Filter>src\fsdevice</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fsdevice\fsdevice-open.h">
+      <Filter>src\fsdevice</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fsdevice\fsdevice-read.h">
+      <Filter>src\fsdevice</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fsdevice\fsdevice-resources.h">
+      <Filter>src\fsdevice</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fsdevice\fsdevicetypes.h">
+      <Filter>src\fsdevice</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fsdevice\fsdevice-write.h">
+      <Filter>src\fsdevice</Filter>
+    </ClInclude>
+    <ClInclude Include="src\imagecontents\diskcontents.h">
+      <Filter>src\imagecontents</Filter>
+    </ClInclude>
+    <ClInclude Include="src\imagecontents\diskcontents-block.h">
+      <Filter>src\imagecontents</Filter>
+    </ClInclude>
+    <ClInclude Include="src\imagecontents\diskcontents-iec.h">
+      <Filter>src\imagecontents</Filter>
+    </ClInclude>
+    <ClInclude Include="src\imagecontents\tapecontents.h">
+      <Filter>src\imagecontents</Filter>
+    </ClInclude>
+    <ClInclude Include="src\tapeport\cp-clockf83.h">
+      <Filter>src\tapeport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\tapeport\dtl-basic-dongle.h">
+      <Filter>src\tapeport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\tapeport\sense-dongle.h">
+      <Filter>src\tapeport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\tapeport\tape_diag_586220_harness.h">
+      <Filter>src\tapeport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\tapeport\tapecart.h">
+      <Filter>src\tapeport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\tapeport\tapecart-loader.h">
+      <Filter>src\tapeport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\tapeport\tapeport.h">
+      <Filter>src\tapeport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\tapeport\wordcraft-dongle.h">
+      <Filter>src\tapeport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\diskimage\fsimage.h">
+      <Filter>src\diskimage</Filter>
+    </ClInclude>
+    <ClInclude Include="src\diskimage\fsimage-check.h">
+      <Filter>src\diskimage</Filter>
+    </ClInclude>
+    <ClInclude Include="src\diskimage\fsimage-create.h">
+      <Filter>src\diskimage</Filter>
+    </ClInclude>
+    <ClInclude Include="src\diskimage\fsimage-dxx.h">
+      <Filter>src\diskimage</Filter>
+    </ClInclude>
+    <ClInclude Include="src\diskimage\fsimage-gcr.h">
+      <Filter>src\diskimage</Filter>
+    </ClInclude>
+    <ClInclude Include="src\diskimage\fsimage-p64.h">
+      <Filter>src\diskimage</Filter>
+    </ClInclude>
+    <ClInclude Include="src\diskimage\fsimage-probe.h">
+      <Filter>src\diskimage</Filter>
+    </ClInclude>
+    <ClInclude Include="src\diskimage\realimage.h">
+      <Filter>src\diskimage</Filter>
+    </ClInclude>
+    <ClInclude Include="src\diskimage\x64.h">
+      <Filter>src\diskimage</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fileio\cbmfile.h">
+      <Filter>src\fileio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fileio\p00.h">
+      <Filter>src\fileio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\printerdrv\driver-select.h">
+      <Filter>src\printerdrv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\printerdrv\drv-1520.h">
+      <Filter>src\printerdrv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\printerdrv\drv-ascii.h">
+      <Filter>src\printerdrv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\printerdrv\drv-mps803.h">
+      <Filter>src\printerdrv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\printerdrv\drv-nl10.h">
+      <Filter>src\printerdrv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\printerdrv\drv-raw.h">
+      <Filter>src\printerdrv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\printerdrv\interface-serial.h">
+      <Filter>src\printerdrv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\printerdrv\interface-userport.h">
+      <Filter>src\printerdrv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\printerdrv\output.h">
+      <Filter>src\printerdrv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\printerdrv\output-graphics.h">
+      <Filter>src\printerdrv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\printerdrv\output-select.h">
+      <Filter>src\printerdrv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\printerdrv\output-text.h">
+      <Filter>src\printerdrv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\printerdrv\printer.h">
+      <Filter>src\printerdrv</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\crc32.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\deflate.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\gzguts.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\inffast.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\inffixed.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\inflate.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\inftrees.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\trees.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\zconf.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\zlib.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\zutil.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="src\hvsc\base.h">
+      <Filter>src\hvsc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\hvsc\bugs.h">
+      <Filter>src\hvsc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\hvsc\hvsc.h">
+      <Filter>src\hvsc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\hvsc\hvsc_defs.h">
+      <Filter>src\hvsc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\hvsc\main.h">
+      <Filter>src\hvsc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\hvsc\psid.h">
+      <Filter>src\hvsc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\hvsc\sldb.h">
+      <Filter>src\hvsc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\hvsc\stil.h">
+      <Filter>src\hvsc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sid\fastsid.h">
+      <Filter>src\sid</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sid\resid.h">
+      <Filter>src\sid</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sid\sid.h">
+      <Filter>src\sid</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sid\sid-cmdline-options.h">
+      <Filter>src\sid</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sid\sid-resources.h">
+      <Filter>src\sid</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sid\sid-snapshot.h">
+      <Filter>src\sid</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sid\wave6581.h">
+      <Filter>src\sid</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sid\wave8580.h">
+      <Filter>src\sid</Filter>
+    </ClInclude>
+    <ClInclude Include="src\userport\userport.h">
+      <Filter>src\userport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\userport\userport_4bit_sampler.h">
+      <Filter>src\userport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\userport\userport_8bss.h">
+      <Filter>src\userport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\userport\userport_dac.h">
+      <Filter>src\userport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\userport\userport_diag_586220_harness.h">
+      <Filter>src\userport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\userport\userport_diag_pin.h">
+      <Filter>src\userport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\userport\userport_digimax.h">
+      <Filter>src\userport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\userport\userport_funmp3.h">
+      <Filter>src\userport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\userport\userport_hks_joystick.h">
+      <Filter>src\userport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\userport\userport_hummer_joystick.h">
+      <Filter>src\userport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\userport\userport_io_sim.h">
+      <Filter>src\userport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\userport\userport_joystick.h">
+      <Filter>src\userport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\userport\userport_petscii_snespad.h">
+      <Filter>src\userport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\userport\userport_ps2mouse.h">
+      <Filter>src\userport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\userport\userport_rtc_58321a.h">
+      <Filter>src\userport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\userport\userport_rtc_ds1307.h">
+      <Filter>src\userport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\userport\userport_spt_joystick.h">
+      <Filter>src\userport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\userport\userport_superpad64.h">
+      <Filter>src\userport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\userport\userport_synergy_joystick.h">
+      <Filter>src\userport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\userport\userport_wic64.h">
+      <Filter>src\userport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\userport\userport_woj_joystick.h">
+      <Filter>src\userport</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pet\6809.h">
+      <Filter>src\pet</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pet\debugcart.h">
+      <Filter>src\pet</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pet\pet.h">
+      <Filter>src\pet</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pet\petacia.h">
+      <Filter>src\pet</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pet\pet-cmdline-options.h">
+      <Filter>src\pet</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pet\petcolour.h">
+      <Filter>src\pet</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pet\petdww.h">
+      <Filter>src\pet</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pet\pethre.h">
+      <Filter>src\pet</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pet\petiec.h">
+      <Filter>src\pet</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pet\petmem.h">
+      <Filter>src\pet</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pet\petmemsnapshot.h">
+      <Filter>src\pet</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pet\petmodel.h">
+      <Filter>src\pet</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pet\petpia.h">
+      <Filter>src\pet</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pet\pet-resources.h">
+      <Filter>src\pet</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pet\petreu.h">
+      <Filter>src\pet</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pet\petrom.h">
+      <Filter>src\pet</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pet\pets.h">
+      <Filter>src\pet</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pet\pet-snapshot.h">
+      <Filter>src\pet</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pet\petsound.h">
+      <Filter>src\pet</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pet\petvia.h">
+      <Filter>src\pet</Filter>
+    </ClInclude>
+    <ClInclude Include="src\samplerdrv\file_drv.h">
+      <Filter>src\samplerdrv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\samplerdrv\portaudio_drv.h">
+      <Filter>src\samplerdrv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\samplerdrv\sampler.h">
+      <Filter>src\samplerdrv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\video\render1x1.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\video\render1x1ntsc.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\video\render1x1pal.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\video\render1x1rgbi.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\video\render1x2.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\video\render1x2rgbi.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\video\render2x2.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\video\render2x2ntsc.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\video\render2x2pal.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\video\render2x2palu.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\video\render2x2rgbi.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\video\render2x4.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\video\render2x4rgbi.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\video\render-common.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\video\renderscale2x.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\video\video-canvas.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\video\video-color.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\video\video-render.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\video\video-resources.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\video\video-sound.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\viciisc\vicii-chip-model.h">
+      <Filter>src\viciisc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\viciisc\vicii-cmdline-options.h">
+      <Filter>src\viciisc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\viciisc\vicii-color.h">
+      <Filter>src\viciisc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\viciisc\vicii-cycle.h">
+      <Filter>src\viciisc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\viciisc\vicii-draw.h">
+      <Filter>src\viciisc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\viciisc\vicii-draw-cycle.h">
+      <Filter>src\viciisc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\viciisc\vicii-fetch.h">
+      <Filter>src\viciisc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\viciisc\vicii-irq.h">
+      <Filter>src\viciisc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\viciisc\vicii-lightpen.h">
+      <Filter>src\viciisc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\viciisc\vicii-mem.h">
+      <Filter>src\viciisc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\viciisc\vicii-phi1.h">
+      <Filter>src\viciisc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\viciisc\vicii-resources.h">
+      <Filter>src\viciisc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\viciisc\vicii-snapshot.h">
+      <Filter>src\viciisc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\viciisc\vicii-timing.h">
+      <Filter>src\viciisc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\viciisc\viciitypes.h">
+      <Filter>src\viciisc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\raster\raster.h">
+      <Filter>src\raster</Filter>
+    </ClInclude>
+    <ClInclude Include="src\raster\raster-cache.h">
+      <Filter>src\raster</Filter>
+    </ClInclude>
+    <ClInclude Include="src\raster\raster-cache-const.h">
+      <Filter>src\raster</Filter>
+    </ClInclude>
+    <ClInclude Include="src\raster\raster-cache-fill.h">
+      <Filter>src\raster</Filter>
+    </ClInclude>
+    <ClInclude Include="src\raster\raster-cache-fill-1fff.h">
+      <Filter>src\raster</Filter>
+    </ClInclude>
+    <ClInclude Include="src\raster\raster-cache-fill-39ff.h">
+      <Filter>src\raster</Filter>
+    </ClInclude>
+    <ClInclude Include="src\raster\raster-cache-nibbles.h">
+      <Filter>src\raster</Filter>
+    </ClInclude>
+    <ClInclude Include="src\raster\raster-cache-text-ext.h">
+      <Filter>src\raster</Filter>
+    </ClInclude>
+    <ClInclude Include="src\raster\raster-cache-text-std.h">
+      <Filter>src\raster</Filter>
+    </ClInclude>
+    <ClInclude Include="src\raster\raster-canvas.h">
+      <Filter>src\raster</Filter>
+    </ClInclude>
+    <ClInclude Include="src\raster\raster-changes.h">
+      <Filter>src\raster</Filter>
+    </ClInclude>
+    <ClInclude Include="src\raster\raster-cmdline-options.h">
+      <Filter>src\raster</Filter>
+    </ClInclude>
+    <ClInclude Include="src\raster\raster-line.h">
+      <Filter>src\raster</Filter>
+    </ClInclude>
+    <ClInclude Include="src\raster\raster-modes.h">
+      <Filter>src\raster</Filter>
+    </ClInclude>
+    <ClInclude Include="src\raster\raster-resources.h">
+      <Filter>src\raster</Filter>
+    </ClInclude>
+    <ClInclude Include="src\raster\raster-snapshot.h">
+      <Filter>src\raster</Filter>
+    </ClInclude>
+    <ClInclude Include="src\raster\raster-sprite.h">
+      <Filter>src\raster</Filter>
+    </ClInclude>
+    <ClInclude Include="src\raster\raster-sprite-cache.h">
+      <Filter>src\raster</Filter>
+    </ClInclude>
+    <ClInclude Include="src\raster\raster-sprite-status.h">
+      <Filter>src\raster</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\iec\c64exp\c64exp-cmdline-options.h">
+      <Filter>src\drive\iec\c64exp</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\iec\c64exp\c64exp-resources.h">
+      <Filter>src\drive\iec\c64exp</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\iec\c64exp\dolphindos3.h">
+      <Filter>src\drive\iec\c64exp</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\iec\c64exp\profdos.h">
+      <Filter>src\drive\iec\c64exp</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\iec\c64exp\stardos-exp.h">
+      <Filter>src\drive\iec\c64exp</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\iec\c64exp\supercard.h">
+      <Filter>src\drive\iec\c64exp</Filter>
+    </ClInclude>
+    <ClInclude Include="src\tape\t64.h">
+      <Filter>src\tape</Filter>
+    </ClInclude>
+    <ClInclude Include="src\tape\tapeimage.h">
+      <Filter>src\tape</Filter>
+    </ClInclude>
+    <ClInclude Include="src\tape\tape-internal.h">
+      <Filter>src\tape</Filter>
+    </ClInclude>
+    <ClInclude Include="src\tape\tape-snapshot.h">
+      <Filter>src\tape</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\tcbm\glue1551.h">
+      <Filter>src\drive\tcbm</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\tcbm\mem1551.h">
+      <Filter>src\drive\tcbm</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\tcbm\tcbm-cmdline-options.h">
+      <Filter>src\drive\tcbm</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\tcbm\tcbm-resources.h">
+      <Filter>src\drive\tcbm</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\tcbm\tcbmrom.h">
+      <Filter>src\drive\tcbm</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\tcbm\tpid.h">
+      <Filter>src\drive\tcbm</Filter>
+    </ClInclude>
+    <ClInclude Include="src\lib\md5\md5.h">
+      <Filter>src\lib\md5</Filter>
+    </ClInclude>
+    <ClInclude Include="src\diag\c64_diag_586220_harness.h">
+      <Filter>src\diag</Filter>
+    </ClInclude>
+    <ClInclude Include="src\crtc\crtc.h">
+      <Filter>src\crtc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\crtc\crtc-cmdline-options.h">
+      <Filter>src\crtc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\crtc\crtc-color.h">
+      <Filter>src\crtc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\crtc\crtc-draw.h">
+      <Filter>src\crtc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\crtc\crtc-mem.h">
+      <Filter>src\crtc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\crtc\crtc-resources.h">
+      <Filter>src\crtc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\crtc\crtctypes.h">
+      <Filter>src\crtc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\resid\dac.h">
+      <Filter>src\resid</Filter>
+    </ClInclude>
+    <ClInclude Include="src\resid\envelope.h">
+      <Filter>src\resid</Filter>
+    </ClInclude>
+    <ClInclude Include="src\resid\extfilt.h">
+      <Filter>src\resid</Filter>
+    </ClInclude>
+    <ClInclude Include="src\resid\filter.h">
+      <Filter>src\resid</Filter>
+    </ClInclude>
+    <ClInclude Include="src\resid\filter8580new.h">
+      <Filter>src\resid</Filter>
+    </ClInclude>
+    <ClInclude Include="src\resid\pot.h">
+      <Filter>src\resid</Filter>
+    </ClInclude>
+    <ClInclude Include="src\resid\resid-config.h">
+      <Filter>src\resid</Filter>
+    </ClInclude>
+    <ClInclude Include="src\resid\sid.h">
+      <Filter>src\resid</Filter>
+    </ClInclude>
+    <ClInclude Include="src\resid\spline.h">
+      <Filter>src\resid</Filter>
+    </ClInclude>
+    <ClInclude Include="src\resid\voice.h">
+      <Filter>src\resid</Filter>
+    </ClInclude>
+    <ClInclude Include="src\resid\wave.h">
+      <Filter>src\resid</Filter>
+    </ClInclude>
+    <ClInclude Include="src\resid\wave6581__ST.h">
+      <Filter>src\resid</Filter>
+    </ClInclude>
+    <ClInclude Include="src\resid\wave6581_P_T.h">
+      <Filter>src\resid</Filter>
+    </ClInclude>
+    <ClInclude Include="src\resid\wave6581_PS_.h">
+      <Filter>src\resid</Filter>
+    </ClInclude>
+    <ClInclude Include="src\resid\wave6581_PST.h">
+      <Filter>src\resid</Filter>
+    </ClInclude>
+    <ClInclude Include="src\resid\wave8580__ST.h">
+      <Filter>src\resid</Filter>
+    </ClInclude>
+    <ClInclude Include="src\resid\wave8580_P_T.h">
+      <Filter>src\resid</Filter>
+    </ClInclude>
+    <ClInclude Include="src\resid\wave8580_PS_.h">
+      <Filter>src\resid</Filter>
+    </ClInclude>
+    <ClInclude Include="src\resid\wave8580_PST.h">
+      <Filter>src\resid</Filter>
+    </ClInclude>
+    <ClInclude Include="src\resid\siddefs.h">
+      <Filter>src\resid</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gfxoutputdrv\bmpdrv.h">
+      <Filter>src\gfxoutputdrv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gfxoutputdrv\ffmpegexedrv.h">
+      <Filter>src\gfxoutputdrv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gfxoutputdrv\gifdrv.h">
+      <Filter>src\gfxoutputdrv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gfxoutputdrv\godotdrv.h">
+      <Filter>src\gfxoutputdrv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gfxoutputdrv\iffdrv.h">
+      <Filter>src\gfxoutputdrv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gfxoutputdrv\nativedrv.h">
+      <Filter>src\gfxoutputdrv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gfxoutputdrv\pcxdrv.h">
+      <Filter>src\gfxoutputdrv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gfxoutputdrv\pngdrv.h">
+      <Filter>src\gfxoutputdrv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gfxoutputdrv\ppmdrv.h">
+      <Filter>src\gfxoutputdrv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gfxoutputdrv\zmbvdrv.h">
+      <Filter>src\gfxoutputdrv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\lib\libzmbv\zmbv.h">
+      <Filter>src\lib\libzmbv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\lib\libzmbv\zmbv_avi.h">
+      <Filter>src\lib\libzmbv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\serial\fsdrive.h">
+      <Filter>src\serial</Filter>
+    </ClInclude>
+    <ClInclude Include="src\serial\iec-ieee488-shared.h">
+      <Filter>src\serial</Filter>
+    </ClInclude>
+    <ClInclude Include="src\serial\realdevice.h">
+      <Filter>src\serial</Filter>
+    </ClInclude>
+    <ClInclude Include="src\serial\serial-iec.h">
+      <Filter>src\serial</Filter>
+    </ClInclude>
+    <ClInclude Include="src\serial\serial-iec-bus.h">
+      <Filter>src\serial</Filter>
+    </ClInclude>
+    <ClInclude Include="src\serial\serial-iec-device.h">
+      <Filter>src\serial</Filter>
+    </ClInclude>
+    <ClInclude Include="src\serial\serial-trap.h">
+      <Filter>src\serial</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\iec\ciad.h">
+      <Filter>src\drive\iec</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\iec\cmdhd.h">
+      <Filter>src\drive\iec</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\iec\fdd.h">
+      <Filter>src\drive\iec</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\iec\glue1571.h">
+      <Filter>src\drive\iec</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\iec\iec-cmdline-options.h">
+      <Filter>src\drive\iec</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\iec\iec-resources.h">
+      <Filter>src\drive\iec</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\iec\iecrom.h">
+      <Filter>src\drive\iec</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\iec\memiec.h">
+      <Filter>src\drive\iec</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\iec\pc8477.h">
+      <Filter>src\drive\iec</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\iec\via1d1541.h">
+      <Filter>src\drive\iec</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\iec\via4000.h">
+      <Filter>src\drive\iec</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\iec\wd1770.h">
+      <Filter>src\drive\iec</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\ieee\fdc.h">
+      <Filter>src\drive\ieee</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\ieee\ieee-cmdline-options.h">
+      <Filter>src\drive\ieee</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\ieee\ieee-resources.h">
+      <Filter>src\drive\ieee</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\ieee\ieeerom.h">
+      <Filter>src\drive\ieee</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\ieee\memieee.h">
+      <Filter>src\drive\ieee</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\ieee\riotd.h">
+      <Filter>src\drive\ieee</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drive\ieee\via1d2031.h">
+      <Filter>src\drive\ieee</Filter>
+    </ClInclude>
+    <ClInclude Include="src\parallel\parallel-trap.h">
+      <Filter>src\parallel</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\65c02core.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\6510core.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\6510dtvcore.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\65816core.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\aciacore.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\alarm.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\attach.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\autostart.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\autostart-prg.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c1541.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c1541-stubs.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cbmdos.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cbmimage.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\charset.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\clipboard.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cmdline.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\color.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\crc32.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\crt.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\debug.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\digimaxcore.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dma.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\event.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\findpath.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\fixpoint.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\fliplist.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gcr.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\info.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\init.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\initcmdline.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\interrupt.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\kbdbuf.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\keyboard.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\keymap.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\lib.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\log.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\m3u.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\machine.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\machine-bus.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\main.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\main65816cpu.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mainc64cpu.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\maincpu.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mainlock.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\midi.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\network.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\opencbmlib.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\palette.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\piacore.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\profiler.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ram.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rawfile.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rawnet.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\resources.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\romset.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\screenshot.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sha1.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\snapshot.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\socket.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sysfile.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\traps.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\util.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vicefeatures.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vsync.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\zfile.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\zipcode.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\actionreplay.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\actionreplay2.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\actionreplay3.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\actionreplay4.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\atomicpower.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\bisplus.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\blackbox3.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\blackbox4.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\blackbox8.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\blackbox9.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\bmpdataturbo.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\c64acia1.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\c64cart.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\c64carthooks.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\c64cartmem.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\c64-generic.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\c64-midi.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\c64tpi.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\capture.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\clockport.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\clockport-mp3at64.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\clockport-rrnet.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\comal80.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\cpmcart.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\cs8900io.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\daa.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\debugcart.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\delaep7x8.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\delaep64.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\delaep256.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\diashowmaker.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\digimax.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\dinamic.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\dqbb.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\drean.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\ds12c887rtc.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\easycalc.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\easyflash.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\epyxfastload.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\ethernetcart.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\exos.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\expert.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\final.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\final3.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\finalplus.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\formel64.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\freezeframe.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\freezeframe2.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\freezemachine.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\funplay.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\gamekiller.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\georam.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\gmod2.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\gmod3.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\gs.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\hyperbasic.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\ide64.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\ieeeflash64.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\isepic.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\kcs.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\kingsoft.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\ltkernal.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\mach5.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\magicdesk.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\magicdesk16.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\magicformel.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\magicvoice.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\maxbasic.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\megabyter.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\mikroass.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\mmc64.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\mmcreplay.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\multimax.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\ocean.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\pagefox.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\partner64.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\profidos.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\prophet64.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\ramcart.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\ramlink.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\retroreplay.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\reu.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\rexep256.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\rexramfloppy.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\rexutility.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\rgcd.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\ross.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\rrnetmk3.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\sdbox.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\sfx_soundexpander.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\sfx_soundsampler.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\shortbus.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\shortbus_digimax.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\shortbus_etfe.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\silverrock128.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\simonsbasic.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\snapshot64.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\stardos.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\stb.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\superexplode5.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\supergames.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\supersnapshot.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\supersnapshot4.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\turtlegraphics.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\uc1.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\uc2.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\warpspeed.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\westermann.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\zaxxon.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\cart\zippcode48.c">
+      <Filter>src\c64\cart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64_256k.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64bus.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64cia1.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64cia2.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64-cmdline-options.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64cpu.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64cpusc.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64datasette.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64drive.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64export.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64fastiec.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64gluelogic.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64iec.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64io.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64keyboard.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64mem.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64meminit.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64memlimit.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64-memory-hacks.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64memrom.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64memsc.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64memsnapshot.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64model.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64parallel.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64pla.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64printer.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64-resources.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64rom.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64romset.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64rsuser.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64scmodel.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64sc-stubs.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64-snapshot.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64sound.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64-stubs.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\c64video.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\plus60k.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\plus256k.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\psid.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\reloc65.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\vsid.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\vsidcia1.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\vsidcia2.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\vsid-cmdline-options.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\vsidcpu.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\vsid-debugcart.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\vsidmem.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\vsidmeminit.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\vsidmemsnapshot.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\vsidpla.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\vsid-resources.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\vsid-snapshot.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\vsidsound.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c64\vsid-stubs.c">
+      <Filter>src\c64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\hotkeys\boolexpr.c">
+      <Filter>src\arch\shared\hotkeys</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\hotkeys\ifstack.c">
+      <Filter>src\arch\shared\hotkeys</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\hotkeys\parser.c">
+      <Filter>src\arch\shared\hotkeys</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\hotkeys\symtab.c">
+      <Filter>src\arch\shared\hotkeys</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\hotkeys\textfilereader.c">
+      <Filter>src\arch\shared\hotkeys</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\hotkeys\uihotkeys.c">
+      <Filter>src\arch\shared\hotkeys</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\hotkeys\vhkdebug.c">
+      <Filter>src\arch\shared\hotkeys</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\hotkeys\vhkkeysyms.c">
+      <Filter>src\arch\shared\hotkeys</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\hwsiddrv\catweaselmkiii-unix-drv.c">
+      <Filter>src\arch\shared\hwsiddrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\hwsiddrv\catweaselmkiii-win32-drv.c">
+      <Filter>src\arch\shared\hwsiddrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\hwsiddrv\cw-unix-device.c">
+      <Filter>src\arch\shared\hwsiddrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\hwsiddrv\cw-win32-dll.c">
+      <Filter>src\arch\shared\hwsiddrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\hwsiddrv\hardsid-unix-drv.c">
+      <Filter>src\arch\shared\hwsiddrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\hwsiddrv\hardsid-win32-drv.c">
+      <Filter>src\arch\shared\hwsiddrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\hwsiddrv\hs-unix-linux.c">
+      <Filter>src\arch\shared\hwsiddrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\hwsiddrv\hs-win32-dll.c">
+      <Filter>src\arch\shared\hwsiddrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\hwsiddrv\parsid-unix-drv.c">
+      <Filter>src\arch\shared\hwsiddrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\hwsiddrv\parsid-win32-drv.c">
+      <Filter>src\arch\shared\hwsiddrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\hwsiddrv\ps-ieee1284.c">
+      <Filter>src\arch\shared\hwsiddrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\hwsiddrv\ps-unix-file.c">
+      <Filter>src\arch\shared\hwsiddrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\hwsiddrv\usbsid-unixwin-drv.c">
+      <Filter>src\arch\shared\hwsiddrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\hwsiddrv\us-unixwin-device.c">
+      <Filter>src\arch\shared\hwsiddrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\sounddrv\lamelib.c">
+      <Filter>src\arch\shared\sounddrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\sounddrv\soundaiff.c">
+      <Filter>src\arch\shared\sounddrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\sounddrv\soundalsa.c">
+      <Filter>src\arch\shared\sounddrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\sounddrv\soundbeos.cc">
+      <Filter>src\arch\shared\sounddrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\sounddrv\soundbsp.cc">
+      <Filter>src\arch\shared\sounddrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\sounddrv\soundcoreaudio.c">
+      <Filter>src\arch\shared\sounddrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\sounddrv\sounddummy.c">
+      <Filter>src\arch\shared\sounddrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\sounddrv\sounddump.c">
+      <Filter>src\arch\shared\sounddrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\sounddrv\sounddx.c">
+      <Filter>src\arch\shared\sounddrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\sounddrv\soundflac.c">
+      <Filter>src\arch\shared\sounddrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\sounddrv\soundfs.c">
+      <Filter>src\arch\shared\sounddrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\sounddrv\soundiff.c">
+      <Filter>src\arch\shared\sounddrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\sounddrv\soundmovie.c">
+      <Filter>src\arch\shared\sounddrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\sounddrv\soundmp3.c">
+      <Filter>src\arch\shared\sounddrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\sounddrv\soundpulse.c">
+      <Filter>src\arch\shared\sounddrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\sounddrv\soundsdl.c">
+      <Filter>src\arch\shared\sounddrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\sounddrv\soundsun.c">
+      <Filter>src\arch\shared\sounddrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\sounddrv\soundvoc.c">
+      <Filter>src\arch\shared\sounddrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\sounddrv\soundvorbis.c">
+      <Filter>src\arch\shared\sounddrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\sounddrv\soundwav.c">
+      <Filter>src\arch\shared\sounddrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\sounddrv\soundwmm.c">
+      <Filter>src\arch\shared\sounddrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\mididrv\midi-osx-drv.c">
+      <Filter>src\arch\shared\mididrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\mididrv\midi-unix-drv.c">
+      <Filter>src\arch\shared\mididrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\mididrv\midi-win32-drv.c">
+      <Filter>src\arch\shared\mididrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\socketdrv\socketdrv.c">
+      <Filter>src\arch\shared\socketdrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\socketdrv\socket-win32-drv.c">
+      <Filter>src\arch\shared\socketdrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\headless\archdep.c">
+      <Filter>src\arch\headless</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\headless\c64dtvui.c">
+      <Filter>src\arch\headless</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\headless\c64scui.c">
+      <Filter>src\arch\headless</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\headless\c64ui.c">
+      <Filter>src\arch\headless</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\headless\c128ui.c">
+      <Filter>src\arch\headless</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\headless\cbm2ui.c">
+      <Filter>src\arch\headless</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\headless\cbm5x0ui.c">
+      <Filter>src\arch\headless</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\headless\console.c">
+      <Filter>src\arch\headless</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\headless\kbd.c">
+      <Filter>src\arch\headless</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\headless\main.c">
+      <Filter>src\arch\headless</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\headless\mousedrv.c">
+      <Filter>src\arch\headless</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\headless\petui.c">
+      <Filter>src\arch\headless</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\headless\plus4ui.c">
+      <Filter>src\arch\headless</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\headless\scpu64ui.c">
+      <Filter>src\arch\headless</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\headless\ui.c">
+      <Filter>src\arch\headless</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\headless\uimon.c">
+      <Filter>src\arch\headless</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\headless\uistatusbar.c">
+      <Filter>src\arch\headless</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\headless\vic20ui.c">
+      <Filter>src\arch\headless</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\headless\video.c">
+      <Filter>src\arch\headless</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\headless\vsidui.c">
+      <Filter>src\arch\headless</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\headless\vsyncarch.c">
+      <Filter>src\arch\headless</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rs232drv\rs232.c">
+      <Filter>src\rs232drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rs232drv\rs232drv.c">
+      <Filter>src\rs232drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rs232drv\rs232net.c">
+      <Filter>src\rs232drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rs232drv\rsuser.c">
+      <Filter>src\rs232drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\monitor\asm6502.c">
+      <Filter>src\monitor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\monitor\asm6502dtv.c">
+      <Filter>src\monitor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\monitor\asm6809.c">
+      <Filter>src\monitor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\monitor\asm65816.c">
+      <Filter>src\monitor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\monitor\asmR65C02.c">
+      <Filter>src\monitor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\monitor\asmz80.c">
+      <Filter>src\monitor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\monitor\mon_assemble6502.c">
+      <Filter>src\monitor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\monitor\mon_assemble6809.c">
+      <Filter>src\monitor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\monitor\mon_assemble65816.c">
+      <Filter>src\monitor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\monitor\mon_assembleR65C02.c">
+      <Filter>src\monitor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\monitor\mon_assemblez80.c">
+      <Filter>src\monitor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\monitor\mon_breakpoint.c">
+      <Filter>src\monitor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\monitor\mon_command.c">
+      <Filter>src\monitor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\monitor\mon_disassemble.c">
+      <Filter>src\monitor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\monitor\mon_drive.c">
+      <Filter>src\monitor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\monitor\mon_file.c">
+      <Filter>src\monitor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\monitor\mon_lex.c">
+      <Filter>src\monitor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\monitor\mon_memmap.c">
+      <Filter>src\monitor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\monitor\mon_memory.c">
+      <Filter>src\monitor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\monitor\mon_parse.c">
+      <Filter>src\monitor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\monitor\mon_profile.c">
+      <Filter>src\monitor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\monitor\mon_register.c">
+      <Filter>src\monitor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\monitor\mon_register6502.c">
+      <Filter>src\monitor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\monitor\mon_register6502dtv.c">
+      <Filter>src\monitor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\monitor\mon_register6809.c">
+      <Filter>src\monitor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\monitor\mon_register65816.c">
+      <Filter>src\monitor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\monitor\mon_registerR65C02.c">
+      <Filter>src\monitor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\monitor\mon_registerz80.c">
+      <Filter>src\monitor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\monitor\mon_util.c">
+      <Filter>src\monitor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\monitor\monitor.c">
+      <Filter>src\monitor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\monitor\monitor_binary.c">
+      <Filter>src\monitor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\monitor\monitor_network.c">
+      <Filter>src\monitor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_access.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_boot_path.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_cbmfont.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_chdir.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_close.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_create_user_cache_dir.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_create_user_config_dir.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_create_user_state_dir.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_current_dir.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_default_autostart_disk_image_file_name.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_default_fliplist_file_name.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_default_joymap_file_name.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_default_logfile.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_default_logger.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_default_portable_resource_file_name.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_default_resource_file_name.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_default_rtc_file_name.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_default_sysfile_pathlist.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_dir.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_ethernet_available.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_exit.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_expand_path.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_extra_title_text.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_fdopen.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_file_exists.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_file_is_blockdev.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_file_is_chardev.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_file_size.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_filename_parameter.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_fix_permissions.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_fix_streams.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_fseeko.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_ftello.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_get_current_drive.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_get_hvsc_dir.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_get_runtime_info.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_get_vice_datadir.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_get_vice_docsdir.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_get_vice_drivesdir.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_get_vice_hotkeysdir.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_get_vice_machinedir.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_getcwd.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_glob.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_home_path.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_icon_path.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_is_haiku.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_is_macos_bindist.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_is_windows_nt.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_kbd_get_host_mapping.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_list_drives.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_make_backup_filename.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_mkdir.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_mkstemp_fd.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_open_default_log_file.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_path_is_relative.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_program_name.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_program_path.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_quote_parameter.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_quote_unzip.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_rawnet_capability.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_real_path.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_remove.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_rename.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_require_vkbd.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_rmdir.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_rtc_get_centisecond.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_sanitize_filename.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_set_current_drive.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_set_openmp_wait_policy.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_signals.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_sleep.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_socketpeek.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_sound.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_spawn.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_startup_log_error.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_stat.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_tick.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_tmpnam.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_user_cache_path.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_user_config_path.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_user_state_path.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_usleep.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\archdep_xdg.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\console.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\console_none.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\console_unix.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\coproc.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\dynlib.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\dynlib-unix.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\dynlib-win32.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\macOS-launcher.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\rawnetarch.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\rawnetarch_tuntap.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\rawnetarch_unix.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\rawnetarch_win32.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\rs232dev.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\rs232-unix-dev.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\rs232-win32-dev.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\signals.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\shared\uiactions.c">
+      <Filter>src\arch\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="src\joyport\bbrtc.c">
+      <Filter>src\joyport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\joyport\cardkey.c">
+      <Filter>src\joyport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\joyport\coplin_keypad.c">
+      <Filter>src\joyport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\joyport\cx21.c">
+      <Filter>src\joyport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\joyport\cx85.c">
+      <Filter>src\joyport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\joyport\inception.c">
+      <Filter>src\joyport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\joyport\joyport.c">
+      <Filter>src\joyport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\joyport\joyport_diag_586220_harness.c">
+      <Filter>src\joyport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\joyport\joyport_io_sim.c">
+      <Filter>src\joyport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\joyport\joystick.c">
+      <Filter>src\joyport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\joyport\lightpen.c">
+      <Filter>src\joyport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\joyport\mouse.c">
+      <Filter>src\joyport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\joyport\mouse_1351.c">
+      <Filter>src\joyport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\joyport\mouse_neos.c">
+      <Filter>src\joyport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\joyport\mouse_paddle.c">
+      <Filter>src\joyport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\joyport\mouse_quadrature.c">
+      <Filter>src\joyport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\joyport\multijoy.c">
+      <Filter>src\joyport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\joyport\ninja_snespad.c">
+      <Filter>src\joyport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\joyport\paperclip2.c">
+      <Filter>src\joyport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\joyport\paperclip64.c">
+      <Filter>src\joyport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\joyport\paperclip64e.c">
+      <Filter>src\joyport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\joyport\paperclip64sc.c">
+      <Filter>src\joyport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\joyport\powerpad.c">
+      <Filter>src\joyport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\joyport\protopad.c">
+      <Filter>src\joyport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\joyport\rushware_keypad.c">
+      <Filter>src\joyport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\joyport\sampler2bit.c">
+      <Filter>src\joyport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\joyport\sampler4bit.c">
+      <Filter>src\joyport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\joyport\script64_dongle.c">
+      <Filter>src\joyport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\joyport\spaceballs.c">
+      <Filter>src\joyport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\joyport\trapthem_snespad.c">
+      <Filter>src\joyport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\joyport\vizawrite64_dongle.c">
+      <Filter>src\joyport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\joyport\waasoft_dongle.c">
+      <Filter>src\joyport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\drive.c">
+      <Filter>src\drive</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\drive-check.c">
+      <Filter>src\drive</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\drive-cmdline-options.c">
+      <Filter>src\drive</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\drivecpu.c">
+      <Filter>src\drive</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\drivecpu65c02.c">
+      <Filter>src\drive</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\driveimage.c">
+      <Filter>src\drive</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\drivemem.c">
+      <Filter>src\drive</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\drive-resources.c">
+      <Filter>src\drive</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\driverom.c">
+      <Filter>src\drive</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\drive-snapshot.c">
+      <Filter>src\drive</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\drive-sound.c">
+      <Filter>src\drive</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\drivesync.c">
+      <Filter>src\drive</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\drive-writeprotect.c">
+      <Filter>src\drive</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\rotation.c">
+      <Filter>src\drive</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\ata.c">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\ciacore.c">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\ciatimer.c">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\cs8900.c">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\flash040core.c">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\flash800core.c">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\fmopl.c">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\i8255a.c">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\m93c86.c">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\mc6821core.c">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\riotcore.c">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\scsi.c">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\ser-eeprom.c">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\spi-flash.c">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\spi-sdcard.c">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\t6721.c">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\tpicore.c">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\viacore.c">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\rtc\bq4830y.c">
+      <Filter>src\core\rtc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\rtc\ds12c887.c">
+      <Filter>src\core\rtc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\rtc\ds1202_1302.c">
+      <Filter>src\core\rtc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\rtc\ds1216e.c">
+      <Filter>src\core\rtc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\rtc\ds1307.c">
+      <Filter>src\core\rtc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\rtc\ds1602.c">
+      <Filter>src\core\rtc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\rtc\pcf8583.c">
+      <Filter>src\core\rtc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\rtc\rtc.c">
+      <Filter>src\core\rtc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\rtc\rtc-58321a.c">
+      <Filter>src\core\rtc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\rtc\rtc-72421.c">
+      <Filter>src\core\rtc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\lib\p64\p64.c">
+      <Filter>src\lib\p64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vdrive\vdrive.c">
+      <Filter>src\vdrive</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vdrive\vdrive-bam.c">
+      <Filter>src\vdrive</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vdrive\vdrive-command.c">
+      <Filter>src\vdrive</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vdrive\vdrive-dir.c">
+      <Filter>src\vdrive</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vdrive\vdrive-iec.c">
+      <Filter>src\vdrive</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vdrive\vdrive-internal.c">
+      <Filter>src\vdrive</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vdrive\vdrive-rel.c">
+      <Filter>src\vdrive</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vdrive\vdrive-snapshot.c">
+      <Filter>src\vdrive</Filter>
+    </ClCompile>
+    <ClCompile Include="src\datasette\datasette.c">
+      <Filter>src\datasette</Filter>
+    </ClCompile>
+    <ClCompile Include="src\datasette\datasette-sound.c">
+      <Filter>src\datasette</Filter>
+    </ClCompile>
+    <ClCompile Include="src\fsdevice\fsdevice.c">
+      <Filter>src\fsdevice</Filter>
+    </ClCompile>
+    <ClCompile Include="src\fsdevice\fsdevice-close.c">
+      <Filter>src\fsdevice</Filter>
+    </ClCompile>
+    <ClCompile Include="src\fsdevice\fsdevice-cmdline-options.c">
+      <Filter>src\fsdevice</Filter>
+    </ClCompile>
+    <ClCompile Include="src\fsdevice\fsdevice-filename.c">
+      <Filter>src\fsdevice</Filter>
+    </ClCompile>
+    <ClCompile Include="src\fsdevice\fsdevice-flush.c">
+      <Filter>src\fsdevice</Filter>
+    </ClCompile>
+    <ClCompile Include="src\fsdevice\fsdevice-open.c">
+      <Filter>src\fsdevice</Filter>
+    </ClCompile>
+    <ClCompile Include="src\fsdevice\fsdevice-read.c">
+      <Filter>src\fsdevice</Filter>
+    </ClCompile>
+    <ClCompile Include="src\fsdevice\fsdevice-resources.c">
+      <Filter>src\fsdevice</Filter>
+    </ClCompile>
+    <ClCompile Include="src\fsdevice\fsdevice-write.c">
+      <Filter>src\fsdevice</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imagecontents\diskcontents.c">
+      <Filter>src\imagecontents</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imagecontents\diskcontents-block.c">
+      <Filter>src\imagecontents</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imagecontents\diskcontents-iec.c">
+      <Filter>src\imagecontents</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imagecontents\imagecontents.c">
+      <Filter>src\imagecontents</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imagecontents\tapecontents.c">
+      <Filter>src\imagecontents</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tapeport\cp-clockf83.c">
+      <Filter>src\tapeport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tapeport\dtl-basic-dongle.c">
+      <Filter>src\tapeport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tapeport\sense-dongle.c">
+      <Filter>src\tapeport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tapeport\tape_diag_586220_harness.c">
+      <Filter>src\tapeport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tapeport\tapecart.c">
+      <Filter>src\tapeport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tapeport\tapeport.c">
+      <Filter>src\tapeport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tapeport\wordcraft-dongle.c">
+      <Filter>src\tapeport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\diskimage\diskimage.c">
+      <Filter>src\diskimage</Filter>
+    </ClCompile>
+    <ClCompile Include="src\diskimage\fsimage.c">
+      <Filter>src\diskimage</Filter>
+    </ClCompile>
+    <ClCompile Include="src\diskimage\fsimage-check.c">
+      <Filter>src\diskimage</Filter>
+    </ClCompile>
+    <ClCompile Include="src\diskimage\fsimage-create.c">
+      <Filter>src\diskimage</Filter>
+    </ClCompile>
+    <ClCompile Include="src\diskimage\fsimage-dxx.c">
+      <Filter>src\diskimage</Filter>
+    </ClCompile>
+    <ClCompile Include="src\diskimage\fsimage-gcr.c">
+      <Filter>src\diskimage</Filter>
+    </ClCompile>
+    <ClCompile Include="src\diskimage\fsimage-p64.c">
+      <Filter>src\diskimage</Filter>
+    </ClCompile>
+    <ClCompile Include="src\diskimage\fsimage-probe.c">
+      <Filter>src\diskimage</Filter>
+    </ClCompile>
+    <ClCompile Include="src\diskimage\realimage.c">
+      <Filter>src\diskimage</Filter>
+    </ClCompile>
+    <ClCompile Include="src\fileio\cbmfile.c">
+      <Filter>src\fileio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\fileio\fileio.c">
+      <Filter>src\fileio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\fileio\p00.c">
+      <Filter>src\fileio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\printerdrv\driver-select.c">
+      <Filter>src\printerdrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\printerdrv\drv-1520.c">
+      <Filter>src\printerdrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\printerdrv\drv-ascii.c">
+      <Filter>src\printerdrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\printerdrv\drv-mps803.c">
+      <Filter>src\printerdrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\printerdrv\drv-nl10.c">
+      <Filter>src\printerdrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\printerdrv\drv-raw.c">
+      <Filter>src\printerdrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\printerdrv\interface-serial.c">
+      <Filter>src\printerdrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\printerdrv\interface-userport.c">
+      <Filter>src\printerdrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\printerdrv\output-graphics.c">
+      <Filter>src\printerdrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\printerdrv\output-select.c">
+      <Filter>src\printerdrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\printerdrv\output-text.c">
+      <Filter>src\printerdrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\printerdrv\printer.c">
+      <Filter>src\printerdrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\printerdrv\printer-serial.c">
+      <Filter>src\printerdrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\printerdrv\printer-userport.c">
+      <Filter>src\printerdrv</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\adler32.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\compress.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\crc32.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\deflate.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\gzclose.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\gzlib.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\gzread.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\gzwrite.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\infback.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\inffast.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\inflate.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\inftrees.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\trees.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\uncompr.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\zutil.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hvsc\base.c">
+      <Filter>src\hvsc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hvsc\bugs.c">
+      <Filter>src\hvsc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hvsc\main.c">
+      <Filter>src\hvsc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hvsc\psid.c">
+      <Filter>src\hvsc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hvsc\sldb.c">
+      <Filter>src\hvsc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hvsc\stil.c">
+      <Filter>src\hvsc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sid\catweaselmkiii.c">
+      <Filter>src\sid</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sid\fastsid.c">
+      <Filter>src\sid</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sid\hardsid.c">
+      <Filter>src\sid</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sid\parsid.c">
+      <Filter>src\sid</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sid\resid.cc">
+      <Filter>src\sid</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sid\resid-dtv.cc">
+      <Filter>src\sid</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sid\sid.c">
+      <Filter>src\sid</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sid\sid-cmdline-options.c">
+      <Filter>src\sid</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sid\sid-resources.c">
+      <Filter>src\sid</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sid\sid-snapshot.c">
+      <Filter>src\sid</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sid\usbsid.c">
+      <Filter>src\sid</Filter>
+    </ClCompile>
+    <ClCompile Include="src\userport\userport.c">
+      <Filter>src\userport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\userport\userport_4bit_sampler.c">
+      <Filter>src\userport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\userport\userport_8bss.c">
+      <Filter>src\userport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\userport\userport_dac.c">
+      <Filter>src\userport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\userport\userport_diag_586220_harness.c">
+      <Filter>src\userport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\userport\userport_diag_pin.c">
+      <Filter>src\userport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\userport\userport_digimax.c">
+      <Filter>src\userport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\userport\userport_funmp3.c">
+      <Filter>src\userport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\userport\userport_hks_joystick.c">
+      <Filter>src\userport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\userport\userport_hummer_joystick.c">
+      <Filter>src\userport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\userport\userport_io_sim.c">
+      <Filter>src\userport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\userport\userport_joystick.c">
+      <Filter>src\userport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\userport\userport_petscii_snespad.c">
+      <Filter>src\userport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\userport\userport_ps2mouse.c">
+      <Filter>src\userport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\userport\userport_rtc_58321a.c">
+      <Filter>src\userport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\userport\userport_rtc_ds1307.c">
+      <Filter>src\userport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\userport\userport_spt_joystick.c">
+      <Filter>src\userport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\userport\userport_superpad64.c">
+      <Filter>src\userport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\userport\userport_synergy_joystick.c">
+      <Filter>src\userport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\userport\userport_wic64.c">
+      <Filter>src\userport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\userport\userport_woj_joystick.c">
+      <Filter>src\userport</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pet\6809.c">
+      <Filter>src\pet</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pet\debugcart.c">
+      <Filter>src\pet</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pet\pet.c">
+      <Filter>src\pet</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pet\petacia1.c">
+      <Filter>src\pet</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pet\petbus.c">
+      <Filter>src\pet</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pet\pet-cmdline-options.c">
+      <Filter>src\pet</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pet\petcolour.c">
+      <Filter>src\pet</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pet\petcpu.c">
+      <Filter>src\pet</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pet\petdatasette.c">
+      <Filter>src\pet</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pet\petdrive.c">
+      <Filter>src\pet</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pet\petdww.c">
+      <Filter>src\pet</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pet\pethre.c">
+      <Filter>src\pet</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pet\petiec.c">
+      <Filter>src\pet</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pet\petio.c">
+      <Filter>src\pet</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pet\petmem.c">
+      <Filter>src\pet</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pet\petmemsnapshot.c">
+      <Filter>src\pet</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pet\petmodel.c">
+      <Filter>src\pet</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pet\petpia1.c">
+      <Filter>src\pet</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pet\petpia2.c">
+      <Filter>src\pet</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pet\petprinter.c">
+      <Filter>src\pet</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pet\pet-resources.c">
+      <Filter>src\pet</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pet\petreu.c">
+      <Filter>src\pet</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pet\petrom.c">
+      <Filter>src\pet</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pet\petromset.c">
+      <Filter>src\pet</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pet\pet-sidcart.c">
+      <Filter>src\pet</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pet\pet-snapshot.c">
+      <Filter>src\pet</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pet\petsound.c">
+      <Filter>src\pet</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pet\pet-stubs.c">
+      <Filter>src\pet</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pet\petvia.c">
+      <Filter>src\pet</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pet\petvideo.c">
+      <Filter>src\pet</Filter>
+    </ClCompile>
+    <ClCompile Include="src\samplerdrv\file_drv.c">
+      <Filter>src\samplerdrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\samplerdrv\portaudio_drv.c">
+      <Filter>src\samplerdrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\samplerdrv\sampler.c">
+      <Filter>src\samplerdrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\video\render1x1.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\video\render1x1ntsc.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\video\render1x1pal.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\video\render1x1rgbi.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\video\render1x2.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\video\render1x2rgbi.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\video\render2x2.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\video\render2x2ntsc.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\video\render2x2pal.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\video\render2x2palu.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\video\render2x2rgbi.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\video\render2x4.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\video\render2x4rgbi.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\video\render-common.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\video\renderscale2x.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\video\video-canvas.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\video\video-cmdline-options.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\video\video-color.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\video\video-render.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\video\video-render-crtmono.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\video\video-render-palntsc.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\video\video-render-rgbi.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\video\video-resources.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\video\video-sound.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\video\video-viewport.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\viciisc\vicii.c">
+      <Filter>src\viciisc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\viciisc\vicii-chip-model.c">
+      <Filter>src\viciisc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\viciisc\vicii-cmdline-options.c">
+      <Filter>src\viciisc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\viciisc\vicii-color.c">
+      <Filter>src\viciisc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\viciisc\vicii-cycle.c">
+      <Filter>src\viciisc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\viciisc\vicii-draw.c">
+      <Filter>src\viciisc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\viciisc\vicii-draw-cycle.c">
+      <Filter>src\viciisc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\viciisc\vicii-fetch.c">
+      <Filter>src\viciisc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\viciisc\vicii-irq.c">
+      <Filter>src\viciisc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\viciisc\vicii-lightpen.c">
+      <Filter>src\viciisc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\viciisc\vicii-mem.c">
+      <Filter>src\viciisc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\viciisc\vicii-phi1.c">
+      <Filter>src\viciisc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\viciisc\vicii-resources.c">
+      <Filter>src\viciisc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\viciisc\vicii-snapshot.c">
+      <Filter>src\viciisc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\viciisc\vicii-timing.c">
+      <Filter>src\viciisc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\raster\raster.c">
+      <Filter>src\raster</Filter>
+    </ClCompile>
+    <ClCompile Include="src\raster\raster-cache.c">
+      <Filter>src\raster</Filter>
+    </ClCompile>
+    <ClCompile Include="src\raster\raster-canvas.c">
+      <Filter>src\raster</Filter>
+    </ClCompile>
+    <ClCompile Include="src\raster\raster-changes.c">
+      <Filter>src\raster</Filter>
+    </ClCompile>
+    <ClCompile Include="src\raster\raster-cmdline-options.c">
+      <Filter>src\raster</Filter>
+    </ClCompile>
+    <ClCompile Include="src\raster\raster-line.c">
+      <Filter>src\raster</Filter>
+    </ClCompile>
+    <ClCompile Include="src\raster\raster-line-changes.c">
+      <Filter>src\raster</Filter>
+    </ClCompile>
+    <ClCompile Include="src\raster\raster-line-changes-sprite.c">
+      <Filter>src\raster</Filter>
+    </ClCompile>
+    <ClCompile Include="src\raster\raster-modes.c">
+      <Filter>src\raster</Filter>
+    </ClCompile>
+    <ClCompile Include="src\raster\raster-resources.c">
+      <Filter>src\raster</Filter>
+    </ClCompile>
+    <ClCompile Include="src\raster\raster-snapshot.c">
+      <Filter>src\raster</Filter>
+    </ClCompile>
+    <ClCompile Include="src\raster\raster-sprite.c">
+      <Filter>src\raster</Filter>
+    </ClCompile>
+    <ClCompile Include="src\raster\raster-sprite-cache.c">
+      <Filter>src\raster</Filter>
+    </ClCompile>
+    <ClCompile Include="src\raster\raster-sprite-status.c">
+      <Filter>src\raster</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\iec\c64exp\c64exp-cmdline-options.c">
+      <Filter>src\drive\iec\c64exp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\iec\c64exp\c64exp-resources.c">
+      <Filter>src\drive\iec\c64exp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\iec\c64exp\dolphindos3.c">
+      <Filter>src\drive\iec\c64exp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\iec\c64exp\iec-c64exp.c">
+      <Filter>src\drive\iec\c64exp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\iec\c64exp\profdos.c">
+      <Filter>src\drive\iec\c64exp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\iec\c64exp\stardos-exp.c">
+      <Filter>src\drive\iec\c64exp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\iec\c64exp\supercard.c">
+      <Filter>src\drive\iec\c64exp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tape\t64.c">
+      <Filter>src\tape</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tape\tap.c">
+      <Filter>src\tape</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tape\tape.c">
+      <Filter>src\tape</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tape\tapeimage.c">
+      <Filter>src\tape</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tape\tape-internal.c">
+      <Filter>src\tape</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tape\tape-snapshot.c">
+      <Filter>src\tape</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\tcbm\glue1551.c">
+      <Filter>src\drive\tcbm</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\tcbm\mem1551.c">
+      <Filter>src\drive\tcbm</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\tcbm\tcbm.c">
+      <Filter>src\drive\tcbm</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\tcbm\tcbm-cmdline-options.c">
+      <Filter>src\drive\tcbm</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\tcbm\tcbm-resources.c">
+      <Filter>src\drive\tcbm</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\tcbm\tcbmrom.c">
+      <Filter>src\drive\tcbm</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\tcbm\tpid.c">
+      <Filter>src\drive\tcbm</Filter>
+    </ClCompile>
+    <ClCompile Include="src\lib\md5\md5.c">
+      <Filter>src\lib\md5</Filter>
+    </ClCompile>
+    <ClCompile Include="src\diag\c64_diag_586220_harness.c">
+      <Filter>src\diag</Filter>
+    </ClCompile>
+    <ClCompile Include="src\crtc\crtc.c">
+      <Filter>src\crtc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\crtc\crtc-cmdline-options.c">
+      <Filter>src\crtc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\crtc\crtc-color.c">
+      <Filter>src\crtc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\crtc\crtc-draw.c">
+      <Filter>src\crtc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\crtc\crtc-mem.c">
+      <Filter>src\crtc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\crtc\crtc-resources.c">
+      <Filter>src\crtc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\crtc\crtc-snapshot.c">
+      <Filter>src\crtc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\resid\dac.cc">
+      <Filter>src\resid</Filter>
+    </ClCompile>
+    <ClCompile Include="src\resid\envelope.cc">
+      <Filter>src\resid</Filter>
+    </ClCompile>
+    <ClCompile Include="src\resid\extfilt.cc">
+      <Filter>src\resid</Filter>
+    </ClCompile>
+    <ClCompile Include="src\resid\filter.cc">
+      <Filter>src\resid</Filter>
+    </ClCompile>
+    <ClCompile Include="src\resid\filter8580new.cc">
+      <Filter>src\resid</Filter>
+    </ClCompile>
+    <ClCompile Include="src\resid\pot.cc">
+      <Filter>src\resid</Filter>
+    </ClCompile>
+    <ClCompile Include="src\resid\sid.cc">
+      <Filter>src\resid</Filter>
+    </ClCompile>
+    <ClCompile Include="src\resid\version.cc">
+      <Filter>src\resid</Filter>
+    </ClCompile>
+    <ClCompile Include="src\resid\voice.cc">
+      <Filter>src\resid</Filter>
+    </ClCompile>
+    <ClCompile Include="src\resid\wave.cc">
+      <Filter>src\resid</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gfxoutputdrv\artstudiodrv.c">
+      <Filter>src\gfxoutputdrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gfxoutputdrv\bmpdrv.c">
+      <Filter>src\gfxoutputdrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gfxoutputdrv\ffmpegexedrv.c">
+      <Filter>src\gfxoutputdrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gfxoutputdrv\gfxoutput.c">
+      <Filter>src\gfxoutputdrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gfxoutputdrv\gifdrv.c">
+      <Filter>src\gfxoutputdrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gfxoutputdrv\godotdrv.c">
+      <Filter>src\gfxoutputdrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gfxoutputdrv\iffdrv.c">
+      <Filter>src\gfxoutputdrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gfxoutputdrv\koaladrv.c">
+      <Filter>src\gfxoutputdrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gfxoutputdrv\minipaintdrv.c">
+      <Filter>src\gfxoutputdrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gfxoutputdrv\nativedrv.c">
+      <Filter>src\gfxoutputdrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gfxoutputdrv\pcxdrv.c">
+      <Filter>src\gfxoutputdrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gfxoutputdrv\pngdrv.c">
+      <Filter>src\gfxoutputdrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gfxoutputdrv\ppmdrv.c">
+      <Filter>src\gfxoutputdrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gfxoutputdrv\zmbvdrv.c">
+      <Filter>src\gfxoutputdrv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\lib\libzmbv\miniz.c">
+      <Filter>src\lib\libzmbv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\lib\libzmbv\zmbv.c">
+      <Filter>src\lib\libzmbv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\lib\libzmbv\zmbv_avi.c">
+      <Filter>src\lib\libzmbv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\serial\fsdrive.c">
+      <Filter>src\serial</Filter>
+    </ClCompile>
+    <ClCompile Include="src\serial\iec-ieee488-shared.c">
+      <Filter>src\serial</Filter>
+    </ClCompile>
+    <ClCompile Include="src\serial\realdevice.c">
+      <Filter>src\serial</Filter>
+    </ClCompile>
+    <ClCompile Include="src\serial\serial.c">
+      <Filter>src\serial</Filter>
+    </ClCompile>
+    <ClCompile Include="src\serial\serial-device.c">
+      <Filter>src\serial</Filter>
+    </ClCompile>
+    <ClCompile Include="src\serial\serial-iec.c">
+      <Filter>src\serial</Filter>
+    </ClCompile>
+    <ClCompile Include="src\serial\serial-iec-bus.c">
+      <Filter>src\serial</Filter>
+    </ClCompile>
+    <ClCompile Include="src\serial\serial-iec-device.c">
+      <Filter>src\serial</Filter>
+    </ClCompile>
+    <ClCompile Include="src\serial\serial-iec-lib.c">
+      <Filter>src\serial</Filter>
+    </ClCompile>
+    <ClCompile Include="src\serial\serial-realdevice.c">
+      <Filter>src\serial</Filter>
+    </ClCompile>
+    <ClCompile Include="src\serial\serial-trap.c">
+      <Filter>src\serial</Filter>
+    </ClCompile>
+    <ClCompile Include="src\z80core.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\iecbus\iecbus.c">
+      <Filter>src\iecbus</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\iecieee\iecieee.c">
+      <Filter>src\drive\iecieee</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\iecieee\via2d.c">
+      <Filter>src\drive\iecieee</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\iec\cia1571d.c">
+      <Filter>src\drive\iec</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\iec\cia1581d.c">
+      <Filter>src\drive\iec</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\iec\cmdhd.c">
+      <Filter>src\drive\iec</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\iec\fdd.c">
+      <Filter>src\drive\iec</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\iec\glue1571.c">
+      <Filter>src\drive\iec</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\iec\iec.c">
+      <Filter>src\drive\iec</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\iec\iec-cmdline-options.c">
+      <Filter>src\drive\iec</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\iec\iec-resources.c">
+      <Filter>src\drive\iec</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\iec\iecrom.c">
+      <Filter>src\drive\iec</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\iec\memiec.c">
+      <Filter>src\drive\iec</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\iec\pc8477.c">
+      <Filter>src\drive\iec</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\iec\via1d1541.c">
+      <Filter>src\drive\iec</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\iec\via4000.c">
+      <Filter>src\drive\iec</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\iec\wd1770.c">
+      <Filter>src\drive\iec</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\ieee\fdc.c">
+      <Filter>src\drive\ieee</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\ieee\ieee.c">
+      <Filter>src\drive\ieee</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\ieee\ieee-cmdline-options.c">
+      <Filter>src\drive\ieee</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\ieee\ieee-resources.c">
+      <Filter>src\drive\ieee</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\ieee\ieeerom.c">
+      <Filter>src\drive\ieee</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\ieee\memieee.c">
+      <Filter>src\drive\ieee</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\ieee\riot1d.c">
+      <Filter>src\drive\ieee</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\ieee\riot2d.c">
+      <Filter>src\drive\ieee</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drive\ieee\via1d2031.c">
+      <Filter>src\drive\ieee</Filter>
+    </ClCompile>
+    <ClCompile Include="src\parallel\parallel.c">
+      <Filter>src\parallel</Filter>
+    </ClCompile>
+    <ClCompile Include="src\parallel\parallel-trap.c">
+      <Filter>src\parallel</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\c64\cart\Makefile.am">
+      <Filter>src\c64\cart</Filter>
+    </None>
+    <None Include="src\c64\cart\Makefile.in">
+      <Filter>src\c64\cart</Filter>
+    </None>
+    <None Include="src\c64\Makefile.am">
+      <Filter>src\c64</Filter>
+    </None>
+    <None Include="src\c64\Makefile.in">
+      <Filter>src\c64</Filter>
+    </None>
+    <None Include="src\c64\psiddrv.a65">
+      <Filter>src\c64</Filter>
+    </None>
+    <None Include="src\monitor\mon_lex.l">
+      <Filter>src\monitor</Filter>
+    </None>
+    <None Include="src\monitor\mon_parse.y">
+      <Filter>src\monitor</Filter>
+    </None>
+    <None Include="src\arch\shared\macOS-launcher.sh">
+      <Filter>src\arch\shared</Filter>
+    </None>
+    <None Include="src\arch\shared\macOS-util.m">
+      <Filter>src\arch\shared</Filter>
+    </None>
+    <None Include="src\core\rtc\Makefile.am">
+      <Filter>src\core\rtc</Filter>
+    </None>
+    <None Include="src\core\rtc\Makefile.in">
+      <Filter>src\core\rtc</Filter>
+    </None>
+  </ItemGroup>
+</Project>

@@ -12,7 +12,13 @@
 #include "UndoBufferWindow.h"
 #include "NetworkManager.h"
 #include "SearchWindow.h"
+#include "EmuScreenWindow.h"
+#include "ViceBridge.h"
 #include <filesystem>
+
+extern "C" {
+#include "src/main.h"
+};
 
 u32 CustomEvent_Timer = 0;
 
@@ -283,6 +289,12 @@ void Application::CreateMenus()
             WindowManager::Instance().LayoutWindows();
         };
 
+    auto newEmuScreenWindow = []()
+        {
+            WindowManager::Instance().AddWindow(new EmuScreenWindow);
+            WindowManager::Instance().LayoutWindows();
+        };
+
     auto toggleFrameLock = []()
         {
             auto layout = WindowManager::Instance().GetActiveWindowLayout();
@@ -297,6 +309,8 @@ void Application::CreateMenus()
     windowMenu->m_items.push_back(new WindowMenuItem("Build Output", newWindowBuildOutput));
     windowMenu->m_items.push_back(new WindowMenuItem("Undo Buffer", newWindowUndoBuffer));
     windowMenu->m_items.push_back(new WindowMenuItem("Search And Replace", newSearchWindow));
+    windowMenu->m_items.push_back(new WindowMenuItem("- - - - - - - - - -", []() {}));
+    windowMenu->m_items.push_back(new WindowMenuItem("Emulator Screen", newEmuScreenWindow));
     windowMenu->m_items.push_back(new WindowMenuItem("- - - - - - - - - -", []() {}));
     windowMenu->m_items.push_back(new WindowMenuItem("Toggle Frame Lock", toggleFrameLock));
     windowMenu->m_items.push_back(new WindowMenuItem("Save Window Layout", []() { WindowManager::Instance().SaveWindowLayout(); Settings::Instance().Save(); }));
@@ -576,6 +590,8 @@ void Application::CreateSettings()
 
 int Application::Run()
 {
+    Log("START");
+
     LogManager::Startup();
 
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK))
@@ -626,6 +642,17 @@ int Application::Run()
 
     auto& nm = NetworkManager::Instance();
     nm.Message(new NMS_SetIP("192.168.50.15"));
+
+    gViceBridge = new ViceBridge;
+    gViceBridge->Start();
+
+    auto emulator = [this]()
+        {
+            const char* argv[1] = { "mad64u.exe" };
+            main_program(1, (char **)argv);
+        };
+    std::thread(emulator).detach();
+
 
     SDL_Event e;
     while (!m_quit)
@@ -794,5 +821,4 @@ bool StrEqualNoCase(const std::string& a, const std::string& b)
             return std::tolower(lhs) == std::tolower(rhs);
         });
 }
-
 

@@ -15,7 +15,7 @@
 #include <filesystem>
 #include <mutex>
 
-#define VERSION "1.000"
+#define MAD64U_VERSION "1.000"
 
 // common types
 typedef unsigned char u8;

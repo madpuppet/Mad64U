@@ -88,6 +88,12 @@
     <ClCompile Include="source\SearchWindow.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="source\EmuScreenWindow.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ViceBridge.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\common.h">
@@ -430,6 +436,12 @@
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="source\SearchWindow.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="source\EmuScreenWindow.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="source\ViceBridge.h">
       <Filter>source</Filter>
     </ClInclude>
   </ItemGroup>

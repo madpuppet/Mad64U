@@ -79,7 +79,7 @@ WindowTree::WindowTree(const Recti& area)
 {
     static int s_unique = 0;
 
-    std::string name = std::format("MAD64U {} #{}", VERSION, s_unique++);
+    std::string name = std::format("MAD64U {} #{}", MAD64U_VERSION, s_unique++);
     m_window = SDL_CreateWindow(name.c_str(), area.w, area.h, SDL_WINDOW_BORDERLESS);
     if (m_window == NULL)
     {
