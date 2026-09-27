@@ -57,9 +57,10 @@ public:
 
     void SetSearchText(const std::string& text);
 
-protected:
     void Search();
     void Replace();
+
+protected:
     SourceFile* m_searchFile;
     std::vector<SearchResult> m_searchLines;
 

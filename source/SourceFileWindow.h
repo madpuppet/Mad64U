@@ -78,7 +78,13 @@ protected:
     void ClampCursor();
     Recti CalcCursorArea();
     float m_animTime = 0.0f;
+
+    int m_pad;
+
     bool m_marking = false;
+
+    int m_pad2;
+
     bool m_marked = false;
     bool m_shiftDown = false;
     bool m_mouseLeftDown = false;

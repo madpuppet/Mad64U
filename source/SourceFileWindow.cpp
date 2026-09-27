@@ -466,6 +466,15 @@ bool SourceFileWindow::HandleEvent(SDL_Event* e)
                             msg.m_layout->ActivateWindow(searchWindow);
                         }
                         searchWindow->SetSearchActive();
+
+                        if (m_marked && m_markStart.y == m_cursor.y)
+                        {
+                            // copy mark string into search window
+                            auto line = m_sourceFile->m_lines[m_cursor.y];
+                            std::string str(line->m_chars.begin() + m_markStart.x, line->m_chars.begin() + m_cursor.x);
+                            searchWindow->SetSearchText(str);
+                            searchWindow->Search();
+                        }
                     }
                     break;
 
@@ -586,6 +595,7 @@ bool SourceFileWindow::HandleEvent(SDL_Event* e)
                     if (e->key.mod & SDL_KMOD_CTRL)
                     {
                         // paste
+                        DeleteSelected();
                         PasteSelected();
                     }
                     return true;
@@ -654,7 +664,7 @@ void SourceFileWindow::MarkCurrentWord()
         m_cursor.x = end;
         m_cursor.y = m_mouseDownPos.y;
         m_marked = true;
-        m_marking = true;
+        m_marking = false;
     }
 }
 
@@ -1261,6 +1271,7 @@ void SourceFileWindow::MessageChild(WindowLayout *layout, struct WindowMessageSt
             {
                 m_cursor.x = msg.m_x;
                 m_cursor.y = msg.m_y;
+                m_marking = false;
                 ClampCursor();
                 MakeCursorVisible();
             }

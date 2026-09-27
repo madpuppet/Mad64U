@@ -202,10 +202,13 @@ void SearchWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
 
         auto line = m_searchFile->m_lines[foundResult.m_line];
 
+        fr.RenderText(renderer, std::format("{:5d}", foundResult.m_line), tp.m_colors[(int)ThemeColor::TextString], xBase, y, FontType::Text);
+        x = xBase + 60;
+
         tp.SetRenderDrawColor(renderer, ThemeColor::TextHighlight);
         int startCol = line->CharIndexToColumn(foundResult.m_startChar);
         int endCol = line->CharIndexToColumn(foundResult.m_startChar + foundResult.m_length);
-        SDL_FRect area{ (float)(xBase + startCol * charWidth), (float)y, (float)((endCol - startCol) * charWidth), (float)LINE_HEIGHT };
+        SDL_FRect area{ (float)(x + startCol * charWidth), (float)y, (float)((endCol - startCol) * charWidth), (float)LINE_HEIGHT };
         SDL_RenderFillRect(renderer, &area);
 
         if (line->m_fragmentsDirty)
@@ -213,7 +216,7 @@ void SearchWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
         for (auto& fragment : line->m_fragments)
         {
             auto& col = tp.m_colors[(int)ThemeColor::TextGeneral + (int)fragment.m_fragType];
-            fr.RenderText(renderer, fragment.m_chars, col, xBase + fragment.m_area.x, y, FontType::Text);
+            fr.RenderText(renderer, fragment.m_chars, col, x + fragment.m_area.x, y, FontType::Text);
             maxWidth = Max(fragment.m_area.x + fragment.m_area.w, maxWidth);
         }
         y += LINE_HEIGHT;
@@ -250,7 +253,7 @@ bool SearchWindow::HandleEvent(SDL_Event* e)
                 else if (m_searchLineArea.Contains(bx, by))
                 {
                     int yBase = m_clientArea.h + LINE_HEIGHT * 3 + BORDER_MARGIN - m_clientContentOffset.y;
-                    int line = (by + m_clientContentOffset.y - (LINE_HEIGHT * 3 + BORDER_MARGIN)) / LINE_HEIGHT;
+                    int line = (by - m_searchLineArea.y) / LINE_HEIGHT;
                     if (line >= 0 && line < m_searchLines.size())
                     {
                         auto sl = m_searchLines[line];
@@ -378,6 +381,11 @@ void SearchWindow::MessageChild(WindowLayout* layout, struct WindowMessageStruct
 void SearchWindow::SaveTokens(std::vector<std::string>& layoutTokens)
 {
     layoutTokens.push_back("SEARCH");
+}
+
+void SearchWindow::SetSearchText(const std::string& text)
+{
+    m_searchBox.m_text = text;
 }
 
 bool SearchWindow::CreateFromLayoutTokens(struct WindowLayout* layout, const std::vector<std::string>& layoutTokens, size_t& idx)
