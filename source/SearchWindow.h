@@ -55,6 +55,8 @@ public:
     void SaveTokens(std::vector<std::string>& layoutTokens);
     static bool CreateFromLayoutTokens(struct WindowLayout* layout, const std::vector<std::string>& layoutTokens, size_t& idx);
 
+    void SetSearchText(const std::string& text);
+
 protected:
     void Search();
     void Replace();

@@ -151,10 +151,10 @@ void SourceLine::BuildFragments(SDL_Renderer* renderer, SourceType sourceType)
             }
         }
 
-        if ((sourceType == SourceType::Asm || sourceType == SourceType::S) && strcmp(frag, ";") == 0)
+        if ((sourceType == SourceType::S) && strcmp(frag, ";") == 0)
             ft = FragmentType::Comment;
 
-        if (sourceType == SourceType::C && strcmp(frag, "//") == 0)
+        if ((sourceType == SourceType::C || sourceType == SourceType::Asm) && strcmp(frag, "//") == 0)
             ft = FragmentType::Comment;
 
         SourceLineRenderFragment fragment;

@@ -16,14 +16,14 @@
 
 const char* s_keywords_asm[] = { "tax", "eor", "dec", "pla", "rts", "rti", "bcc", "bcs", "txa", "clc", "sec",
             "cpx", "cpy", "cmp", "bne", "beq", "bmi", "bpl", "ldx", "ldy", "stx", "sty", "jsr", "jmp", "nop",
-            "tay", "tya", "pha", "dey", "dex", "inc", "inx", "iny", "lda", "sta", "adc", "lsr", "asr",
-        "asl", "lsl", "and", "ora", "xor", "sei", "cli", "//", ";", ":", ".label", "#import", "#", "$",
+            "tay", "tya", "pha", "dey", "dex", "inc", "inx", "iny", "lda", "sta", "adc", "lsr", "asr", "ror",
+        "asl", "lsl", "and", "ora", "sei", "cli", "//", ";", ":", ".label", "#import", "#", "$",
     ".word", ".byte", ".import", "binary", "*", "=", ".for", "var", "round", "sin", ",", "%", 0};
 
 const char* s_keywords_s[] = { "tax", "eor", "dec", "pla", "rts", "rti", "bcc", "bcs", "txa", "clc", "sec",
             "cpx", "cpy", "cmp", "bne", "beq", "bmi", "bpl", "ldx", "ldy", "stx", "sty", "jsr", "jmp", "nop",
-            "tay", "tya", "pha", "dey", "dex", "inc", "inx", "iny", "lda", "sta", "adc", "lsr", "asr",
-        "asl", "lsl", "and", "ora", "xor", "sei", "cli", "//", ";", ":", ".label", "#import", "#", "$",
+            "tay", "tya", "pha", "dey", "dex", "inc", "inx", "iny", "lda", "sta", "adc", "lsr", "asr", "ror",
+        "asl", "lsl", "and", "ora", "sei", "cli", "//", ";", ":", ".label", "#import", "#", "$",
     ".word", ".byte", ".import", "binary", "*", "=", ".for", "var", "round", "sin", ",", "%",
     ".fopt", ".setcpu", ".smart", ".autoimport", ".debuginfo", ".importzp", ".dbg", ".forceimport", ".export", ".macpack", ".case",
     0 };
@@ -209,7 +209,7 @@ public:
                 return true;
             }
 
-            while ((*m_ptr >= 'a' && *m_ptr <= 'z') || (*m_ptr >= 'A' && *m_ptr <= 'Z') || (*m_ptr >= '0' && *m_ptr <= '9') || *m_ptr == '/' || *m_ptr == '\\' || *m_ptr == '.' || *m_ptr == ':' || *m_ptr == '$' || *m_ptr == '_')
+            while ((*m_ptr >= 'a' && *m_ptr <= 'z') || (*m_ptr >= 'A' && *m_ptr <= 'Z') || (*m_ptr >= '0' && *m_ptr <= '9') || *m_ptr == '/' || *m_ptr == '\\' || *m_ptr == '.' || *m_ptr == ':' || *m_ptr == '$' || *m_ptr == '_' || *m_ptr == '-')
             {
                 result.push_back(*m_ptr++);
             }

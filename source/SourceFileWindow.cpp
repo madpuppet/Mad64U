@@ -117,7 +117,7 @@ void SourceFileWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     int xBase = m_clientArea.x - m_clientContentOffset.x + BORDER_MARGIN;
     int yBase = m_clientArea.y - m_clientContentOffset.y + BORDER_MARGIN;
 
-    SDL_FRect highlightRect{ xBase, yBase + m_cursor.y * LINE_HEIGHT, m_clientArea.w, LINE_HEIGHT };
+    SDL_FRect highlightRect{ (float)xBase, (float)(yBase + m_cursor.y * LINE_HEIGHT), (float)m_clientArea.w, (float)LINE_HEIGHT };
     tp.SetRenderDrawColor(renderer, ThemeColor::HighlightLine);
     SDL_RenderFillRect(renderer, &highlightRect);
 
@@ -374,11 +374,18 @@ bool SourceFileWindow::HandleEvent(SDL_Event* e)
                 CalcXYFromClientPos((int)e->button.x, (int)e->button.y, col, row);
                 MoveCursorXY(col, row);
                 m_mouseLeftDown = true;
+
+                bool moved = (m_mouseDownPos.x != col || m_mouseDownPos.y != row);
                 m_mouseDownPos.x = col;
                 m_mouseDownPos.y = row;
+
                 if (!m_shiftDown)
                 {
                     ClearMarking();
+                }
+                if (e->button.clicks > 1 && !moved)
+                {
+                    MarkCurrentWord();
                 }
             }
             return true;
@@ -422,6 +429,8 @@ bool SourceFileWindow::HandleEvent(SDL_Event* e)
                 case SDLK_F:
                     if (e->key.mod & SDL_KMOD_CTRL)
                     {
+                        Log(LogGroup::Build, "CTRL F");
+
                         WindowMessageStruct msg;
                         WindowFindQuery query;
                         query.m_windowName = "Search";
@@ -429,6 +438,9 @@ bool SourceFileWindow::HandleEvent(SDL_Event* e)
                         msg.m_flags = WMF_Window | WMF_EarlyOut;
                         msg.m_query = &query;
                         WindowManager::Instance().Message(msg);
+
+                        int count = (int) query.m_foundWindows.size();
+                        Log(LogGroup::Build, "response {}  found {}", msg.m_response, count);
 
                         SearchWindow *searchWindow = nullptr;
                         if (msg.m_response == 0)
@@ -449,6 +461,10 @@ bool SourceFileWindow::HandleEvent(SDL_Event* e)
                                 searchWindow = (SearchWindow*)query.m_foundWindows[0];
                         }
 
+                        if (msg.m_layout)
+                        {
+                            msg.m_layout->ActivateWindow(searchWindow);
+                        }
                         searchWindow->SetSearchActive();
                     }
                     break;
@@ -613,6 +629,34 @@ bool SourceFileWindow::HandleEvent(SDL_Event* e)
     return WindowBase::HandleEvent(e);
 }
 
+bool IsAlphaNumeric(char ch)
+{
+    return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') || (ch == '_');
+}
+
+void SourceFileWindow::MarkCurrentWord()
+{
+    auto line = m_sourceFile->m_lines[m_mouseDownPos.y];
+    int start = m_mouseDownPos.x;
+    int end = m_mouseDownPos.x;
+    int lineLength = (int)line->m_chars.length();
+    if (start < lineLength)
+    {
+        bool isAlpha = IsAlphaNumeric(line->m_chars[start]);
+
+        while (start > 0 && IsAlphaNumeric(line->m_chars[start - 1]) == isAlpha)
+            start--;
+        while (end < lineLength && IsAlphaNumeric(line->m_chars[end]) == isAlpha)
+            end++;
+
+        m_markStart.y = m_mouseDownPos.y;
+        m_markStart.x = start;
+        m_cursor.x = end;
+        m_cursor.y = m_mouseDownPos.y;
+        m_marked = true;
+        m_marking = true;
+    }
+}
 
 void SourceFileWindow::MoveCursorLeft()
 {
@@ -898,6 +942,7 @@ void SourceFileWindow::DeleteCharBeforeCursor()
 
         m_cursor = newCursor;
         m_trackedColumn = m_cursor.x;
+        m_clientContentSize.y = (int)m_sourceFile->m_lines.size() * LINE_HEIGHT;
     }
     else
     {
@@ -913,6 +958,7 @@ void SourceFileWindow::DeleteCharBeforeCursor()
 
         m_cursor = newCursor;
         m_trackedColumn = m_cursor.x;
+        m_clientContentSize.y = (int)m_sourceFile->m_lines.size() * LINE_HEIGHT;
     }
 }
 
@@ -942,6 +988,7 @@ void SourceFileWindow::DeleteCharAfterCursor()
         sfcGroup->m_cmds.push_back(sfcReplace);
         sfcGroup->m_cmds.push_back(sfcDelete);
         m_sourceFile->m_cmdBuffer->PushAndExecute(m_sourceFile, sfcGroup);
+        m_clientContentSize.y = (int)m_sourceFile->m_lines.size() * LINE_HEIGHT;
     }
     else
     {
@@ -950,6 +997,7 @@ void SourceFileWindow::DeleteCharAfterCursor()
         newLine.erase(newLine.begin() + m_cursor.x, newLine.begin() + m_cursor.x + 1);
         auto sfcReplace = new SFC_ReplaceLine(m_cursor.y, oldLine, newLine, oldCursor, newCursor);
         m_sourceFile->m_cmdBuffer->PushAndExecute(m_sourceFile, sfcReplace);
+        m_clientContentSize.y = (int)m_sourceFile->m_lines.size() * LINE_HEIGHT;
     }
 }
 
@@ -965,6 +1013,7 @@ void SourceFileWindow::InsertNewLineAtCursor()
         auto sfcInsertLine = new SFC_InsertLine(m_cursor.y, "", oldCursor, newCursor);
         m_sourceFile->m_cmdBuffer->PushAndExecute(m_sourceFile, sfcInsertLine);
         m_cursor = newCursor;
+        m_clientContentSize.y = (int)m_sourceFile->m_lines.size() * LINE_HEIGHT;
     }
     else if (m_cursor.x == m_sourceFile->m_lines[m_cursor.y]->m_chars.size())
     {
@@ -975,6 +1024,7 @@ void SourceFileWindow::InsertNewLineAtCursor()
         m_sourceFile->m_cmdBuffer->PushAndExecute(m_sourceFile, sfcInsertLine);
         m_cursor = newCursor;
         m_trackedColumn = m_cursor.x;
+        m_clientContentSize.y = (int)m_sourceFile->m_lines.size() * LINE_HEIGHT;
     }
     else
     {
@@ -993,6 +1043,7 @@ void SourceFileWindow::InsertNewLineAtCursor()
         m_sourceFile->m_cmdBuffer->PushAndExecute(m_sourceFile, sfcGroup);
         m_cursor = newCursor;
         m_trackedColumn = m_cursor.x;
+        m_clientContentSize.y = (int)m_sourceFile->m_lines.size() * LINE_HEIGHT;
     }
 }
 
@@ -1010,6 +1061,7 @@ void SourceFileWindow::InsertTextAtCursor(const char *text)
     m_sourceFile->m_cmdBuffer->PushAndExecute(m_sourceFile, sfcReplaceLine);
     m_cursor = newCursor;
     m_trackedColumn = m_cursor.x;
+    m_clientContentSize.y = (int)m_sourceFile->m_lines.size() * LINE_HEIGHT;
 }
 
 void SourceFileWindow::DeleteSelected()
@@ -1057,6 +1109,7 @@ void SourceFileWindow::DeleteSelected()
 
         m_cursor = newCursor;
         m_trackedColumn = m_cursor.x;
+        m_clientContentSize.y = (int)m_sourceFile->m_lines.size() * LINE_HEIGHT;
     }
     m_marked = false;
     m_marking = false;
@@ -1138,6 +1191,7 @@ void SourceFileWindow::PasteSelected()
 
         m_cursor = newCursor;
         m_trackedColumn = m_cursor.x;
+        m_clientContentSize.y = (int)m_sourceFile->m_lines.size() * LINE_HEIGHT;
     }
     else
     {
@@ -1164,8 +1218,10 @@ void SourceFileWindow::PasteSelected()
 
         m_cursor = newCursor;
         m_trackedColumn = m_cursor.x;
+        m_clientContentSize.y = (int)m_sourceFile->m_lines.size() * LINE_HEIGHT;
     }
 
+    m_clientContentSize.y = (int)m_sourceFile->m_lines.size() * LINE_HEIGHT;
     m_marked = false;
     m_marking = false;
     WindowManager::Instance().GetActiveWindowTree()->m_dirty = true;
@@ -1257,7 +1313,7 @@ void SourceFileWindow::ReplaceLines(const std::vector<SearchResult>& lines, cons
         return;
 
     Vec2i oldCursor = m_cursor;
-    Vec2i newCursor = { m_sourceFile->m_lines[lastLine]->m_chars.size(), lastLine};
+    Vec2i newCursor = { (int)m_sourceFile->m_lines[lastLine]->m_chars.size(), lastLine};
 
     auto sfcGroup = new SFC_Group("Search and Replace", oldCursor, newCursor);
     for (auto line : lines)
@@ -1272,4 +1328,5 @@ void SourceFileWindow::ReplaceLines(const std::vector<SearchResult>& lines, cons
 
     m_cursor = newCursor;
     m_trackedColumn = m_cursor.x;
+    m_clientContentSize.y = (int)m_sourceFile->m_lines.size() * LINE_HEIGHT;
 }

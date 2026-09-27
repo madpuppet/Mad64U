@@ -73,6 +73,7 @@ public:
         m_marking = false;
         m_marked = false;
     }
+    void MarkCurrentWord();
 protected:
     void ClampCursor();
     Recti CalcCursorArea();
