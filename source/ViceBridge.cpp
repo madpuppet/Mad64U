@@ -62,7 +62,7 @@ void VBC_NewFrame::Execute()
     u8* in = m_buffer;
     for (int p = 0; p < (m_width * m_height); p++)
     {
-        *out = c64Palette[*in & 15];
+        *out++ = c64Palette[*in++ & 15];
     }
     gViceBridge->QueueFrame(frame);
     delete m_buffer;

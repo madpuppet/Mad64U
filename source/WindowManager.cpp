@@ -5,6 +5,8 @@
 #include "Settings.h"
 #include "SourceFileManager.h"
 #include "LogManager.h"
+#include "ViceBridge.h"
+#include "EmuScreenWindow.h"
 #include <filesystem>
 
 std::vector<std::string> GetSourceFiles(const std::string& pathStr)
@@ -736,8 +738,31 @@ void WindowManager::Paint()
     // might as well just do WindowManager dirty flag...
     // or do a dirty system per renderer & per file, with a paint ID if we really need a smart dirty system
     bool anyDirty = false;
+
+    ViceFrame frame;
+    bool hasFrame = gViceBridge->PopFrame(frame);
+
     for (auto tree : m_windowTrees)
+    {
+        if (hasFrame)
+        {
+            WindowMessageStruct msg;
+            WindowFindQuery query;
+            query.m_windowName = "EmuScreen";
+            msg.m_type = WindowMessage::Query_FindWindow;
+            msg.m_flags = WMF_Window | WMF_TabActive | WMF_EarlyOut;
+            msg.m_query = &query;
+            tree->Message(msg);
+            if (msg.m_response > 0)
+            {
+                EmuScreenWindow* esw = (EmuScreenWindow*)msg.m_window;
+                esw->UpdateTexture(tree->m_renderer, frame);
+                anyDirty = true;
+                tree->m_dirty = true;
+            }
+        }
         anyDirty |= tree->m_dirty;
+    }
 
     if (anyDirty)
     {
@@ -746,6 +771,11 @@ void WindowManager::Paint()
             tree->Paint(nullptr);
             tree->m_dirty = false;
         }
+    }
+
+    if (hasFrame)
+    {
+        delete frame.m_pixels;
     }
 }
 

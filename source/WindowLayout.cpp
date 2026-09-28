@@ -7,6 +7,7 @@
 #include "UndoBufferWindow.h"
 #include "ProjectListWindow.h"
 #include "SearchWindow.h"
+#include "EmuScreenWindow.h"
 #include <format>
 
 void WindowLayout::Layout(SDL_Renderer* renderer, const Recti& area)
@@ -548,7 +549,10 @@ void WindowLayout::LoadLayout(const std::vector<std::string>& layoutTokens, size
                         {
                             if (!SearchWindow::CreateFromLayoutTokens(this, layoutTokens, idx))
                             {
-                                Log(LogGroup::System, "Unknown window token: {}", layoutTokens[idx]);
+                                if (!EmuScreenWindow::CreateFromLayoutTokens(this, layoutTokens, idx))
+                                {
+                                    Log(LogGroup::System, "Unknown window token: {}", layoutTokens[idx]);
+                                }
                             }
                         }
                     }
@@ -690,7 +694,7 @@ void WindowLayout::Message(struct WindowMessageStruct& msg)
 
         if (msg.m_flags & WMF_Window)
         {
-            if (msg.m_flags & WMF_AreaCheck)
+            if (msg.m_flags & (WMF_AreaCheck|WMF_TabActive))
             {
                 if (!m_tabs.empty())
                     m_tabs[m_activeTab]->Message(this, msg);
