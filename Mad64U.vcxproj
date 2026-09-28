@@ -75,6 +75,7 @@
     <LibraryPath>lib\x64;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
     <OutDir>Intermediate\$(ShortProjectName)\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>Intermediate\$(ShortProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <TargetName>$(ProjectName)_Debug</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>include;source;$(VC_IncludePath);$(WindowsSDK_IncludePath);Vice</IncludePath>
@@ -126,7 +127,7 @@
       <AdditionalDependencies>SDL3_net.lib;SDL3.lib;SDL3_ttf.lib;SDL3_image.lib;winmm.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(TargetPath) $(ProjectDir)\release\Mad64U.exe</Command>
+      <Command>copy $(TargetPath) $(ProjectDir)\release\Mad64U_Debug.exe</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

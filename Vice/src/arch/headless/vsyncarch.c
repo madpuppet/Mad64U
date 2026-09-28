@@ -63,6 +63,9 @@ static int pause_pending = 0;
 
 void vsyncarch_presync(void)
 {
+    extern void mad64_process_vice_commands(void);
+    mad64_process_vice_commands();
+
     ui_update_lightpen();
     joystick();
 }

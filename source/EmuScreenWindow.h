@@ -20,6 +20,6 @@ protected:
     SDL_Texture* m_viceTexture = nullptr;
     int m_viceTextureWidth = 0;
     int m_viceTextureHeight = 0;
-    bool m_snapToClientArea = true;
-    int m_zoom = 0;
+    bool m_snapToClientArea = false;
+    int m_zoom = 3;
 };

@@ -90,6 +90,14 @@ public:
     void ShowLines(bool enable);
     void ShowBytes(bool enable);
 
+    void Vice_SetZoomMode(bool fixed);
+    void Vice_SetZoomLevel(int zoom);
+    void Vice_GetZoomInfo(bool& fixed, int &level)
+    {
+        fixed = m_vice_zoomFixed;
+        level = m_vice_zoomLevel;
+    }
+
 protected:
     void CreateShellProcess();
     void ProcessShellOutput();
@@ -118,6 +126,12 @@ protected:
     WindowMenuItem* m_themeMenu;
     WindowMenuItem* m_showLinesMenu;
     WindowMenuItem* m_showBytesMenu;
+
+    WindowMenuItem* m_viceZoomModeMenu;
+    WindowMenuItem* m_viceZoomLevelMenu;
+
+    bool m_vice_zoomFixed = false;
+    int m_vice_zoomLevel = 0;
 
     std::mutex m_watcherLock;
     std::vector<OutputWatcherFunc> m_watchers;

@@ -29,9 +29,11 @@ struct SourceLineRenderFragment
 class SourceLine
 {
 public:
-    int m_assembledLine;
+    int m_uniqueID = 0;
+    int m_assembledLine = -1;
     std::string m_chars;
     bool m_fragmentsDirty = true;
+    int m_breakpointID = 0;
     std::vector<SourceLineRenderFragment> m_fragments;
 
     void BuildFragments(SDL_Renderer *renderer, SourceType sourceType);
@@ -43,6 +45,10 @@ class SourceFile
 public:
     SourceFile(const std::string& path);
     ~SourceFile();
+
+    // unique file ID - used for tracking files by a handle
+    int m_uniqueLineID = 0;
+    int m_fileID;
 
     std::vector<SourceLine*> m_lines;
     std::string m_path;

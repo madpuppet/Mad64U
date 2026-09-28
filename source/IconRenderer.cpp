@@ -21,6 +21,7 @@ IconRenderer::IconRenderer()
     LoadImage("data/icon_previous.png");
     LoadImage("data/icon_replace_one.png");
     LoadImage("data/icon_replace_all.png");
+    LoadImage("data/icon_breakpoint.png");
 }
 
 IconRenderer::~IconRenderer()

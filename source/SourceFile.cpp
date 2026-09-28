@@ -5,8 +5,11 @@
 #include "FontRenderer.h"
 #include "SourceFileManager.h"
 
+static int s_uniqueID = 1;
+
 SourceFile::SourceFile(const std::string& path) : m_path(path)
 {
+    m_fileID = s_uniqueID++;
     m_cmdBuffer = new SourceFileCmdBuffer;
 
     std::filesystem::path p = path;

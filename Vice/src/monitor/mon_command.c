@@ -1093,3 +1093,4 @@ void mon_command_print_help(const char *cmd)
         }
     }
 }
+

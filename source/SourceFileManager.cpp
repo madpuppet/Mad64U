@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 #include <format>
+#include "ViceBridge.h"
 #include "Settings.h"
 
 const char* s_keywords_asm[] = { "tax", "eor", "dec", "pla", "rts", "rti", "bcc", "bcs", "txa", "clc", "sec",
@@ -635,6 +636,7 @@ bool SourceFileManager::NewFile(const std::string& path)
 {
     auto sourceFile = new SourceFile(path);
     auto line = new SourceLine;
+    line->m_uniqueID = sourceFile->m_uniqueLineID++;
     sourceFile->m_lines.push_back(line);
     sourceFile->m_sourceType = SourceType::Asm;
     m_sourceFiles.push_back(sourceFile);
@@ -773,6 +775,7 @@ void SourceFileManager::LoadRequestedFiles(bool addWindow)
                 line.pop_back();
             }
             SourceLine* sl = new SourceLine;
+            sl->m_uniqueID = sourceFile->m_uniqueLineID++;
             sl->m_chars = std::move(line);
             sourceFile->m_lines.push_back(sl);
             sl->m_assembledLine = (int)sourceFile->m_lines.size();
@@ -780,6 +783,7 @@ void SourceFileManager::LoadRequestedFiles(bool addWindow)
         if (sourceFile->m_lines.empty())
         {
             SourceLine* sl = new SourceLine;
+            sl->m_uniqueID = sourceFile->m_uniqueLineID++;
             sourceFile->m_lines.push_back(sl);
             sl->m_assembledLine = (int)sourceFile->m_lines.size();
         }
@@ -917,8 +921,9 @@ void SourceFileManager::Run(const std::filesystem::path& outputFile)
     }
     else if (outputFile.extension() == ".prg")
     {
-        std::string cmd = std::format("start F:\\Emulators\\C64\\Vice3.6\\bin\\x64sc.exe {}", outputFile.string());
-        Application::Instance().SendShellCommand(cmd);
+        auto cmd = new VBC_RunPrg;
+        cmd->m_path = outputFile.string();
+        gViceBridge->SendMad2Vice(cmd);
     }
 }
 
@@ -957,7 +962,7 @@ void SourceFileManager::Run(class SourceFile* file)
     }
 }
 
-void SourceFileManager::Compile(SourceFile* file)
+void SourceFileManager::Compile(SourceFile* file, bool run)
 {
     SaveAll();
 
@@ -969,7 +974,7 @@ void SourceFileManager::Compile(SourceFile* file)
         for (auto line : file->m_lines)
             line->m_assembledLine = ln++;
 
-        auto compileKickAss = [file]()
+        auto compileKickAss = [file, run]()
             {
                 LogManager::Instance().Clear(LogGroup::Build);
 
@@ -988,14 +993,30 @@ void SourceFileManager::Compile(SourceFile* file)
                 std::string outSymbol = path.filename().replace_extension(".sym").string();
                 std::filesystem::path filePath = file->m_path;
                 std::string expectLine = std::format("Writing Symbol file: {}", outSymbol);
-                auto compileWatcher = [expectLine, filePath](const std::string &line)->bool
+                auto compileWatcher = [expectLine, filePath, run](const std::string &line)->bool
                     {
                         if (line == expectLine)
                         {
-                            auto assemble = [filePath]()
+                            auto assemble = [filePath, run]()
                                 {
-                                    auto dbgFile = (filePath.parent_path() / "out" / filePath.stem()).replace_extension(".dbg");
+                                    std::filesystem::path outpath = filePath.parent_path() / "out" / filePath.stem();
+
+                                    auto dbgFile = outpath.replace_extension(".dbg");
                                     SourceFileManager::Instance().LoadDisassembly(dbgFile, false);
+
+                                    if (run)
+                                    {
+                                        std::filesystem::path outputPrg = outpath.replace_extension("prg");
+                                        std::filesystem::path outputD64 = outpath.replace_extension("d64");
+                                        if (std::filesystem::exists(outputPrg))
+                                        {
+                                            SourceFileManager::Instance().Run(outputPrg);
+                                        }
+                                        else if (std::filesystem::exists(outputD64))
+                                        {
+                                            SourceFileManager::Instance().Run(outputD64);
+                                        }
+                                    }
                                 };
                             std::thread(assemble).detach();
                             return true;
@@ -1106,5 +1127,31 @@ DisassemblyFile *SourceFileManager::GetDisassembly(SourceFile* file)
         }
     }
     return nullptr;
+}
+
+void SourceFileManager::OnBreakpointSet(int fileID, int lineID, int breakpointID)
+{
+    for (auto file : m_sourceFiles)
+    {
+        if (file->m_fileID == fileID)
+        {
+            for (auto line : file->m_lines)
+            {
+                if (line->m_uniqueID == lineID)
+                {
+                    if (line->m_breakpointID != 0 && line->m_breakpointID != breakpointID)
+                    {
+                        // delete the old breakpoint
+                        gViceBridge->ClearBreakpoint(line->m_breakpointID);
+                    }
+                    line->m_breakpointID = breakpointID;
+                    return;
+                }
+            }
+        }
+    }
+
+    // couldn't find the file/line, so just clear the breakpoint ID
+    gViceBridge->ClearBreakpoint(breakpointID);
 }
 

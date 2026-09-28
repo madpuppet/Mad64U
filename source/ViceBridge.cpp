@@ -1,6 +1,7 @@
 #include "common.h"
 #include "ViceBridge.h"
 #include "LogManager.h"
+#include "SourceFileManager.h"
 
 ViceBridge* gViceBridge = nullptr;
 
@@ -30,6 +31,114 @@ extern "C" void mad64_video_refresh(u8* buffer, int width, int height)
     cmd->m_width = width;
     memcpy(cmd->m_buffer, buffer, width * height);
     gViceBridge->Queue(cmd);
+}
+
+extern "C" void mad64_process_vice_commands(void)
+{
+    gViceBridge->ExecuteViceCmds();
+}
+
+extern "C" void mad64_breakpoint_hit(void)
+{
+    gViceBridge->BreakpointHit();
+}
+
+extern "C" void mon_instructions_step(int);
+extern "C" void mon_go();
+
+extern "C" void mad64_update_vice_state(int rasterline, int rasterCycle, int pc, int acc, int x, int y, int flags)
+{
+    auto cmd = new VBC_UpdateViceState;
+    cmd->m_acc = acc;
+    cmd->m_flags = flags;
+    cmd->m_pc = pc;
+    cmd->m_rasterCycle = rasterCycle;
+    cmd->m_rasterline = rasterline;
+    cmd->m_x = x;
+    cmd->m_y = y;
+    gViceBridge->SendVice2Mad(cmd);
+}
+
+void VBC_UpdateViceState::Execute()
+{
+    auto& state = gViceBridge->GetViceState();
+    state.m_acc = m_acc;
+    state.m_flags = m_flags;
+    state.m_pc = m_pc;
+    state.m_rasterCycle = m_rasterCycle;
+    state.m_rasterLine = m_rasterline;
+    state.m_x = m_x;
+    state.m_y = m_y;
+}
+
+void ViceBridge::BreakpointHit()
+{
+    m_vice_stopped = true;
+
+    while (m_vice_stopped)
+    {
+        Sleep(1);
+        ExecuteViceCmds();
+    }
+}
+
+void ViceBridge::SingleStep()
+{
+    auto cmd = new VBC_Continue;
+    cmd->m_singleStep = true;
+    SendMad2Vice(cmd);
+}
+
+void ViceBridge::Continue()
+{
+    auto cmd = new VBC_Continue;
+    cmd->m_singleStep = false;
+    SendMad2Vice(cmd);
+}
+
+void VBC_Continue::Execute()
+{
+    gViceBridge->ClearViceStopped();
+    if (m_singleStep)
+        mon_instructions_step(1);
+    else
+        mon_go();
+}
+
+void ViceBridge::ExecuteViceCmds()
+{
+    std::vector<ViceBridgeCmd*> runme;
+    m_mutexMad2Vice.lock();
+    for (auto cmd : m_syncMad2Vice)
+    {
+        runme.push_back(cmd);
+    }
+    m_syncMad2Vice.clear();
+    m_mutexMad2Vice.unlock();
+
+    for (auto cmd : runme)
+    {
+        cmd->Execute();
+        delete cmd;
+    }
+}
+
+void ViceBridge::ExecuteMadCmds()
+{
+    std::vector<ViceBridgeCmd*> runme;
+    m_mutexVice2Mad.lock();
+    for (auto cmd : m_syncVice2Mad)
+    {
+        runme.push_back(cmd);
+    }
+    m_syncVice2Mad.clear();
+    m_mutexVice2Mad.unlock();
+
+    for (auto cmd : runme)
+    {
+        cmd->Execute();
+        delete cmd;
+    }
 }
 
 
@@ -66,4 +175,40 @@ void VBC_NewFrame::Execute()
     }
     gViceBridge->QueueFrame(frame);
     delete m_buffer;
+}
+
+
+extern "C" void helper_autostart_prg(const char* path);
+extern "C" int helper_set_breakpoint(int memaddr);
+extern "C" void mon_breakpoint_delete_checkpoint(int checkpointId);
+
+void VBC_RunPrg::Execute()
+{
+    if (gViceBridge->HasViceStopped())
+    {
+        gViceBridge->ClearViceStopped();
+        mon_go();
+    }
+
+    helper_autostart_prg(m_path.c_str());
+}
+
+void VBC_SetBreakpoint::Execute()
+{
+    int id = helper_set_breakpoint(m_addr);
+    auto cmd = new VBC_BreakpointSet;
+    cmd->m_breakpointID = id;
+    cmd->m_fileID = m_fileID;
+    cmd->m_lineID = m_lineID;
+    gViceBridge->SendVice2Mad(cmd);
+}
+
+void VBC_ClearBreakpoint::Execute()
+{
+    mon_breakpoint_delete_checkpoint(m_breakpointID);
+}
+
+void VBC_BreakpointSet::Execute()
+{
+    SourceFileManager::Instance().OnBreakpointSet(m_fileID, m_lineID, m_breakpointID);
 }

@@ -4833,6 +4833,9 @@
     <ClCompile Include="src\parallel\parallel-trap.c">
       <Filter>src\parallel</Filter>
     </ClCompile>
+    <ClCompile Include="src\mad_helpers.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\c64\cart\Makefile.am">

@@ -65,7 +65,7 @@ public:
     void SetActiveSourceFile(class SourceFile* file);
     class SourceFile* GetActiveSourceFile() { return m_activeSourceFile; }
 
-    void Compile(class SourceFile* file);
+    void Compile(class SourceFile* file, bool run);
     void Run(class SourceFile* file);
     void Run(const std::filesystem::path &outputFile);
     void Deploy(const std::filesystem::path& outputFile);
@@ -82,6 +82,8 @@ public:
 
     // gets the disassembly matching this file, if it is active
     DisassemblyFile* GetDisassembly(class SourceFile* file);
+
+    void OnBreakpointSet(int fileID, int lineID, int breakpointID);
 
 protected:
     bool StartLoadingDisassembly(const std::filesystem::path dbg);

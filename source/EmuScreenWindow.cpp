@@ -17,6 +17,10 @@ EmuScreenWindow::~EmuScreenWindow()
 
 void EmuScreenWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
 {
+    bool fixed;
+    int level;
+    Application::Instance().Vice_GetZoomInfo(fixed, level);
+
     // draw background
     auto& tp = Application::Instance().GetThemeProperties();
     auto window = WindowManager::Instance().GetActiveWindowBase();
@@ -30,7 +34,7 @@ void EmuScreenWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     if (m_viceTexture)
     {
         SDL_FRect body = m_clientArea.AsSDLFRect();
-        if (m_snapToClientArea)
+        if (!fixed)
         {
             float frameAR = (float)m_viceTextureWidth / (float)m_viceTextureHeight;
             float clientAreaAR = body.w / body.h;
@@ -44,13 +48,20 @@ void EmuScreenWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
                 // tallscreen - use full width
                 body.h = body.w / frameAR;
             }
-            m_clientContentSize.x = body.w;
-            m_clientContentSize.y = body.h;
             SDL_RenderTexture(renderer, m_viceTexture, nullptr, &body);
         }
         else
         {
+            float zoom = (float)level;
+            body.w = m_viceTextureWidth * zoom;
+            body.h = m_viceTextureHeight * zoom;
+            body.x -= m_clientContentOffset.x;
+            body.y -= m_clientContentOffset.y;
+            SDL_RenderTexture(renderer, m_viceTexture, nullptr, &body);
         }
+        m_clientContentSize.x = (int)body.w;
+        m_clientContentSize.y = (int)body.h;
+        LayoutScrollbars();
     }
 }
 

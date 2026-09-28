@@ -3,7 +3,8 @@
 
 #define WINDOWS_COMPILE 1
 #define USE_HEADLESSUI 1
-#define HAVE_RESID 1
+#define HAVE_FASTSID 1
+#define HAVE_RESID   1
 
 // Standard headers available in modern MSVC.
 #define HAVE_STDINT_H 1

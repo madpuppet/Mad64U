@@ -7,6 +7,7 @@
 #include "LogManager.h"
 #include "SearchWindow.h"
 #include "Settings.h"
+#include "ViceBridge.h"
 #include <filesystem>
 
 SourceFileWindow::SourceFileWindow(SourceFile* file) : m_sourceFile(file)
@@ -97,6 +98,9 @@ int SourceFileWindow::CalcXPos(int x, int y)
 
 void SourceFileWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
 {
+    bool isActiveVice = gViceBridge->GetActiveFileID() == m_sourceFile->m_fileID;
+    auto& viceState = gViceBridge->GetViceState();
+
     bool showLineNumbers = Settings::Instance().GetBool(SETTING_SHOW_LINES);
     bool showDisassembly = Settings::Instance().GetBool(SETTING_SHOW_BYTES);
 
@@ -110,6 +114,7 @@ void SourceFileWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     SDL_FRect body = m_clientArea.AsSDLFRect();
     SDL_RenderFillRect(renderer, &body);
 
+    auto& ir = IconRenderer::Instance();
     auto& fr = FontRenderer::Instance();
     int firstLine = Max(m_clientContentOffset.y / LINE_HEIGHT, 0);
     int lastLine = Min(firstLine + m_clientArea.h / LINE_HEIGHT, (int)m_sourceFile->m_lines.size());
@@ -120,6 +125,16 @@ void SourceFileWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     SDL_FRect highlightRect{ (float)xBase, (float)(yBase + m_cursor.y * LINE_HEIGHT), (float)m_clientArea.w, (float)LINE_HEIGHT };
     tp.SetRenderDrawColor(renderer, ThemeColor::HighlightLine);
     SDL_RenderFillRect(renderer, &highlightRect);
+
+    // breakpoints
+    for (int i = firstLine; i < lastLine; i++)
+    {
+        auto line = m_sourceFile->m_lines[i];
+        if (line->m_breakpointID != 0)
+        {
+            ir.DrawIcon(renderer, Icons::Breakpoint, xBase + 5, (int)(yBase + i * LINE_HEIGHT + LINE_HEIGHT * 0.5f - 2));
+        }
+    }
 
     int bodyX = m_clientArea.x;
     if (showLineNumbers)
@@ -174,7 +189,7 @@ void SourceFileWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
             for (int i = firstLine; i < lastLine; i++)
             {
                 auto srcLine = m_sourceFile->m_lines[i];
-                if (srcLine->m_assembledLine >= dis->m_lines.size())
+                if (srcLine->m_assembledLine < 0 || srcLine->m_assembledLine >= dis->m_lines.size())
                     continue;
 
                 auto& line = dis->m_lines[srcLine->m_assembledLine];
@@ -187,6 +202,14 @@ void SourceFileWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
 
                 int ly = yBase + i * LINE_HEIGHT;
                 int lx = xBase;
+
+                if (isActiveVice && (int)viceState.m_pc >= (int)line.m_addressStart && (int)viceState.m_pc < (int)line.m_addressStart + (int)line.m_addressLength)
+                {
+                    SDL_FRect highlight{ disBody.x, ly, disBody.w, LINE_HEIGHT };
+                    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 128);
+                    SDL_RenderFillRect(renderer, &highlight);
+                }
+
                 u32 bytes = Min(line.m_addressLength, 3);
                 fr.RenderText(renderer, std::format("{:04x}", line.m_addressStart), tp.m_colors[(int)ThemeColor::TextOperator], lx, ly, FontType::Text);
                 lx += 50;
@@ -245,6 +268,7 @@ void SourceFileWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
         }
         y += LINE_HEIGHT;
     }
+
     m_clientContentSize.x = maxWidth + 32;
 
     // draw cursor
@@ -484,8 +508,50 @@ bool SourceFileWindow::HandleEvent(SDL_Event* e)
                         SourceFileManager::Instance().SaveFile(m_sourceFile);
 
                         if (m_sourceFile->m_sourceType == SourceType::Asm)
-                            SourceFileManager::Instance().Compile(m_sourceFile);
+                            SourceFileManager::Instance().Compile(m_sourceFile, false);
                     }
+                    break;
+
+
+                case SDLK_F10:
+                    if (e->key.mod & SDL_KMOD_SHIFT)
+                    {
+                        gViceBridge->Continue();
+                    }
+                    else
+                    {
+                        gViceBridge->SingleStep();
+                    }
+                    MakeAddressVisible(gViceBridge->GetViceState().m_pc);
+                    break;
+
+                case SDLK_F5:
+                    {
+                        // find output file
+                        std::filesystem::path path = m_sourceFile->m_path;
+                        std::filesystem::path output = path.parent_path() / "out" / path.stem();
+                        std::filesystem::path outputPrg = output.replace_extension("prg");
+                        std::filesystem::path outputD64 = output.replace_extension("d64");
+                        if (std::filesystem::exists(outputPrg))
+                        {
+                            SourceFileManager::Instance().Run(outputPrg);
+                            gViceBridge->SetActiveFileID(m_sourceFile->m_fileID);
+                        }
+                        else if (std::filesystem::exists(outputD64))
+                        {
+                            SourceFileManager::Instance().Run(outputD64);
+                            gViceBridge->SetActiveFileID(m_sourceFile->m_fileID);
+                        }
+                        else
+                        {
+                            SourceFileManager::Instance().Compile(m_sourceFile, true);
+                            gViceBridge->SetActiveFileID(m_sourceFile->m_fileID);
+                        }
+                    }
+                    break;
+
+                case SDLK_F9:
+                    ToggleBreakpoint(m_cursor.y);
                     break;
 
                 case SDLK_TAB:
@@ -818,6 +884,16 @@ void SourceFileWindow::MoveCursorEndOfLine()
     MakeCursorVisible();
 }
 
+void SourceFileWindow::MakeRowVisible(int row)
+{
+    int yOffset = row * LINE_HEIGHT;
+    if (yOffset < m_clientContentOffset.y)
+        m_clientContentOffset.y = yOffset;
+    if (yOffset > (m_clientContentOffset.y + m_clientArea.h - LINE_HEIGHT * 2))
+        m_clientContentOffset.y = yOffset - m_clientArea.h + LINE_HEIGHT * 2;
+    LayoutScrollbars();
+}
+
 void SourceFileWindow::MakeCursorVisible()
 {
     int yOffset = m_cursor.y * LINE_HEIGHT;
@@ -839,6 +915,29 @@ void SourceFileWindow::MakeCursorVisible()
     LayoutScrollbars();
 }
 
+void SourceFileWindow::MakeAddressVisible(int addr)
+{
+    auto dis = SourceFileManager::Instance().GetDisassembly(m_sourceFile);
+    if (dis)
+    {
+        for (int row = 0; row < m_sourceFile->m_lines.size(); row++)
+        {
+            auto ln = m_sourceFile->m_lines[row];
+            if (ln->m_assembledLine >= 0 && ln->m_assembledLine < dis->m_lines.size())
+            {
+                auto& disline = dis->m_lines[ln->m_assembledLine];
+                if (addr >= disline.m_addressStart && addr < disline.m_addressStart + disline.m_addressLength)
+                {
+                    MakeRowVisible(row);
+                    return;
+                }
+            }
+
+        }
+    }
+}
+
+
 class SFC_DeleteLine : public SourceFileCmd
 {
 public:
@@ -852,6 +951,7 @@ public:
     void DoRevert(SourceFile* file) override
     {
         auto line = new SourceLine;
+        line->m_uniqueID = file->m_uniqueLineID++;
         line->m_chars = m_oldChars;
         file->m_lines.insert(file->m_lines.begin() + m_lineNmbr, line);
     }
@@ -906,6 +1006,7 @@ public:
     void DoExecute(SourceFile* file) override
     {
         auto line = new SourceLine;
+        line->m_uniqueID = file->m_uniqueLineID++;
         line->m_chars = m_chars;
         file->m_lines.insert(file->m_lines.begin() + m_lineNmbr, line);
     }
@@ -1054,6 +1155,54 @@ void SourceFileWindow::InsertNewLineAtCursor()
         m_cursor = newCursor;
         m_trackedColumn = m_cursor.x;
         m_clientContentSize.y = (int)m_sourceFile->m_lines.size() * LINE_HEIGHT;
+    }
+}
+
+void SourceFileWindow::SetBreakpoint(int lineID, int breakpointID)
+{
+    for (auto line : m_sourceFile->m_lines)
+    {
+        if (line->m_uniqueID == lineID)
+        {
+            // clear out the old breakpoint if somehow its set and doesn't match
+            if (line->m_breakpointID && line->m_breakpointID != breakpointID)
+            {
+                gViceBridge->ClearBreakpoint(line->m_breakpointID);
+            }
+
+            line->m_breakpointID = breakpointID;
+            return;
+        }
+    }
+
+    // line doesn't exist anymore so just destroy this breakpoint
+    gViceBridge->ClearBreakpoint(breakpointID);
+}
+
+void SourceFileWindow::ToggleBreakpoint(int line)
+{
+    if (line >= 0 && line < m_sourceFile->m_lines.size())
+    {
+        auto ln = m_sourceFile->m_lines[line];
+        if (ln->m_breakpointID == 0)
+        {
+            auto dis = SourceFileManager::Instance().GetDisassembly(m_sourceFile);
+            if (dis && ln->m_assembledLine >= 0 && ln->m_assembledLine < dis->m_lines.size())
+            {
+                auto& disline = dis->m_lines[ln->m_assembledLine];
+
+                auto cmd = new VBC_SetBreakpoint;
+                cmd->m_fileID = m_sourceFile->m_fileID;
+                cmd->m_lineID = ln->m_uniqueID;
+                cmd->m_addr = disline.m_addressStart;
+                gViceBridge->SendMad2Vice(cmd);
+            }
+        }
+        else
+        {
+            gViceBridge->ClearBreakpoint(ln->m_breakpointID);
+            ln->m_breakpointID = 0;
+        }
     }
 }
 

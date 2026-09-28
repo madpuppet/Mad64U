@@ -20,7 +20,8 @@ enum class Icons
     NextItem,
     PrevItem,
     ReplaceOne,
-    ReplaceAll
+    ReplaceAll,
+    Breakpoint
 };
 
 class IconRenderer : public Singleton<IconRenderer>

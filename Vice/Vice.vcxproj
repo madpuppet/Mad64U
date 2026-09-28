@@ -1449,6 +1449,7 @@
     <ClCompile Include="src\m3u.c" />
     <ClCompile Include="src\machine-bus.c" />
     <ClCompile Include="src\machine.c" />
+    <ClCompile Include="src\mad_helpers.c" />
     <ClCompile Include="src\main.c" />
     <ClCompile Include="src\main65816cpu.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

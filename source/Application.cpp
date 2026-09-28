@@ -240,7 +240,6 @@ void Application::CreateMenus()
             NetworkManager::Instance().Message(new NMS_Command("machine:writemem?address=00C6&data=04"));
         }));
 
-
     auto screenCol = []()
         {
             auto& nm = NetworkManager::Instance();
@@ -258,6 +257,29 @@ void Application::CreateMenus()
     ultimateMenu->m_items.push_back(new WindowMenuItem("Power Off", []() {NetworkManager::Instance().SendPowerOff(); }));
 
     wm.AddWindowMenu(ultimateMenu);
+
+    auto viceMenu = new WindowMenu;
+    viceMenu->m_name = "Vice";
+
+    m_viceZoomModeMenu = new WindowMenuItem("Zoom Mode");
+    auto sizeToFitZoom = []() { Application::Instance().Vice_SetZoomMode(false); };
+    auto fixedZoom = []() { Application::Instance().Vice_SetZoomMode(true); };
+    m_viceZoomModeMenu->m_subMenus.push_back(new WindowMenuItem("Size To Fit", sizeToFitZoom));
+    m_viceZoomModeMenu->m_subMenus.push_back(new WindowMenuItem("Fixed", fixedZoom));
+    viceMenu->m_items.push_back(m_viceZoomModeMenu);
+
+    m_viceZoomLevelMenu = new WindowMenuItem("Zoom Level");
+    auto zoomLevel1 = []() { Application::Instance().Vice_SetZoomLevel(1); };
+    auto zoomLevel2 = []() { Application::Instance().Vice_SetZoomLevel(2); };
+    auto zoomLevel4 = []() { Application::Instance().Vice_SetZoomLevel(4); };
+    auto zoomLevel8 = []() { Application::Instance().Vice_SetZoomLevel(8); };
+    m_viceZoomLevelMenu->m_subMenus.push_back(new WindowMenuItem("1x", zoomLevel1));
+    m_viceZoomLevelMenu->m_subMenus.push_back(new WindowMenuItem("2x", zoomLevel2));
+    m_viceZoomLevelMenu->m_subMenus.push_back(new WindowMenuItem("4x", zoomLevel4));
+    m_viceZoomLevelMenu->m_subMenus.push_back(new WindowMenuItem("8x", zoomLevel8));
+    viceMenu->m_items.push_back(m_viceZoomLevelMenu);
+
+    wm.AddWindowMenu(viceMenu);
 
     auto newWindowProjectList = []()
         {
@@ -325,7 +347,7 @@ void Application::CreateMenus()
             auto file = sfm.GetActiveSourceFile();
             if (file)
             {
-                sfm.Compile(file);
+                sfm.Compile(file, false);
             }
         };
 
@@ -638,6 +660,11 @@ int Application::Run()
     ShowLines(showLines);
     ShowBytes(showBytes);
 
+    bool viceZoomMode = Settings::Instance().GetBool(SETTING_VICE_ZOOM_MODE);
+    int viceZoomLevel = Settings::Instance().GetInt(SETTING_VICE_ZOOM_LEVEL);
+    Vice_SetZoomLevel(viceZoomLevel);
+    Vice_SetZoomMode(viceZoomMode);
+
     wm.LoadWindowLayout();
 
     auto& nm = NetworkManager::Instance();
@@ -648,8 +675,8 @@ int Application::Run()
 
     auto emulator = [this]()
         {
-            const char* argv[1] = { "mad64u.exe" };
-            main_program(1, (char **)argv);
+            const char* argv[] = { "mad64u.exe", "-soundbufsize", "200", "-soundfragsize", "3"};
+            main_program(5, (char **)argv);
         };
     std::thread(emulator).detach();
 
@@ -668,6 +695,8 @@ int Application::Run()
             else
                 wm.HandleEvent(&e);
         }
+        gViceBridge->ExecuteMadCmds();
+
         wm.Paint();
 
         SourceFileManager::Instance().LoadRequestedFiles(true);
@@ -703,6 +732,28 @@ void Application::SelectTheme(const char *themeName)
         Settings::Instance().Save();
         WindowManager::Instance().LayoutMenu();
     }
+}
+
+void Application::Vice_SetZoomMode(bool fixed)
+{
+    std::string result = fixed ? "Fixed" : "Scale To Fit";
+    m_viceZoomModeMenu->m_name = std::format("Zoom Mode : {}", result);
+    Settings::Instance().SetBool(SETTING_VICE_ZOOM_MODE, fixed);
+    Settings::Instance().Save();
+    WindowManager::Instance().LayoutMenu();
+    m_vice_zoomFixed = fixed;
+}
+
+void Application::Vice_SetZoomLevel(int zoom)
+{
+    // force fixed if your gonna set the zoom level
+    Vice_SetZoomMode(true);
+
+    m_viceZoomLevelMenu->m_name = std::format("Zoom Level : {}x", zoom);
+    Settings::Instance().SetInt(SETTING_VICE_ZOOM_LEVEL, zoom);
+    Settings::Instance().Save();
+    WindowManager::Instance().LayoutMenu();
+    m_vice_zoomLevel = zoom;
 }
 
 void Application::ShowLines(bool enable)

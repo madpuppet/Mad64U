@@ -12,6 +12,9 @@
 #define SETTING_SHOW_LINES "showlines"
 #define SETTING_SHOW_BYTES "showbytes"
 
+#define SETTING_VICE_ZOOM_MODE "vice_zoomMode"
+#define SETTING_VICE_ZOOM_LEVEL "vice_zoomLevel"
+
 class Settings : public Singleton<Settings>
 {
 public:

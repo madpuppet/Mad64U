@@ -112,7 +112,7 @@ bool ProjectListWindow::HandleEvent(SDL_Event* e)
                     case Icons::Build:
                         if (line.m_file)
                         {
-                            SourceFileManager::Instance().Compile(line.m_file);
+                            SourceFileManager::Instance().Compile(line.m_file, false);
                         }
                         break;
 

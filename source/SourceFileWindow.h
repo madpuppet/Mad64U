@@ -40,6 +40,8 @@ public:
     void MoveCursorEndOfFile();
     void MoveCursorXY(int x, int y);
     void MakeCursorVisible();
+    void MakeAddressVisible(int addr);
+    void MakeRowVisible(int row);
 
     // undoable editing operations
     void DeleteCharBeforeCursor();
@@ -54,6 +56,10 @@ public:
 
     // search & replace
     void ReplaceLines(const std::vector<SearchResult>& lines, const std::string& text);
+
+    // breakpoints
+    void ToggleBreakpoint(int line);
+    void SetBreakpoint(int lineID, int breakpointID);
 
     void StartMarking()
     {

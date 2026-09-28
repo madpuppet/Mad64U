@@ -668,7 +668,7 @@ static void wd1770_execute(wd1770_t *drv)
                             return;
                         }
                         drv->clk += BYTE_RATE;
-                        drv->data = fdd_read(drv->fdd);
+                        drv->data = (uint8_t) fdd_read(drv->fdd);
                         drv->status |= (drv->status & WD_DRQ) ? WD_LD : WD_DRQ;
                         continue;
                     case 7:
@@ -698,7 +698,7 @@ static void wd1770_execute(wd1770_t *drv)
                         }
                         drv->status |= (drv->status & WD_DRQ) ? WD_LD : WD_DRQ;
                         drv->clk += BYTE_RATE;
-                        drv->data = fdd_read(drv->fdd);
+                        drv->data = (uint8_t) fdd_read(drv->fdd);
                         if (drv->byte_count == 6) {
                             drv->sector = drv->data;
                         }
