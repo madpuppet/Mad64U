@@ -62,6 +62,7 @@ struct VBC_BreakpointSet : ViceBridgeCmd
     int m_fileID;
     int m_lineID;
     int m_breakpointID;
+    int m_addr;
 };
 
 struct VBC_BreakpointHit : ViceBridgeCmd
@@ -75,6 +76,11 @@ struct VBC_Continue : ViceBridgeCmd
     bool m_singleStep;
 };
 
+struct VBC_Pause : ViceBridgeCmd
+{
+    virtual void Execute() override;
+};
+
 struct VBC_UpdateViceState : ViceBridgeCmd
 {
     virtual void Execute() override;
@@ -85,6 +91,11 @@ struct VBC_UpdateViceState : ViceBridgeCmd
     int m_x;
     int m_y;
     int m_flags;
+};
+
+struct VBC_BreakPointHit : ViceBridgeCmd
+{
+    virtual void Execute() override;
 };
 
 struct ViceState
@@ -188,6 +199,7 @@ public:
 
     void SingleStep();
     void Continue();
+    void Pause();
 
     // general state info
     ViceState& GetViceState() { return m_viceState; }

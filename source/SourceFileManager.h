@@ -61,6 +61,7 @@ public:
 
     void LoadRequestedFiles(bool addWindow);
     SourceFile* FindFile(const std::string& path);
+    SourceFile* FindFileByID(int id);
 
     void SetActiveSourceFile(class SourceFile* file);
     class SourceFile* GetActiveSourceFile() { return m_activeSourceFile; }
@@ -83,7 +84,7 @@ public:
     // gets the disassembly matching this file, if it is active
     DisassemblyFile* GetDisassembly(class SourceFile* file);
 
-    void OnBreakpointSet(int fileID, int lineID, int breakpointID);
+    void OnBreakpointSet(int fileID, int lineID, int breakpointID, int addr);
 
 protected:
     bool StartLoadingDisassembly(const std::filesystem::path dbg);

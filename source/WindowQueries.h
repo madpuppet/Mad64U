@@ -64,7 +64,8 @@ enum class WindowHighlightType
     ProjectListIcon,
     ScrollBar,
     ProjectListFile,
-    ClientArea
+    ClientArea,
+    EmuScreenIcon
 };
 
 struct WindowHighlightQuery
@@ -103,6 +104,10 @@ struct WindowHighlightQuery
         {
             enum class Icons m_icon;
         } m_projectFiles;
+        struct
+        {
+            enum class Icons m_icon;
+        } m_emuScreen;
     };
 
     bool IsEqual(const WindowHighlightQuery& o)

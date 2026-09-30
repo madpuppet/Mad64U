@@ -7,6 +7,7 @@
 
 IconRenderer::IconRenderer()
 {
+    LoadImage("data/icon_highlight.png");
     LoadImage("data/icon_close.png");
     LoadImage("data/icon_fullscreen.png");
     LoadImage("data/icon_windowed.png");
@@ -22,6 +23,8 @@ IconRenderer::IconRenderer()
     LoadImage("data/icon_replace_one.png");
     LoadImage("data/icon_replace_all.png");
     LoadImage("data/icon_breakpoint.png");
+    LoadImage("data/icon_pause.png");
+    LoadImage("data/icon_step.png");
 }
 
 IconRenderer::~IconRenderer()

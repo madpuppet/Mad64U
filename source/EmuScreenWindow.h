@@ -9,6 +9,7 @@ public:
     ~EmuScreenWindow();
     void Paint(SDL_Renderer* renderer, const Recti& dirtyArea) override;
     bool HandleEvent(SDL_Event* e) override;
+    void MessageChild(WindowLayout* layout, struct WindowMessageStruct& msg) override;
 
     void SaveTokens(std::vector<std::string>& layoutTokens) override;
     static bool CreateFromLayoutTokens(struct WindowLayout* layout, const std::vector<std::string>& layoutTokens, size_t& idx);

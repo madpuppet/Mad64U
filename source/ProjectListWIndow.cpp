@@ -29,7 +29,7 @@ void ProjectListWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     SDL_RenderFillRect(renderer, &body);
 
     // render tab highlighted
-    if (highlight.m_highlight == WindowHighlightType::ProjectListFile || highlight.m_highlight == WindowHighlightType::ProjectListIcon)
+    if (highlight.m_highlight == WindowHighlightType::ProjectListFile)
     {
         SDL_FRect area = highlight.m_area.AsSDLFRect();
         tp.SetRenderDrawColor(renderer, ThemeColor::HighlightArea);
@@ -84,6 +84,13 @@ void ProjectListWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
             }
             break;
         }
+    }
+
+    if (highlight.m_highlight == WindowHighlightType::ProjectListIcon)
+    {
+        int ix = highlight.m_area.x + 8;
+        int iy = highlight.m_area.y + 8;
+        ir.DrawIcon(renderer, Icons::Highlight, ix, iy);
     }
 }
 

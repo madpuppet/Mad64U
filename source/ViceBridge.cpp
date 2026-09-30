@@ -2,6 +2,7 @@
 #include "ViceBridge.h"
 #include "LogManager.h"
 #include "SourceFileManager.h"
+#include "WindowManager.h"
 
 ViceBridge* gViceBridge = nullptr;
 
@@ -45,6 +46,7 @@ extern "C" void mad64_breakpoint_hit(void)
 
 extern "C" void mon_instructions_step(int);
 extern "C" void mon_go();
+extern "C" void monitor_startup_trap();
 
 extern "C" void mad64_update_vice_state(int rasterline, int rasterCycle, int pc, int acc, int x, int y, int flags)
 {
@@ -74,11 +76,24 @@ void VBC_UpdateViceState::Execute()
 void ViceBridge::BreakpointHit()
 {
     m_vice_stopped = true;
+    SendVice2Mad(new VBC_BreakPointHit);
 
     while (m_vice_stopped)
     {
         Sleep(1);
         ExecuteViceCmds();
+    }
+}
+
+void VBC_BreakPointHit::Execute()
+{
+    WindowMessageStruct msgBH;
+    msgBH.m_type = WindowMessage::Window_BreakpointHit;
+    msgBH.m_flags = WMF_EarlyOut | WMF_Window | WMF_TabActive;
+    msgBH.m_sourceFile = SourceFileManager::Instance().FindFileByID(gViceBridge->GetActiveFileID());
+    if (msgBH.m_sourceFile)
+    {
+        WindowManager::Instance().Message(msgBH);
     }
 }
 
@@ -96,6 +111,11 @@ void ViceBridge::Continue()
     SendMad2Vice(cmd);
 }
 
+void ViceBridge::Pause()
+{
+    SendMad2Vice(new VBC_Pause);
+}
+
 void VBC_Continue::Execute()
 {
     gViceBridge->ClearViceStopped();
@@ -103,6 +123,11 @@ void VBC_Continue::Execute()
         mon_instructions_step(1);
     else
         mon_go();
+}
+
+void VBC_Pause::Execute()
+{
+    monitor_startup_trap();
 }
 
 void ViceBridge::ExecuteViceCmds()
@@ -200,6 +225,7 @@ void VBC_SetBreakpoint::Execute()
     cmd->m_breakpointID = id;
     cmd->m_fileID = m_fileID;
     cmd->m_lineID = m_lineID;
+    cmd->m_addr = m_addr;
     gViceBridge->SendVice2Mad(cmd);
 }
 
@@ -210,5 +236,5 @@ void VBC_ClearBreakpoint::Execute()
 
 void VBC_BreakpointSet::Execute()
 {
-    SourceFileManager::Instance().OnBreakpointSet(m_fileID, m_lineID, m_breakpointID);
+    SourceFileManager::Instance().OnBreakpointSet(m_fileID, m_lineID, m_breakpointID, m_addr);
 }

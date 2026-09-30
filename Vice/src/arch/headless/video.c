@@ -35,6 +35,7 @@
 #include "resources.h"
 #include "videoarch.h"
 #include "video.h"
+#include "interrupt.h"
 
 
 /** \brief  Command line options related to generic video output
@@ -168,6 +169,18 @@ void video_canvas_refresh(struct video_canvas_s *canvas,
     struct draw_buffer_s *db = canvas->draw_buffer;
     if (!db)
         return;
+
+
+    if (monitor_is_inside_monitor())
+    {
+        extern void helper_update_vice_state();
+        helper_update_vice_state();
+    }
+    else
+    {
+        extern void capture_and_update_vice_state(uint16_t currentPc, void* userData);
+        interrupt_maincpu_trigger_trap(capture_and_update_vice_state, 0);
+    }
 
     mad64_video_refresh(db->draw_buffer, db->draw_buffer_width, db->draw_buffer_height);
 }

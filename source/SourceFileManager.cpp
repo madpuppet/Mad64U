@@ -675,6 +675,17 @@ SourceFile* SourceFileManager::FindFile(const std::string& path)
     return nullptr;
 }
 
+SourceFile* SourceFileManager::FindFileByID(int id)
+{
+    for (auto file : m_sourceFiles)
+    {
+        if (file->m_fileID == id)
+            return file;
+    }
+    return nullptr;
+}
+
+
 void SourceFileManager::SetActiveSourceFile(class SourceFile* file)
 {
     if (m_activeSourceFile != file)
@@ -1129,23 +1140,31 @@ DisassemblyFile *SourceFileManager::GetDisassembly(SourceFile* file)
     return nullptr;
 }
 
-void SourceFileManager::OnBreakpointSet(int fileID, int lineID, int breakpointID)
+void SourceFileManager::OnBreakpointSet(int fileID, int lineID, int breakpointID, int addr)
 {
     for (auto file : m_sourceFiles)
     {
         if (file->m_fileID == fileID)
         {
-            for (auto line : file->m_lines)
+            if (file->m_stepOverAddr == addr)
             {
-                if (line->m_uniqueID == lineID)
+                file->m_stepOverBreakpointID = breakpointID;
+                return;
+            }
+            else
+            {
+                for (auto line : file->m_lines)
                 {
-                    if (line->m_breakpointID != 0 && line->m_breakpointID != breakpointID)
+                    if (line->m_uniqueID == lineID)
                     {
-                        // delete the old breakpoint
-                        gViceBridge->ClearBreakpoint(line->m_breakpointID);
+                        if (line->m_breakpointID != 0 && line->m_breakpointID != breakpointID)
+                        {
+                            // delete the old breakpoint
+                            gViceBridge->ClearBreakpoint(line->m_breakpointID);
+                        }
+                        line->m_breakpointID = breakpointID;
+                        return;
                     }
-                    line->m_breakpointID = breakpointID;
-                    return;
                 }
             }
         }

@@ -29,6 +29,7 @@ enum class WindowMessage
     File_ChangedActive,
     Window_Activated,
     Window_SetCursor,
+    Window_BreakpointHit,
     Query_FileCount,
     Query_WindowCount,
     Query_Highlight,

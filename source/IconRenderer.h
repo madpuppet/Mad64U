@@ -7,6 +7,7 @@ enum class Icons
 {
     None = -1,
 
+    Highlight,
     Close,
     Fullscreen,
     Windowed,
@@ -21,7 +22,9 @@ enum class Icons
     PrevItem,
     ReplaceOne,
     ReplaceAll,
-    Breakpoint
+    Breakpoint,
+    Pause,
+    SingleStep
 };
 
 class IconRenderer : public Singleton<IconRenderer>
