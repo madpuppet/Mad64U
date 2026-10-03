@@ -71,6 +71,8 @@ struct ThemeProperties
     }
 };
 
+
+
 class Application : public Singleton<Application>
 {
 public:
