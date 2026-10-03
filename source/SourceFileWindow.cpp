@@ -592,7 +592,10 @@ bool SourceFileWindow::HandleEvent(SDL_Event* e)
                 return true;
 
                 case SDLK_F11:
-                    gViceBridge->SingleStep();
+                    if (e->key.mod & SDL_KMOD_SHIFT)
+                        gViceBridge->MultiStep();
+                    else
+                        gViceBridge->SingleStep();
                     return true;
 
                 case SDLK_F5:

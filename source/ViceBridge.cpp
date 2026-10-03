@@ -118,17 +118,24 @@ void VBC_BreakPointHit::Execute()
     }
 }
 
+void ViceBridge::MultiStep()
+{
+    auto cmd = new VBC_Continue;
+    cmd->m_steps = 20;
+    SendMad2Vice(cmd);
+}
+
 void ViceBridge::SingleStep()
 {
     auto cmd = new VBC_Continue;
-    cmd->m_singleStep = true;
+    cmd->m_steps = 1;
     SendMad2Vice(cmd);
 }
 
 void ViceBridge::Continue()
 {
     auto cmd = new VBC_Continue;
-    cmd->m_singleStep = false;
+    cmd->m_steps = 0;
     SendMad2Vice(cmd);
 }
 
@@ -142,8 +149,8 @@ void VBC_Continue::Execute()
     gViceBridge->ClearViceStopped();
 
     s_clock_start = helper_get_clock_cycle();
-    if (m_singleStep)
-        mon_instructions_step(1);
+    if (m_steps > 0)
+        mon_instructions_step(m_steps);
     else
         mon_go();
 }

@@ -75,7 +75,7 @@ struct VBC_BreakpointHit : ViceBridgeCmd
 struct VBC_Continue : ViceBridgeCmd
 {
     virtual void Execute() override;
-    bool m_singleStep;
+    int m_steps;
 };
 
 struct VBC_Pause : ViceBridgeCmd
@@ -206,6 +206,7 @@ public:
     bool HasViceStopped() { return m_vice_stopped; }
     void ClearViceStopped() { m_vice_stopped = false; }
 
+    void MultiStep();
     void SingleStep();
     void Continue();
     void Pause();
