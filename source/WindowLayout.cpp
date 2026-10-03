@@ -8,6 +8,7 @@
 #include "ProjectListWindow.h"
 #include "SearchWindow.h"
 #include "EmuScreenWindow.h"
+#include "FunctionsWindow.h"
 #include <format>
 
 void WindowLayout::Layout(SDL_Renderer* renderer, const Recti& area)
@@ -545,13 +546,16 @@ void WindowLayout::LoadLayout(const std::vector<std::string>& layoutTokens, size
                 {
                     if (!UndoBufferWindow::CreateFromLayoutTokens(this, layoutTokens, idx))
                     {
-                        if (!ProjectListWindow::CreateFromLayoutTokens(this, layoutTokens, idx))
+                        if (!FunctionsWindow::CreateFromLayoutTokens(this, layoutTokens, idx))
                         {
-                            if (!SearchWindow::CreateFromLayoutTokens(this, layoutTokens, idx))
+                            if (!ProjectListWindow::CreateFromLayoutTokens(this, layoutTokens, idx))
                             {
-                                if (!EmuScreenWindow::CreateFromLayoutTokens(this, layoutTokens, idx))
+                                if (!SearchWindow::CreateFromLayoutTokens(this, layoutTokens, idx))
                                 {
-                                    Log(LogGroup::System, "Unknown window token: {}", layoutTokens[idx]);
+                                    if (!EmuScreenWindow::CreateFromLayoutTokens(this, layoutTokens, idx))
+                                    {
+                                        Log(LogGroup::System, "Unknown window token: {}", layoutTokens[idx]);
+                                    }
                                 }
                             }
                         }

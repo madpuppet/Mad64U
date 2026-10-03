@@ -34,7 +34,7 @@ void NetworkManager::Message(NetworkMessageStruct* msg)
             }
 
             GetNetworkStatus(status);
-            if (!status.m_hostName.empty())
+            if (true)// !status.m_hostName.empty())
             {
                 m_networkMutex.lock();
                 m_messageList[m_writeMsgIdx] = msg;

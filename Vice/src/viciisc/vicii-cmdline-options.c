@@ -113,6 +113,8 @@ static int set_vicii_model(const char *param, void *extra_param)
     }
 
     do {
+        const char* cmp = model_match[i].name;
+
         if (strcmp(model_match[i].name, param) == 0) {
             model = model_match[i].model;
         }

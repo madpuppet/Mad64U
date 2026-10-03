@@ -5,6 +5,7 @@
 #include "resources.h"
 #include "mon_breakpoint.h"
 #include "machine.h"
+#include "maincpu.h"
 
 void helper_autostart_prg(const char* path)
 {
@@ -50,3 +51,15 @@ void capture_and_update_vice_state(uint16_t currentPc, void* userData)
 {
     helper_update_vice_state();
 }
+
+void helper_set_video_mode(int pal)
+{
+    resources_set_int("MachineVideoStandard", pal ? MACHINE_SYNC_PAL : MACHINE_SYNC_NTSC);
+    resources_set_int("MachinePowerFrequency", pal ? 50 : 60);
+}
+
+uint64_t helper_get_clock_cycle()
+{
+    return maincpu_clk;
+}
+

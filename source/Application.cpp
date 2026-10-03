@@ -14,6 +14,7 @@
 #include "SearchWindow.h"
 #include "EmuScreenWindow.h"
 #include "ViceBridge.h"
+#include "FunctionsWindow.h"
 #include <filesystem>
 
 extern "C" {
@@ -263,21 +264,23 @@ void Application::CreateMenus()
 
     m_viceZoomModeMenu = new WindowMenuItem("Zoom Mode");
     auto sizeToFitZoom = []() { Application::Instance().Vice_SetZoomMode(false); };
-    auto fixedZoom = []() { Application::Instance().Vice_SetZoomMode(true); };
-    m_viceZoomModeMenu->m_subMenus.push_back(new WindowMenuItem("Size To Fit", sizeToFitZoom));
-    m_viceZoomModeMenu->m_subMenus.push_back(new WindowMenuItem("Fixed", fixedZoom));
-    viceMenu->m_items.push_back(m_viceZoomModeMenu);
-
-    m_viceZoomLevelMenu = new WindowMenuItem("Zoom Level");
     auto zoomLevel1 = []() { Application::Instance().Vice_SetZoomLevel(1); };
     auto zoomLevel2 = []() { Application::Instance().Vice_SetZoomLevel(2); };
     auto zoomLevel4 = []() { Application::Instance().Vice_SetZoomLevel(4); };
     auto zoomLevel8 = []() { Application::Instance().Vice_SetZoomLevel(8); };
-    m_viceZoomLevelMenu->m_subMenus.push_back(new WindowMenuItem("1x", zoomLevel1));
-    m_viceZoomLevelMenu->m_subMenus.push_back(new WindowMenuItem("2x", zoomLevel2));
-    m_viceZoomLevelMenu->m_subMenus.push_back(new WindowMenuItem("4x", zoomLevel4));
-    m_viceZoomLevelMenu->m_subMenus.push_back(new WindowMenuItem("8x", zoomLevel8));
-    viceMenu->m_items.push_back(m_viceZoomLevelMenu);
+    m_viceZoomModeMenu->m_subMenus.push_back(new WindowMenuItem("Size To Fit", sizeToFitZoom));
+    m_viceZoomModeMenu->m_subMenus.push_back(new WindowMenuItem("Fixed 1x", zoomLevel1));
+    m_viceZoomModeMenu->m_subMenus.push_back(new WindowMenuItem("Fixed 2x", zoomLevel2));
+    m_viceZoomModeMenu->m_subMenus.push_back(new WindowMenuItem("Fixed 4x", zoomLevel4));
+    m_viceZoomModeMenu->m_subMenus.push_back(new WindowMenuItem("Fixed 8x", zoomLevel8));
+    viceMenu->m_items.push_back(m_viceZoomModeMenu);
+
+    m_viceVideoStandardMenu = new WindowMenuItem("Video Standard");
+    auto setToPAL = []() { Application::Instance().Vice_EnablePAL(true); };
+    auto setToNTSC = []() { Application::Instance().Vice_EnablePAL(false); };
+    m_viceVideoStandardMenu->m_subMenus.push_back(new WindowMenuItem("PAL", setToPAL));
+    m_viceVideoStandardMenu->m_subMenus.push_back(new WindowMenuItem("NTSC", setToNTSC));
+    viceMenu->m_items.push_back(m_viceVideoStandardMenu);
 
     wm.AddWindowMenu(viceMenu);
 
@@ -317,6 +320,12 @@ void Application::CreateMenus()
             WindowManager::Instance().LayoutWindows();
         };
 
+    auto newFunctionsWindow = []()
+        {
+            WindowManager::Instance().AddWindow(new FunctionsWindow);
+            WindowManager::Instance().LayoutWindows();
+        };
+
     auto toggleFrameLock = []()
         {
             auto layout = WindowManager::Instance().GetActiveWindowLayout();
@@ -327,6 +336,7 @@ void Application::CreateMenus()
     auto windowMenu = new WindowMenu;
     windowMenu->m_name = "Windows";
     windowMenu->m_items.push_back(new WindowMenuItem("Project Files", newWindowProjectList ));
+    windowMenu->m_items.push_back(new WindowMenuItem("Function List", newFunctionsWindow));
     windowMenu->m_items.push_back(new WindowMenuItem("Debug Output", newWindowSystemOutput));
     windowMenu->m_items.push_back(new WindowMenuItem("Build Output", newWindowBuildOutput));
     windowMenu->m_items.push_back(new WindowMenuItem("Undo Buffer", newWindowUndoBuffer));
@@ -673,13 +683,24 @@ int Application::Run()
     gViceBridge = new ViceBridge;
     gViceBridge->Start();
 
+    bool isPal = Settings::Instance().GetBool(SETTING_VICE_IS_PAL);
+
     auto emulator = [this]()
         {
-            const char* argv[] = { "mad64u.exe", "-soundbufsize", "200", "-soundfragsize", "3"};
-            main_program(5, (char **)argv);
+            std::vector<const char*> args;
+            args.push_back("mad64u.exe");
+            args.push_back("-soundbufsize");
+            args.push_back("200");
+            args.push_back("-soundfragsize");
+            args.push_back("3");
+            args.push_back(m_vice_pal ? "-pal" : "-ntsc");
+            args.push_back("-VICIImodel");
+            args.push_back("6569");
+            main_program((int)args.size(), (char**)args.data());
         };
     std::thread(emulator).detach();
 
+    Vice_EnablePAL(isPal);
 
     SDL_Event e;
     while (!m_quit)
@@ -736,7 +757,8 @@ void Application::SelectTheme(const char *themeName)
 
 void Application::Vice_SetZoomMode(bool fixed)
 {
-    std::string result = fixed ? "Fixed" : "Scale To Fit";
+    int level = Settings::Instance().GetInt(SETTING_VICE_ZOOM_LEVEL);
+    std::string result = fixed ? std::format("Fixed {}x", level) : "Scale To Fit";
     m_viceZoomModeMenu->m_name = std::format("Zoom Mode : {}", result);
     Settings::Instance().SetBool(SETTING_VICE_ZOOM_MODE, fixed);
     Settings::Instance().Save();
@@ -747,13 +769,22 @@ void Application::Vice_SetZoomMode(bool fixed)
 void Application::Vice_SetZoomLevel(int zoom)
 {
     // force fixed if your gonna set the zoom level
-    Vice_SetZoomMode(true);
-
-    m_viceZoomLevelMenu->m_name = std::format("Zoom Level : {}x", zoom);
+    m_vice_zoomLevel = zoom;
     Settings::Instance().SetInt(SETTING_VICE_ZOOM_LEVEL, zoom);
+    Vice_SetZoomMode(true);
+}
+
+void Application::Vice_EnablePAL(bool enable)
+{
+    auto cmd = new VBC_SetVideoStandard;
+    cmd->m_palMode = enable;
+    gViceBridge->SendMad2Vice(cmd);
+
+    std::string mode = enable ? "PAL" : "NTSC";
+    m_viceVideoStandardMenu->m_name = std::format("Video Standard : {}", mode);
+    Settings::Instance().SetInt(SETTING_VICE_IS_PAL, enable);
     Settings::Instance().Save();
     WindowManager::Instance().LayoutMenu();
-    m_vice_zoomLevel = zoom;
 }
 
 void Application::ShowLines(bool enable)

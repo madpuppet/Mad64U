@@ -24,12 +24,17 @@ void ViceBridge::Start()
     std::thread(msgLoop).detach();
 }
 
-extern "C" void mad64_video_refresh(u8* buffer, int width, int height)
+extern "C" void mad64_video_refresh(u8* buffer, int width, int height, int firstLine, int lastLine)
 {
+    if (width == 0 || height == 0)
+        return;
+
     auto cmd = new VBC_NewFrame;
     cmd->m_buffer = new u8[width * height];
     cmd->m_height = height;
     cmd->m_width = width;
+    cmd->m_firstLine = firstLine;
+    cmd->m_lastLine = lastLine;
     memcpy(cmd->m_buffer, buffer, width * height);
     gViceBridge->Queue(cmd);
 }
@@ -47,6 +52,8 @@ extern "C" void mad64_breakpoint_hit(void)
 extern "C" void mon_instructions_step(int);
 extern "C" void mon_go();
 extern "C" void monitor_startup_trap();
+extern "C" int helper_set_video_mode(int pal);
+extern "C" uint64_t helper_get_clock_cycle();
 
 extern "C" void mad64_update_vice_state(int rasterline, int rasterCycle, int pc, int acc, int x, int y, int flags)
 {
@@ -73,10 +80,24 @@ void VBC_UpdateViceState::Execute()
     state.m_y = m_y;
 }
 
+static uint64_t s_clock_start = 0;
+static uint64_t s_clock_elapsed = 0;
+
 void ViceBridge::BreakpointHit()
 {
+    uint64_t now = helper_get_clock_cycle();
+    s_clock_elapsed = now - s_clock_start;
+
+    // ignore double breaks that happen if you single step on a breakpoint
+    if (s_clock_elapsed == 0)
+        return;
+
+    s_clock_start = now;
+
     m_vice_stopped = true;
-    SendVice2Mad(new VBC_BreakPointHit);
+    auto cmd = new VBC_BreakPointHit;
+    cmd->m_clock_elapsed = s_clock_elapsed;
+    SendVice2Mad(cmd);
 
     while (m_vice_stopped)
     {
@@ -119,6 +140,8 @@ void ViceBridge::Pause()
 void VBC_Continue::Execute()
 {
     gViceBridge->ClearViceStopped();
+
+    s_clock_start = helper_get_clock_cycle();
     if (m_singleStep)
         mon_instructions_step(1);
     else
@@ -128,6 +151,11 @@ void VBC_Continue::Execute()
 void VBC_Pause::Execute()
 {
     monitor_startup_trap();
+}
+
+void VBC_SetVideoStandard::Execute()
+{
+    helper_set_video_mode(m_palMode);
 }
 
 void ViceBridge::ExecuteViceCmds()
@@ -190,11 +218,11 @@ void VBC_NewFrame::Execute()
 {
     ViceFrame frame;
     frame.m_width = m_width;
-    frame.m_height = m_height;
+    frame.m_height = m_lastLine - m_firstLine;
     frame.m_pixels = new u32[m_width * m_height];
     u32* out = frame.m_pixels;
-    u8* in = m_buffer;
-    for (int p = 0; p < (m_width * m_height); p++)
+    u8* in = m_buffer + m_firstLine * m_width;
+    for (int p = 0; p < (frame.m_width * frame.m_height); p++)
     {
         *out++ = c64Palette[*in++ & 15];
     }

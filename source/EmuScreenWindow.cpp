@@ -66,6 +66,14 @@ void EmuScreenWindow::MessageChild(WindowLayout* layout, struct WindowMessageStr
     }
 }
 
+bool EmuScreenWindow::Tick()
+{
+    m_animTime += WINDOW_TICK_MS * (1.0f / 1000.0f);
+    if (m_animTime > 1.0f)
+        m_animTime -= 1.0f;
+    return true;
+}
+
 void EmuScreenWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
 {
     bool fixed;
@@ -73,34 +81,6 @@ void EmuScreenWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     Application::Instance().Vice_GetZoomInfo(fixed, level);
     auto& wm = WindowManager::Instance();
     auto& highlight = wm.GetWindowHighlightQuery();
-
-    // draw icons
-    auto& ir = IconRenderer::Instance();
-    ir.DrawIcon(renderer, Icons::Run, m_clientArea.x + 16, m_clientArea.y + 12);
-    ir.DrawIcon(renderer, Icons::Pause, m_clientArea.x + 36, m_clientArea.y + 12);
-    ir.DrawIcon(renderer, Icons::SingleStep, m_clientArea.x + 56, m_clientArea.y + 12);
-
-    if (highlight.m_highlight == WindowHighlightType::EmuScreenIcon)
-    {
-        int ix = highlight.m_area.x + 8;
-        int iy = highlight.m_area.y + 8;
-        ir.DrawIcon(renderer, Icons::Highlight, ix, iy);
-    }
-
-    // draw emulator state
-    auto& fr = FontRenderer::Instance();
-    auto& viceState = gViceBridge->GetViceState();
-    SDL_Color stateCol{ 255,255,255,255 };
-    std::string text = std::format("PC {:4x} ROW {:3d} COL {:3d} A {:2x} X {:2x} Y {:2x} Flags {}{}.{}{}{}{}{}",
-        viceState.m_pc, viceState.m_rasterLine, viceState.m_rasterCycle, viceState.m_acc, viceState.m_x, viceState.m_y,
-        viceState.m_flags & 128 ? 'N' : 'n',
-        viceState.m_flags & 64 ? 'V' : 'v',
-        viceState.m_flags & 16 ? 'B' : 'b',
-        viceState.m_flags & 8 ? 'D' : 'd',
-        viceState.m_flags & 4 ? 'I' : 'i',
-        viceState.m_flags & 2 ? 'Z' : 'z',
-        viceState.m_flags & 1 ? 'C' : 'c');
-    fr.RenderText(renderer, text, stateCol, m_clientArea.x + 100, m_clientArea.y, FontType::UI);
 
     // draw background
     auto& tp = Application::Instance().GetThemeProperties();
@@ -111,17 +91,19 @@ void EmuScreenWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
         tp.SetRenderDrawColor(renderer, ThemeColor::SourceBackground);
 
     SDL_FRect body = m_clientArea.AsSDLFRect();
-    body.x = (float)m_clientArea.x;
-    body.y = (float)(m_clientArea.y + LINE_HEIGHT);
-    body.w = (float)m_clientArea.w;
-    body.h = (float)m_clientArea.h - LINE_HEIGHT;
+    body.y += LINE_HEIGHT;
     SDL_RenderFillRect(renderer, &body);
 
+    auto& viceState = gViceBridge->GetViceState();
     if (m_viceTexture)
     {
+        bool isPal = m_viceTextureWidth == 384;
+        int lineCycles = isPal ? 63 : 65;
+        float textureVScale = isPal ? (float)m_viceTextureHeight * 1.07f : (float)m_viceTextureHeight * 0.75f;
+
         if (!fixed)
         {
-            float frameAR = (float)m_viceTextureWidth / (float)m_viceTextureHeight;
+            float frameAR = (float)m_viceTextureWidth / textureVScale;
             float clientAreaAR = body.w / body.h;
             if (clientAreaAR > frameAR)
             {
@@ -139,15 +121,59 @@ void EmuScreenWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
         {
             float zoom = (float)level;
             body.w = m_viceTextureWidth * zoom;
-            body.h = m_viceTextureHeight * zoom;
+            body.h = textureVScale * zoom;
             body.x -= m_clientContentOffset.x;
             body.y -= m_clientContentOffset.y;
             SDL_RenderTexture(renderer, m_viceTexture, nullptr, &body);
         }
+
+        int rasterX = (viceState.m_rasterCycle - 14) * 8;
+        if (rasterX >= 0 && rasterX < 384 && viceState.m_rasterLine >= 16)
+        {
+            float pixelWidth = body.w / m_viceTextureWidth;
+            float pixelHeight = body.h / m_viceTextureHeight;
+
+            SDL_FRect cycleArea{ body.x + rasterX * pixelWidth, body.y + pixelHeight * (viceState.m_rasterLine - 16), pixelWidth * 8.0f, pixelHeight };
+            SDL_SetRenderDrawColor(m_renderer, 255, 255, 0, 128);
+            SDL_RenderRect(m_renderer, &cycleArea);
+        }
+
         m_clientContentSize.x = (int)body.w;
         m_clientContentSize.y = (int)body.h;
         LayoutScrollbars();
     }
+
+    // draw icons
+    auto& ir = IconRenderer::Instance();
+
+    SDL_FRect headerArea = m_clientArea.AsSDLFRect();
+    headerArea.h = LINE_HEIGHT;
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderFillRect(renderer, &headerArea);
+    ir.DrawIcon(renderer, Icons::Run, m_clientArea.x + 16, m_clientArea.y + 12);
+    ir.DrawIcon(renderer, Icons::Pause, m_clientArea.x + 36, m_clientArea.y + 12);
+    ir.DrawIcon(renderer, Icons::SingleStep, m_clientArea.x + 56, m_clientArea.y + 12);
+
+    if (highlight.m_highlight == WindowHighlightType::EmuScreenIcon)
+    {
+        int ix = highlight.m_area.x + 8;
+        int iy = highlight.m_area.y + 8;
+        ir.DrawIcon(renderer, Icons::Highlight, ix, iy);
+    }
+
+    // draw emulator state
+    auto& fr = FontRenderer::Instance();
+    SDL_Color stateCol{ 255,255,255,255 };
+    std::string text = std::format("PC {:4x} ROW {:3d} COL {:3d} A {:2x} X {:2x} Y {:2x} Flags {}{}.{}{}{}{}{}",
+        viceState.m_pc, viceState.m_rasterLine, viceState.m_rasterCycle, viceState.m_acc, viceState.m_x, viceState.m_y,
+        viceState.m_flags & 128 ? 'N' : 'n',
+        viceState.m_flags & 64 ? 'V' : 'v',
+        viceState.m_flags & 16 ? 'B' : 'b',
+        viceState.m_flags & 8 ? 'D' : 'd',
+        viceState.m_flags & 4 ? 'I' : 'i',
+        viceState.m_flags & 2 ? 'Z' : 'z',
+        viceState.m_flags & 1 ? 'C' : 'c');
+    fr.RenderText(renderer, text, stateCol, m_clientArea.x + 100, m_clientArea.y, FontType::UI);
 }
 
 bool EmuScreenWindow::HandleEvent(SDL_Event* e)

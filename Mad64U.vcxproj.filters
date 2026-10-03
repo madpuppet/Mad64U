@@ -94,6 +94,9 @@
     <ClCompile Include="source\ViceBridge.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="source\FunctionsWindow.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\common.h">
@@ -442,6 +445,9 @@
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="source\ViceBridge.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="source\FunctionsWindow.h">
       <Filter>source</Filter>
     </ClInclude>
   </ItemGroup>

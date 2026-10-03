@@ -15,6 +15,8 @@
 #define SETTING_VICE_ZOOM_MODE "vice_zoomMode"
 #define SETTING_VICE_ZOOM_LEVEL "vice_zoomLevel"
 
+#define SETTING_VICE_IS_PAL "vice_isPal"
+
 class Settings : public Singleton<Settings>
 {
 public:

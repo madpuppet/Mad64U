@@ -99,5 +99,6 @@ protected:
 
     int m_lineNmbrOffset = 12*5;
     int m_disOffset = 12*11;
+    float m_breakpointFlash = 0.0f;
 };
 

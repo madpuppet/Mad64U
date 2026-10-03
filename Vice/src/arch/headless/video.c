@@ -37,6 +37,11 @@
 #include "video.h"
 #include "interrupt.h"
 
+#include <stddef.h>
+#include <string.h>
+#include "viewport.h"
+#include "viciitypes.h"
+
 
 /** \brief  Command line options related to generic video output
  */
@@ -149,6 +154,66 @@ void video_canvas_destroy(struct video_canvas_s *canvas)
     /* printf("%s\n", __func__); */
 }
 
+
+int mad64_update_current_raster_line(video_canvas_t* canvas)
+{
+    draw_buffer_t* db;
+    const geometry_t* geo;
+    unsigned int row;
+    unsigned int column;
+    int source_offset;
+    int count;
+    int width;
+
+    if (!canvas || canvas != vicii.raster.canvas)
+        return 0;
+
+    db = canvas->draw_buffer;
+    geo = canvas->geometry;
+
+    if (!db || !db->draw_buffer || !geo)
+        return 0;
+
+    source_offset = 17 * 8 - vicii.screen_leftborderwidth;
+
+    if (source_offset < 0 || source_offset >= VICII_DRAW_BUFFER_SIZE)
+        return 0;
+
+    count = vicii.dbuf_offset - source_offset;
+    if (count <= 0)
+        return 0;
+
+    width = vicii.screen_leftborderwidth + 320
+        + vicii.screen_rightborderwidth;
+
+    if (count > width)
+        count = width;
+
+    if (count > VICII_DRAW_BUFFER_SIZE - source_offset)
+        count = VICII_DRAW_BUFFER_SIZE - source_offset;
+
+    row = vicii.raster.current_line;
+    column = geo->extra_offscreen_border_left;
+
+    if (row < geo->first_displayed_line || row < geo->last_displayed_line)
+        return 0;
+
+    if (row >= db->draw_buffer_height ||
+        column >= db->draw_buffer_width)
+        return 0;
+
+    if ((unsigned int)count > db->draw_buffer_width - column)
+        count = (int)(db->draw_buffer_width - column);
+
+    memcpy(
+        db->draw_buffer + (size_t)row * db->draw_buffer_width + column,
+        vicii.dbuf + source_offset,
+        (size_t)count);
+
+    return count;
+}
+
+
 /** \brief Update the display on a video canvas to reflect the machine
  *         state.
  * \param canvas The canvas to update.
@@ -164,17 +229,18 @@ void video_canvas_refresh(struct video_canvas_s *canvas,
                           unsigned int xi, unsigned int yi,
                           unsigned int w, unsigned int h)
 {
-    extern void mad64_video_refresh(unsigned char * buffer, int width, int height);
+    extern void mad64_video_refresh(unsigned char * buffer, int width, int height, int firstLine, int lastLine);
 
     struct draw_buffer_s *db = canvas->draw_buffer;
     if (!db)
         return;
 
-
+    extern bool monitor_is_inside_monitor();
     if (monitor_is_inside_monitor())
     {
         extern void helper_update_vice_state();
         helper_update_vice_state();
+        mad64_update_current_raster_line(canvas);
     }
     else
     {
@@ -182,7 +248,8 @@ void video_canvas_refresh(struct video_canvas_s *canvas,
         interrupt_maincpu_trigger_trap(capture_and_update_vice_state, 0);
     }
 
-    mad64_video_refresh(db->draw_buffer, db->draw_buffer_width, db->draw_buffer_height);
+    const geometry_t* geo = canvas->geometry;
+    mad64_video_refresh(db->draw_buffer, db->draw_buffer_width, db->draw_buffer_height, geo->first_displayed_line, geo->last_displayed_line);
 }
 
 /** \brief Update canvas size to match the draw buffer size requested

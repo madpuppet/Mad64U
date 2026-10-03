@@ -41,8 +41,11 @@ extern bool StrEqualNoCase(const std::string& a, const std::string& b);
 
 #define Assert(cond, ...)  if (!(cond)) { Log("ASSERTION FAILURE:\n"); __VA_OPT__(Log(__VA_ARGS__);) __debugbreak(); };
 
+inline float Max(float x, float y) { return x > y ? x : y; }
 inline int Max(int x, int y) { return x > y ? x : y; }
+inline float Min(float x, float y) { return x < y ? x : y; }
 inline int Min(int x, int y) { return x < y ? x : y; }
+inline float Abs(float x) { return x < 0 ? -x : x; }
 inline int Abs(int x) { return x < 0 ? -x : x; }
 inline float Clamp(float val, float min, float max) { return val < min ? min : (val > max ? max : val); }
 inline int Clamp(int val, int min, int max) { return val < min ? min : (val > max ? max : val); }

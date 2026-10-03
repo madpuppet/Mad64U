@@ -10,6 +10,7 @@ public:
     void Paint(SDL_Renderer* renderer, const Recti& dirtyArea) override;
     bool HandleEvent(SDL_Event* e) override;
     void MessageChild(WindowLayout* layout, struct WindowMessageStruct& msg) override;
+    bool Tick() override;
 
     void SaveTokens(std::vector<std::string>& layoutTokens) override;
     static bool CreateFromLayoutTokens(struct WindowLayout* layout, const std::vector<std::string>& layoutTokens, size_t& idx);
@@ -23,4 +24,5 @@ protected:
     int m_viceTextureHeight = 0;
     bool m_snapToClientArea = false;
     int m_zoom = 3;
+    float m_animTime = 0.0f;
 };

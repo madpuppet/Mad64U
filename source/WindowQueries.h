@@ -108,6 +108,10 @@ struct WindowHighlightQuery
         {
             enum class Icons m_icon;
         } m_emuScreen;
+        struct
+        {
+            int line;
+        } m_functionsWindow;
     };
 
     bool IsEqual(const WindowHighlightQuery& o)

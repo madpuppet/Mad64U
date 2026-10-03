@@ -34,6 +34,8 @@ struct VBC_NewFrame : ViceBridgeCmd
     u8* m_buffer;
     int m_width;
     int m_height;
+    int m_firstLine;
+    int m_lastLine;
 };
 
 struct VBC_RunPrg : ViceBridgeCmd
@@ -96,6 +98,13 @@ struct VBC_UpdateViceState : ViceBridgeCmd
 struct VBC_BreakPointHit : ViceBridgeCmd
 {
     virtual void Execute() override;
+    uint64_t m_clock_elapsed;
+};
+
+struct VBC_SetVideoStandard : ViceBridgeCmd
+{
+    virtual void Execute() override;
+    bool m_palMode;
 };
 
 struct ViceState

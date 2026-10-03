@@ -274,6 +274,13 @@ void SourceFileWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
 
     m_clientContentSize.x = maxWidth + 32;
 
+    if (m_breakpointFlash > 0.0f)
+    {
+        SDL_FRect body = m_clientArea.AsSDLFRect();
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, (int)(77.0f * m_breakpointFlash));
+        SDL_RenderFillRect(renderer, &body);
+    }
+
     // draw cursor
     SDL_FRect cursorRect = CalcCursorArea().AsSDLFRect();
     cursorRect.x += (float)xBase;
@@ -342,9 +349,16 @@ void SourceFileWindow::Close()
 
 bool SourceFileWindow::Tick()
 {
-    m_animTime += WINDOW_TICK_MS * (1.0f / 1000.0f);
+    float deltaTime = WINDOW_TICK_MS * (1.0f / 1000.0f);
+
+    m_animTime += deltaTime;
     if (m_animTime > 1.0f)
         m_animTime -= 1.0f;
+
+    if (m_breakpointFlash > 0.0f)
+    {
+        m_breakpointFlash = Max(m_breakpointFlash - deltaTime*2.0f, 0.0f);
+    }
     return true;
 }
 
@@ -1500,18 +1514,16 @@ void SourceFileWindow::MessageChild(WindowLayout *layout, struct WindowMessageSt
             {
                 auto& viceState = gViceBridge->GetViceState();
                 MakeAddressVisible(viceState.m_pc);
-
                 if (m_sourceFile->m_stepOverAddr == viceState.m_pc)
                 {
                     gViceBridge->ClearBreakpoint(m_sourceFile->m_stepOverBreakpointID);
                     m_sourceFile->m_stepOverBreakpointID = 0;
-                    m_sourceFile->m_stepOverAddr = -1;
                 }
                 else
                 {
-                    Log(LogGroup::System, "hit breakpoint at {} but addr is {}", m_sourceFile->m_stepOverAddr, viceState.m_pc);
-                    m_sourceFile->m_stepOverAddr = -1;
+                    m_breakpointFlash = 1.0f;
                 }
+                m_sourceFile->m_stepOverAddr = -1;
             }
         }
         break;

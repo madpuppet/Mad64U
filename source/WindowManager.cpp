@@ -89,7 +89,7 @@ void WindowManager::HandleEvent(SDL_Event* e)
         {
             if (e->button.button == 1)
             {
-                m_mouseHighlightQuery.Reset();
+//                m_mouseHighlightQuery.Reset();
                 m_mouseSelectionQuery.Reset();
 
                 WindowMessageStruct msg;
