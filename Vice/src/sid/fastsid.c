@@ -1269,28 +1269,28 @@ void fastsid_state_read(struct sound_s *psid, struct sid_fastsid_snapshot_state_
 
         if (psid->v[i].wt >= &wavetable00[0] && psid->v[i].wt <= &wavetable00[1]) {
             sid_state->v_wt[i] = 0;
-            sid_state->v_wt_offset[i] = psid->v[i].wt - &wavetable00[0];
+            sid_state->v_wt_offset[i] = (uint16_t)(psid->v[i].wt - &wavetable00[0]);
         } else if (psid->v[i].wt >= &wavetable10[0] && psid->v[i].wt <= &wavetable10[4095]) {
             sid_state->v_wt[i] = 1;
-            sid_state->v_wt_offset[i] = psid->v[i].wt - &wavetable10[0];
+            sid_state->v_wt_offset[i] = (uint16_t)(psid->v[i].wt - &wavetable10[0]);
         } else if (psid->v[i].wt >= &wavetable20[0] && psid->v[i].wt <= &wavetable20[4095]) {
             sid_state->v_wt[i] = 2;
-            sid_state->v_wt_offset[i] = psid->v[i].wt - &wavetable20[0];
+            sid_state->v_wt_offset[i] = (uint16_t)(psid->v[i].wt - &wavetable20[0]);
         } else if (psid->v[i].wt >= &wavetable30[0] && psid->v[i].wt <= &wavetable30[4095]) {
             sid_state->v_wt[i] = 3;
-            sid_state->v_wt_offset[i] = psid->v[i].wt - &wavetable30[0];
+            sid_state->v_wt_offset[i] = (uint16_t)(psid->v[i].wt - &wavetable30[0]);
         } else if (psid->v[i].wt >= &wavetable40[0] && psid->v[i].wt <= &wavetable40[8191]) {
             sid_state->v_wt[i] = 4;
-            sid_state->v_wt_offset[i] = psid->v[i].wt - &wavetable40[0];
+            sid_state->v_wt_offset[i] = (uint16_t)(psid->v[i].wt - &wavetable40[0]);
         } else if (psid->v[i].wt >= &wavetable50[0] && psid->v[i].wt <= &wavetable50[8191]) {
             sid_state->v_wt[i] = 5;
-            sid_state->v_wt_offset[i] = psid->v[i].wt - &wavetable50[0];
+            sid_state->v_wt_offset[i] = (uint16_t)(psid->v[i].wt - &wavetable50[0]);
         } else if (psid->v[i].wt >= &wavetable60[0] && psid->v[i].wt <= &wavetable60[8191]) {
             sid_state->v_wt[i] = 6;
-            sid_state->v_wt_offset[i] = psid->v[i].wt - &wavetable60[0];
+            sid_state->v_wt_offset[i] = (uint16_t)(psid->v[i].wt - &wavetable60[0]);
         } else if (psid->v[i].wt >= &wavetable70[0] && psid->v[i].wt <= &wavetable70[8191]) {
             sid_state->v_wt[i] = 7;
-            sid_state->v_wt_offset[i] = psid->v[i].wt - &wavetable70[0];
+            sid_state->v_wt_offset[i] = (uint16_t)(psid->v[i].wt - &wavetable70[0]);
         } else {
             sid_state->v_wt[i] = 0;
             sid_state->v_wt_offset[i] = 0;

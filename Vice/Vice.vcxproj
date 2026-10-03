@@ -1846,26 +1846,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -1889,9 +1889,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>config;src;src\rs232drv;src\arch\shared;src\arch\headless;src\joyport;src\drive;src\core\rtc;src\lib\p64;src\vdrive;src\datasette;src\fsdevice;src\imagecontents;src\monitor;src\tapeport;src\diskimage;src\c64;src\printerdrv;src\arch\shared\hotkeys;src\c64\cart;zlib;src\hvsc;src\sid;src\userport;src\pet;src\core;src\samplerdrv;src\video;src\viciisc;src\raster;src\drive\iec\c64exp;src\tape;src\drive\iec;src\drive\tcbm;src\lib\md5;src\diag;src\crtc;src\arch\shared\sounddrv;src\lib\libzmbv</IncludePath>
+    <OutDir>Intermediate\$(ShortProjectName)\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>Intermediate\$(ShortProjectName)\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>config;src;src\rs232drv;src\arch\shared;src\arch\headless;src\joyport;src\drive;src\core\rtc;src\lib\p64;src\vdrive;src\datasette;src\fsdevice;src\imagecontents;src\monitor;src\tapeport;src\diskimage;src\c64;src\printerdrv;src\arch\shared\hotkeys;src\c64\cart;zlib;src\hvsc;src\sid;src\userport;src\pet;src\core;src\samplerdrv;src\video;src\viciisc;src\raster;src\drive\iec\c64exp;src\tape;src\drive\iec;src\drive\tcbm;src\lib\md5;src\diag;src\crtc;src\arch\shared\sounddrv;src\lib\libzmbv</IncludePath>
+    <OutDir>Intermediate\$(ShortProjectName)\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>Intermediate\$(ShortProjectName)\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -1945,6 +1949,7 @@
       <XMLDocumentationFileName>$(IntDir)%(RelativeDir)</XMLDocumentationFileName>
       <SourceDependenciesFile>$(IntDir)%(RelativeDir)</SourceDependenciesFile>
       <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>
