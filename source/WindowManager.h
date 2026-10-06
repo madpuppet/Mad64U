@@ -130,6 +130,7 @@ public:
     }
 
     void SetActiveWindow(WindowBase* window);
+    void SetActiveWindow(WindowTree *tree, WindowLayout *layout, WindowBase* window);
 
 protected:
     std::vector<WindowMessageStruct> m_msgQueue;

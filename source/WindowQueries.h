@@ -65,7 +65,8 @@ enum class WindowHighlightType
     ScrollBar,
     ProjectListFile,
     ClientArea,
-    EmuScreenIcon
+    EmuScreenIcon,
+    FunctionsWindow
 };
 
 struct WindowHighlightQuery
@@ -116,8 +117,28 @@ struct WindowHighlightQuery
 
     bool IsEqual(const WindowHighlightQuery& o)
     {
-        return o.m_highlight == m_highlight && o.m_tree == m_tree && o.m_area.x == m_area.x && o.m_area.y == m_area.y 
-            && o.m_area.w == m_area.w && o.m_area.h == m_area.h;
+        if (o.m_highlight != m_highlight || o.m_tree != m_tree || o.m_area.x != m_area.x || o.m_area.y != m_area.y || o.m_area.w != m_area.w || o.m_area.h != m_area.h || o.m_id != m_id)
+            return false;
+
+        if (m_highlight == WindowHighlightType::Menu && (o.m_menu.m_menuIdx != m_menu.m_menuIdx || o.m_menu.m_itemIdx != m_menu.m_itemIdx || o.m_menu.m_subItemIdx != m_menu.m_subItemIdx || o.m_menu.m_prefixIcon != m_menu.m_prefixIcon))
+            return false;
+
+        if (m_highlight == WindowHighlightType::ScrollBar && (o.m_scrollbar.m_vertical != m_scrollbar.m_vertical || o.m_scrollbar.m_bar != m_scrollbar.m_bar))
+            return false;
+
+        if (m_highlight == WindowHighlightType::LayoutSplit && (o.m_split.m_vertical != m_split.m_vertical || o.m_split.m_splitPos != m_split.m_splitPos))
+            return false;
+
+        if (m_highlight == WindowHighlightType::ProjectListIcon && (o.m_projectFiles.m_icon != m_projectFiles.m_icon))
+            return false;
+
+        if (m_highlight == WindowHighlightType::EmuScreenIcon && (o.m_emuScreen.m_icon != m_emuScreen.m_icon))
+            return false;
+
+        if (m_highlight == WindowHighlightType::FunctionsWindow && (o.m_functionsWindow.line != m_functionsWindow.line))
+            return false;
+
+        return true;
     }
 };
 

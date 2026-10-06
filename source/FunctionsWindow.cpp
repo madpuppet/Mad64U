@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <unordered_map>
 #include <vector>
+#include "LogManager.h"
 
 void FunctionsWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
 {
@@ -15,8 +16,15 @@ void FunctionsWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     if (!file)
         return;
 
+    static int iii = 0;
+    iii++;
+
     if (file->m_fileID != m_cachedFileID || file->m_lines.size() != m_cachedLinesSize)
+    {
         RebuildLines();
+        m_clientContentSize.y = (int)m_functionLines.size() * LINE_HEIGHT + LINE_HEIGHT;
+        LayoutScrollbars();
+    }
 
     auto& fr = FontRenderer::Instance();
     auto& tp = Application::Instance().GetThemeProperties();
@@ -32,33 +40,34 @@ void FunctionsWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     SDL_FRect body = m_clientArea.AsSDLFRect();
     SDL_RenderFillRect(renderer, &body);
 
-    auto& list = file->m_cmdBuffer->m_commandList;
-    m_clientContentSize.y = (int)list.size() * LINE_HEIGHT + LINE_HEIGHT;
-
     int firstLine = Max(m_clientContentOffset.y / LINE_HEIGHT, 0);
-    int lastLine = Min(firstLine + m_clientArea.h / LINE_HEIGHT, (int)list.size());
+    int lastLine = Min(firstLine + m_clientArea.h / LINE_HEIGHT, (int)m_functionLines.size());
     int xBase = m_clientArea.x - m_clientContentOffset.x + BORDER_MARGIN;
     int yBase = m_clientArea.y - m_clientContentOffset.y + BORDER_MARGIN;
     int x = xBase;
     int y = yBase + firstLine * LINE_HEIGHT;
     int w = 0;
-
-    for (auto &fl : m_functionLines)
+    for (int i = firstLine; i < lastLine; i++)
     {
+        auto &fl = m_functionLines[i];
         fr.RenderText(renderer, std::format("{:4d}", fl.m_line), tp.m_colors[(int)ThemeColor::TextOperator], x, y, FontType::Text);
 
         Recti area;
         fr.CalcTextArea(renderer, fl.m_label, { 0,0 }, FontType::Text, area);
         w = Max(100 + w, area.w);
-        fr.RenderText(renderer, fl.m_label, tp.m_colors[(int)ThemeColor::TextLabel], x + 100, y, FontType::Text);
 
-        if (highlight.m_highlight == WindowHighlightType::ProjectListFile && highlight.m_window == this && highlight.m_functionsWindow.line == fl.m_line)
+        ThemeColor textCol = ThemeColor::TextGeneral;
+        if (fl.m_label[0] < 'A' || fl.m_label[0] > 'Z')
+            textCol = ThemeColor::TextComment;
+
+        fr.RenderText(renderer, fl.m_label, tp.m_colors[(int)textCol], x + 100, y, FontType::Text);
+
+        if (highlight.m_highlight == WindowHighlightType::FunctionsWindow && highlight.m_window == this && highlight.m_functionsWindow.line == i)
         {
             SDL_FRect rectf{ (float)(x + 100), (float)y, (float)area.w, (float)area.h };
             tp.SetRenderDrawColor(renderer, ThemeColor::Cursor);
             SDL_RenderRect(renderer, &rectf);
         }
-
         y += LINE_HEIGHT;
     }
     m_clientContentSize.x = w;
@@ -81,12 +90,12 @@ bool FunctionsWindow::HandleEvent(SDL_Event* e)
         {
             auto& wm = WindowManager::Instance();
             auto& highlight = wm.GetWindowHighlightQuery();
-            if (highlight.m_highlight == WindowHighlightType::ProjectListFile && highlight.m_window == this)
+            if (highlight.m_highlight == WindowHighlightType::FunctionsWindow && highlight.m_window == this)
             {
                 auto file = SourceFileManager::Instance().FindFileByID(m_cachedFileID);
                 if (file)
                 {
-                    int fileLine = highlight.m_functionsWindow.line;
+                    int fileLine = m_functionLines[highlight.m_functionsWindow.line].m_line;
                     WindowTree* tree;
                     WindowLayout* layout;
                     WindowBase* window;
@@ -143,15 +152,15 @@ void FunctionsWindow::MessageChild(WindowLayout* layout, struct WindowMessageStr
                 query->m_layout = layout;
                 query->m_window = this;
 
-                int l = (msg.m_y - (m_clientArea.y + m_clientContentOffset.y)) / LINE_HEIGHT;
+                int l = (msg.m_y - (m_clientArea.y - m_clientContentOffset.y)) / LINE_HEIGHT;
                 if (l >= 0 && l < m_functionLines.size())
                 {
                     auto& fr = FontRenderer::Instance();
                     Recti area;
                     fr.CalcTextArea(msg.m_tree->m_renderer, m_functionLines[l].m_label, {m_clientArea.x - m_clientContentOffset.x, m_clientArea.y - m_clientContentOffset.y}, FontType::Text, area);
                     query->m_area = area;
-                    query->m_highlight = WindowHighlightType::ProjectListFile;
-                    query->m_functionsWindow.line = m_functionLines[l].m_line;
+                    query->m_highlight = WindowHighlightType::FunctionsWindow;
+                    query->m_functionsWindow.line = l;
                 }
                 else
                 {

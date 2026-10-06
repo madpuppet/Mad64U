@@ -989,6 +989,13 @@ void WindowManager::SendDeferredMessages()
     }
 }
 
+void WindowManager::SetActiveWindow(WindowTree* tree, WindowLayout* layout, WindowBase* window)
+{
+    m_activeWindow = window;
+    m_activeLayout = layout;
+    m_activeTree = tree;
+}
+
 void WindowManager::SetActiveWindow(WindowBase* window)
 {
     if (m_activeWindow != window)
@@ -997,6 +1004,7 @@ void WindowManager::SetActiveWindow(WindowBase* window)
         WindowMessageStruct msg;
         msg.m_type = WindowMessage::Window_Activated;
         msg.m_flags = WMF_Menu | WMF_Layout | WMF_Window;
+        msg.m_query = window;
         Message(msg);
     }
 }

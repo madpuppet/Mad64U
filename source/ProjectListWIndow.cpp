@@ -92,6 +92,8 @@ void ProjectListWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
         int iy = highlight.m_area.y + 8;
         ir.DrawIcon(renderer, Icons::Highlight, ix, iy);
     }
+
+    LayoutScrollbars();
 }
 
 ProjectListWindow::ProjectListWindow()

@@ -15,13 +15,13 @@
 #include "ViceBridge.h"
 #include "Settings.h"
 
-const char* s_keywords_asm[] = { "tax", "eor", "dec", "pla", "rts", "rti", "bcc", "bcs", "txa", "clc", "sec",
+const char* s_keywords_asm[] = { "tax", "eor", "dec", "pla", "rts", "rti", "bcc", "bcs", "txa", "clc", "sec", "sbc", "cld",
             "cpx", "cpy", "cmp", "bne", "beq", "bmi", "bpl", "ldx", "ldy", "stx", "sty", "jsr", "jmp", "nop",
             "tay", "tya", "pha", "dey", "dex", "inc", "inx", "iny", "lda", "sta", "adc", "lsr", "asr", "ror",
         "asl", "lsl", "and", "ora", "sei", "cli", "//", ";", ":", ".label", "#import", "#", "$", "php", "plp",
     ".word", ".byte", ".import", "binary", "*", "=", ".for", "var", "round", "sin", ",", "%", 0};
 
-const char* s_keywords_s[] = { "tax", "eor", "dec", "pla", "rts", "rti", "bcc", "bcs", "txa", "clc", "sec",
+const char* s_keywords_s[] = { "tax", "eor", "dec", "pla", "rts", "rti", "bcc", "bcs", "txa", "clc", "sec", "sbc", "cld",
             "cpx", "cpy", "cmp", "bne", "beq", "bmi", "bpl", "ldx", "ldy", "stx", "sty", "jsr", "jmp", "nop",
             "tay", "tya", "pha", "dey", "dex", "inc", "inx", "iny", "lda", "sta", "adc", "lsr", "asr", "ror",
         "asl", "lsl", "and", "ora", "sei", "cli", "//", ";", ":", ".label", "#import", "#", "$","php", "plp",

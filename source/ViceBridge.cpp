@@ -249,7 +249,6 @@ void VBC_RunPrg::Execute()
         gViceBridge->ClearViceStopped();
         mon_go();
     }
-
     helper_autostart_prg(m_path.c_str());
 }
 

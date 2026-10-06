@@ -146,6 +146,15 @@ void WindowBase::Message(WindowLayout *layout, struct WindowMessageStruct& msg)
     msg.m_window = this;
     switch (msg.m_type)
     {
+        case WindowMessage::Window_Activated:
+        {
+            if ((WindowBase*)msg.m_query == this)
+            {
+                WindowManager::Instance().SetActiveWindow(msg.m_tree, msg.m_layout, this);
+            }
+        }
+        break;
+
         case WindowMessage::Query_FindWindow:
         {
             auto query = ((WindowFindQuery*)msg.m_query);

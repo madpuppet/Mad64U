@@ -507,6 +507,7 @@ bool SourceFileWindow::HandleEvent(SDL_Event* e)
                             msg.m_layout->ActivateWindow(searchWindow);
                         }
                         searchWindow->SetSearchActive();
+                        WindowManager::Instance().SetActiveWindow(searchWindow);
 
                         if (m_marked && m_markStart.y == m_cursor.y)
                         {
@@ -1014,6 +1015,8 @@ void SourceFileWindow::MakeAddressVisible(int addr)
                 if ((u32)addr >= disline.m_addressStart && (u32)addr < disline.m_addressStart + disline.m_addressLength)
                 {
                     MakeRowVisible(row);
+                    m_cursor.y = row;
+                    m_cursor.x = m_sourceFile->m_lines[row]->m_chars.size();
                     return;
                 }
             }
