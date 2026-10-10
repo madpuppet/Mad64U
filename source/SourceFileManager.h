@@ -84,8 +84,6 @@ public:
     // gets the disassembly matching this file, if it is active
     DisassemblyFile* GetDisassembly(class SourceFile* file);
 
-    void OnBreakpointSet(int fileID, int lineID, int breakpointID, int addr);
-
 protected:
     bool StartLoadingDisassembly(const std::filesystem::path dbg);
     void FinishLoadingDisassembly(const std::filesystem::path dbg);

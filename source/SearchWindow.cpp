@@ -197,7 +197,7 @@ void SearchWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     for (int i = firstLine; i < lastLine; i++)
     {
         auto &foundResult = m_searchLines[i];
-        if (foundResult.m_line > m_searchFile->m_lines.size())
+        if (foundResult.m_line >= m_searchFile->m_lines.size())
             break;
 
         auto line = m_searchFile->m_lines[foundResult.m_line];

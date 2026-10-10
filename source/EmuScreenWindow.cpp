@@ -94,7 +94,7 @@ void EmuScreenWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     body.y += LINE_HEIGHT;
     SDL_RenderFillRect(renderer, &body);
 
-    auto& viceState = gViceBridge->GetViceState();
+    ViceState viceState = ViceBridge::Instance().GetViceState();
     if (m_viceTexture)
     {
         bool isPal = m_viceTextureWidth == 384;
@@ -188,15 +188,15 @@ bool EmuScreenWindow::HandleEvent(SDL_Event* e)
                 switch (selected.m_emuScreen.m_icon)
                 {
                     case Icons::Run:
-                        gViceBridge->Continue();
+                        ViceBridge::Instance().Continue();
                         break;
 
                     case Icons::Pause:
-                        gViceBridge->Pause();
+                        ViceBridge::Instance().Pause();
                         break;
 
                     case Icons::SingleStep:
-                        gViceBridge->SingleStep();
+                        ViceBridge::Instance().SingleStep();
                         break;
                 }
             }

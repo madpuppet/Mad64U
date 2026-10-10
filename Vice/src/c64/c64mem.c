@@ -361,6 +361,9 @@ void zero_store_dma(uint16_t addr, uint8_t value)
     } else {
         mem_ram[addr] = value;
     }
+
+    extern void mad64_track_ram_store(uint64_t clock, uint16_t addr);
+    mad64_track_ram_store(maincpu_clk, addr);
 }
 
 #define FALLOFF_RANDOM (C64_CPU6510_DATA_PORT_FALL_OFF_CYCLES / 5)
@@ -519,6 +522,9 @@ uint8_t ram_read(uint16_t addr)
 void ram_store(uint16_t addr, uint8_t value)
 {
     mem_ram[addr] = value;
+
+    extern void mad64_track_ram_store(uint64_t clock, uint16_t addr);
+    mad64_track_ram_store(maincpu_clk, addr);
 }
 
 void ram_hi_store(uint16_t addr, uint8_t value)
@@ -532,6 +538,9 @@ void ram_hi_store(uint16_t addr, uint8_t value)
     if (addr == 0xff00) {
         reu_dma(-1);
     }
+
+    extern void mad64_track_ram_store(uint64_t clock, uint16_t addr);
+    mad64_track_ram_store(maincpu_clk, addr);
 }
 
 /* unconnected memory space */

@@ -1,6 +1,7 @@
 #pragma once
 #include <semaphore>
 #include <deque>
+#include "Singleton.h"
 
 // Bridge between VICE and MAD64
 //
@@ -49,22 +50,15 @@ struct VBC_SetBreakpoint : ViceBridgeCmd
     virtual void Execute() override;
     int m_fileID;
     int m_lineID;
-    u32 m_addr;
+    int m_breakpointID;
+    bool m_oneShot;
+    u16 m_addr;
 };
 
 struct VBC_ClearBreakpoint : ViceBridgeCmd
 {
     virtual void Execute() override;
     int m_breakpointID;
-};
-
-struct VBC_BreakpointSet : ViceBridgeCmd
-{
-    virtual void Execute() override;
-    int m_fileID;
-    int m_lineID;
-    int m_breakpointID;
-    int m_addr;
 };
 
 struct VBC_BreakpointHit : ViceBridgeCmd
@@ -83,22 +77,13 @@ struct VBC_Pause : ViceBridgeCmd
     virtual void Execute() override;
 };
 
-struct VBC_UpdateViceState : ViceBridgeCmd
-{
-    virtual void Execute() override;
-    int m_rasterline;
-    int m_rasterCycle;
-    int m_pc;
-    int m_acc;
-    int m_x;
-    int m_y;
-    int m_flags;
-};
-
 struct VBC_BreakPointHit : ViceBridgeCmd
 {
     virtual void Execute() override;
-    uint64_t m_clock_elapsed;
+    int m_breakpointID = 0;
+    int m_fileID = 0;
+    int m_lineID = 0;
+    int m_once = true;
 };
 
 struct VBC_SetVideoStandard : ViceBridgeCmd
@@ -109,19 +94,20 @@ struct VBC_SetVideoStandard : ViceBridgeCmd
 
 struct ViceState
 {
-    int m_rasterLine;
-    int m_rasterCycle;
-    int m_pc;
-    int m_acc;
-    int m_x;
-    int m_y;
-    int m_flags;
+    u64 m_clock;
+    u16 m_rasterLine;
+    u8 m_rasterCycle;
+    u16 m_pc;
+    u8 m_acc;
+    u8 m_x;
+    u8 m_y;
+    u8 m_flags;
 };
 
-class ViceBridge
+class ViceBridge : public Singleton<ViceBridge>
 {
 public:
-    void Start();
+    ViceBridge();
 
     void Queue(ViceBridgeCmd* cmd)
     {
@@ -168,7 +154,7 @@ public:
             m_syncMad2Vice.pop_front();
         }
         m_mutexMad2Vice.unlock();
-        return nullptr;
+        return cmd;
     }
     void ExecuteViceCmds();
 
@@ -193,18 +179,18 @@ public:
     void ExecuteMadCmds();
 
     // breakpoint was hit...
-    void BreakpointHit();
+    void BreakpointHit(const struct CPUBreakpoint& bp);
+
+    // create a breakpoint at an addr
+    // returns the breakpoint ID
+    int SetBreakpoint(int fileID, int lineID, u16 addr, bool oneShot);
 
     // HELPERS
-    void ClearBreakpoint(int breakpointID)
-    {
-        auto cmd = new VBC_ClearBreakpoint;
-        cmd->m_breakpointID = breakpointID;
-        SendMad2Vice(cmd);
-    }
-
+    void ClearBreakpoint(int breakpointID);
     bool HasViceStopped() { return m_vice_stopped; }
+    void SetViceStopped() { m_vice_stopped = true; }
     void ClearViceStopped() { m_vice_stopped = false; }
+    void ProcessViceCmdsTillContinue();
 
     void MultiStep();
     void SingleStep();
@@ -212,14 +198,18 @@ public:
     void Pause();
 
     // general state info
-    ViceState& GetViceState() { return m_viceState; }
+    ViceState GetViceState();
+    u8* GetRam();
 
     void SetActiveFileID(int fileID) { m_activeFileID = fileID; }
     int GetActiveFileID() { return m_activeFileID; }
 
+
+    void ProcessCycle(u64 clock, u16 pc_addr, u8 a, u8 x, u8 y, u8 flags, u8 sp);
+
 protected:
     int m_activeFileID = 0;
-    ViceState m_viceState;
+    int m_nextBreakpointID = 1;
 
     // data blocks from VICE to MAD64
     // used for sound and frame
@@ -237,6 +227,4 @@ protected:
 
     bool m_vice_stopped = false;
 };
-extern ViceBridge* gViceBridge;
-
 

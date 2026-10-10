@@ -44,6 +44,7 @@ enum class WindowMessage
 #define WMF_EarlyOut 8              // exit as soon as anyone responds (m_response > 0)
 #define WMF_AreaCheck 16            // use layout area checks - only active tabs will get processed
 #define WMF_TabActive 32            // only return windows that are active
+#define WMF_NoFlash 64              // don't flash on this breakpoint
 
 struct WindowMessageStruct
 {

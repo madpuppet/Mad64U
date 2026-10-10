@@ -4,9 +4,159 @@
 #include "SourceFileManager.h"
 #include "WindowManager.h"
 
-ViceBridge* gViceBridge = nullptr;
+extern "C" int helper_set_video_mode(int pal);
+extern "C" uint64_t helper_get_clock_cycle();
+extern "C" void helper_get_raster_pos(unsigned int* rasterLine, unsigned int* rasterCycle);
 
-void ViceBridge::Start()
+//==================================================================================================================================
+// Emulation internals
+//==================================================================================================================================
+
+struct CPUBreakpoint
+{
+    int m_id = 0;
+    int m_fileID = 0;
+    int m_lineID = 0;
+    u16 m_addr = 0;
+    bool m_once = false;
+};
+struct TracePoint
+{
+    u64 clock;
+    u16 raster;
+    u16 addr;
+    u8 cycle;
+    u8 a;
+    u8 x;
+    u8 y;
+    u8 flags;
+    u8 sp;
+};
+
+#define MAX_TRACE_POINTS (1024*1024)
+struct EmulationState
+{
+    uint64_t m_clock = 0;
+    int m_runCycles = -1;
+    std::vector<CPUBreakpoint> m_breakpoints;
+    TracePoint m_trace[MAX_TRACE_POINTS];
+    int m_traceCurrIdx = 0;
+    int m_traceFirstIdx = 0;
+    u8 m_ram[65536];
+    u64 m_pcTouch[65536];
+    u64 m_heatMap[65536];
+
+    EmulationState()
+    {
+        memset(m_ram, 0, sizeof(m_ram));
+        memset(m_pcTouch, 0, sizeof(m_pcTouch));
+        memset(m_heatMap, 0, sizeof(m_heatMap));
+        memset(m_trace, 0, sizeof(m_trace));
+    }
+
+    void ClearOnceBreakpoints(u16 addr)
+    {
+        std::erase_if(m_breakpoints, [addr](const CPUBreakpoint& bp)
+            {
+                return bp.m_once && bp.m_addr == addr;
+            });
+    }
+};
+EmulationState s_emulationState;
+
+void CheckBreakpoints(u16 addr)
+{
+    // check any breakpoints...
+    for (auto bp : s_emulationState.m_breakpoints)
+    {
+        if (bp.m_addr == addr)
+        {
+            auto& vb = ViceBridge::Instance();
+
+            vb.SetViceStopped();
+
+            // alert that we have hit a permanent breakpoint
+            vb.BreakpointHit(bp);
+
+            // clear all oneshot breakpoints at this addr
+            s_emulationState.ClearOnceBreakpoints(addr);
+
+            // busy wait till we get a cmd from the editor to run some more emulation
+            vb.ProcessViceCmdsTillContinue();
+            break;
+        }
+    }
+}
+
+extern "C" void mad64_update_ram(u8 *ram)
+{
+    memcpy(s_emulationState.m_ram, ram, 65536);
+}
+
+extern "C" void mad64_track_ram_store(u64 clock, u16 addr)
+{
+    s_emulationState.m_heatMap[addr] = clock;
+    CheckBreakpoints(addr);
+}
+
+extern "C" void mad64_process_cycle(u64 clock, u16 pc_addr, u8 a, u8 x, u8 y, u8 flags, u8 sp)
+{
+    // add this trace point
+    int nextIdx = (s_emulationState.m_traceCurrIdx + 1) & (MAX_TRACE_POINTS - 1);
+    if (nextIdx == s_emulationState.m_traceFirstIdx)
+    {
+        s_emulationState.m_traceFirstIdx = (s_emulationState.m_traceFirstIdx + 1) & (MAX_TRACE_POINTS - 1);
+    }
+
+    u32 rasterLine, rasterCycle;
+    helper_get_raster_pos(&rasterLine, &rasterCycle);
+    auto& tp = s_emulationState.m_trace[nextIdx];
+    tp.clock = clock;
+    tp.raster = (u16)rasterLine;
+    tp.cycle = (u8)rasterCycle;
+    tp.addr = pc_addr;
+    tp.a = a;
+    tp.x = x;
+    tp.y = y;
+    tp.flags = flags;
+    tp.sp = sp;
+    s_emulationState.m_pcTouch[pc_addr] = clock;
+    s_emulationState.m_traceCurrIdx = nextIdx;
+
+    if (s_emulationState.m_runCycles != -1 && (--s_emulationState.m_runCycles == 0))
+    {
+        auto& vb = ViceBridge::Instance();
+
+        vb.SetViceStopped();
+        s_emulationState.m_runCycles = -1;
+
+        auto cmd = new VBC_BreakPointHit;
+        ViceBridge::Instance().SendVice2Mad(cmd);
+
+        // clear all oneshot breakpoints at this addr
+        s_emulationState.ClearOnceBreakpoints(pc_addr);
+
+        // busy wait till we get a cmd from the editor to run some more emulation
+        vb.ProcessViceCmdsTillContinue();
+    }
+    else
+        CheckBreakpoints(pc_addr);
+}
+
+int ViceBridge::SetBreakpoint(int fileID, int lineID, u16 addr, bool oneShot)
+{
+    int breakpointID = m_nextBreakpointID++;
+    auto cmd = new VBC_SetBreakpoint;
+    cmd->m_fileID = fileID;
+    cmd->m_lineID = lineID;
+    cmd->m_addr = addr;
+    cmd->m_breakpointID = breakpointID;
+    cmd->m_oneShot = oneShot;
+    SendMad2Vice(cmd);
+    return breakpointID;
+}
+
+ViceBridge::ViceBridge()
 {
     auto msgLoop = [this]()
         {
@@ -36,69 +186,19 @@ extern "C" void mad64_video_refresh(u8* buffer, int width, int height, int first
     cmd->m_firstLine = firstLine;
     cmd->m_lastLine = lastLine;
     memcpy(cmd->m_buffer, buffer, width * height);
-    gViceBridge->Queue(cmd);
+    ViceBridge::Instance().Queue(cmd);
 }
 
 extern "C" void mad64_process_vice_commands(void)
 {
-    gViceBridge->ExecuteViceCmds();
-}
-
-extern "C" void mad64_breakpoint_hit(void)
-{
-    gViceBridge->BreakpointHit();
-}
-
-extern "C" void mon_instructions_step(int);
-extern "C" void mon_go();
-extern "C" void monitor_startup_trap();
-extern "C" int helper_set_video_mode(int pal);
-extern "C" uint64_t helper_get_clock_cycle();
-
-extern "C" void mad64_update_vice_state(int rasterline, int rasterCycle, int pc, int acc, int x, int y, int flags)
-{
-    auto cmd = new VBC_UpdateViceState;
-    cmd->m_acc = acc;
-    cmd->m_flags = flags;
-    cmd->m_pc = pc;
-    cmd->m_rasterCycle = rasterCycle;
-    cmd->m_rasterline = rasterline;
-    cmd->m_x = x;
-    cmd->m_y = y;
-    gViceBridge->SendVice2Mad(cmd);
-}
-
-void VBC_UpdateViceState::Execute()
-{
-    auto& state = gViceBridge->GetViceState();
-    state.m_acc = m_acc;
-    state.m_flags = m_flags;
-    state.m_pc = m_pc;
-    state.m_rasterCycle = m_rasterCycle;
-    state.m_rasterLine = m_rasterline;
-    state.m_x = m_x;
-    state.m_y = m_y;
+    ViceBridge::Instance().ExecuteViceCmds();
 }
 
 static uint64_t s_clock_start = 0;
 static uint64_t s_clock_elapsed = 0;
 
-void ViceBridge::BreakpointHit()
+void ViceBridge::ProcessViceCmdsTillContinue()
 {
-    uint64_t now = helper_get_clock_cycle();
-    s_clock_elapsed = now - s_clock_start;
-
-    // ignore double breaks that happen if you single step on a breakpoint
-    if (s_clock_elapsed == 0)
-        return;
-
-    s_clock_start = now;
-
-    m_vice_stopped = true;
-    auto cmd = new VBC_BreakPointHit;
-    cmd->m_clock_elapsed = s_clock_elapsed;
-    SendVice2Mad(cmd);
-
     while (m_vice_stopped)
     {
         Sleep(1);
@@ -106,12 +206,44 @@ void ViceBridge::BreakpointHit()
     }
 }
 
+ViceState ViceBridge::GetViceState()
+{
+    int idx = s_emulationState.m_traceCurrIdx;
+    TracePoint& tp = s_emulationState.m_trace[idx];
+    ViceState state;
+    state.m_acc = tp.a;
+    state.m_pc = tp.addr;
+    state.m_flags = tp.flags;
+    state.m_x = tp.x;
+    state.m_y = tp.y;
+    state.m_rasterCycle = 0;
+    state.m_rasterLine = 0;
+    state.m_clock = tp.clock;
+    return state;
+}
+
+u8* ViceBridge::GetRam()
+{
+    return s_emulationState.m_ram;
+}
+
+void ViceBridge::BreakpointHit(const CPUBreakpoint &bp)
+{
+    auto cmd = new VBC_BreakPointHit;
+    cmd->m_breakpointID = bp.m_id;
+    cmd->m_fileID = bp.m_fileID;
+    cmd->m_lineID = bp.m_lineID;
+    SendVice2Mad(cmd);
+}
+
 void VBC_BreakPointHit::Execute()
 {
+    int fileID = m_fileID ? m_fileID : ViceBridge::Instance().GetActiveFileID();
+
     WindowMessageStruct msgBH;
     msgBH.m_type = WindowMessage::Window_BreakpointHit;
     msgBH.m_flags = WMF_EarlyOut | WMF_Window | WMF_TabActive;
-    msgBH.m_sourceFile = SourceFileManager::Instance().FindFileByID(gViceBridge->GetActiveFileID());
+    msgBH.m_sourceFile = SourceFileManager::Instance().FindFileByID(fileID);
     if (msgBH.m_sourceFile)
     {
         WindowManager::Instance().Message(msgBH);
@@ -146,18 +278,14 @@ void ViceBridge::Pause()
 
 void VBC_Continue::Execute()
 {
-    gViceBridge->ClearViceStopped();
-
-    s_clock_start = helper_get_clock_cycle();
-    if (m_steps > 0)
-        mon_instructions_step(m_steps);
-    else
-        mon_go();
+    ViceBridge::Instance().ClearViceStopped();
+    s_emulationState.m_runCycles = m_steps;
 }
 
 void VBC_Pause::Execute()
 {
-    monitor_startup_trap();
+    ViceBridge::Instance().SetViceStopped();
+    ViceBridge::Instance().ProcessViceCmdsTillContinue();
 }
 
 void VBC_SetVideoStandard::Execute()
@@ -233,7 +361,7 @@ void VBC_NewFrame::Execute()
     {
         *out++ = c64Palette[*in++ & 15];
     }
-    gViceBridge->QueueFrame(frame);
+    ViceBridge::Instance().QueueFrame(frame);
     delete m_buffer;
 }
 
@@ -244,23 +372,19 @@ extern "C" void mon_breakpoint_delete_checkpoint(int checkpointId);
 
 void VBC_RunPrg::Execute()
 {
-    if (gViceBridge->HasViceStopped())
-    {
-        gViceBridge->ClearViceStopped();
-        mon_go();
-    }
+    ViceBridge::Instance().ClearViceStopped();
     helper_autostart_prg(m_path.c_str());
 }
 
 void VBC_SetBreakpoint::Execute()
 {
-    int id = helper_set_breakpoint(m_addr);
-    auto cmd = new VBC_BreakpointSet;
-    cmd->m_breakpointID = id;
-    cmd->m_fileID = m_fileID;
-    cmd->m_lineID = m_lineID;
-    cmd->m_addr = m_addr;
-    gViceBridge->SendVice2Mad(cmd);
+    CPUBreakpoint bp;
+    bp.m_id = m_breakpointID;
+    bp.m_addr = m_addr;
+    bp.m_fileID = m_fileID;
+    bp.m_lineID = m_lineID;
+    bp.m_once = m_oneShot;
+    s_emulationState.m_breakpoints.push_back(bp);
 }
 
 void VBC_ClearBreakpoint::Execute()
@@ -268,7 +392,9 @@ void VBC_ClearBreakpoint::Execute()
     mon_breakpoint_delete_checkpoint(m_breakpointID);
 }
 
-void VBC_BreakpointSet::Execute()
+void ViceBridge::ClearBreakpoint(int breakpointID)
 {
-    SourceFileManager::Instance().OnBreakpointSet(m_fileID, m_lineID, m_breakpointID, m_addr);
+    auto cmd = new VBC_ClearBreakpoint;
+    cmd->m_breakpointID = breakpointID;
+    SendMad2Vice(cmd);
 }

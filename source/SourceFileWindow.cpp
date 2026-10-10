@@ -98,8 +98,8 @@ int SourceFileWindow::CalcXPos(int x, int y)
 
 void SourceFileWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
 {
-    bool isActiveVice = gViceBridge->GetActiveFileID() == m_sourceFile->m_fileID;
-    auto& viceState = gViceBridge->GetViceState();
+    bool isActiveVice = ViceBridge::Instance().GetActiveFileID() == m_sourceFile->m_fileID;
+    ViceState viceState = ViceBridge::Instance().GetViceState();
 
     bool showLineNumbers = Settings::Instance().GetBool(SETTING_SHOW_LINES);
     bool showDisassembly = Settings::Instance().GetBool(SETTING_SHOW_BYTES);
@@ -206,7 +206,7 @@ void SourceFileWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
                 if (isActiveVice && (int)viceState.m_pc >= (int)line.m_addressStart && (int)viceState.m_pc < (int)line.m_addressStart + (int)line.m_addressLength)
                 {
                     SDL_FRect highlight{ disBody.x, (float)ly, disBody.w, LINE_HEIGHT };
-                    if (gViceBridge->HasViceStopped())
+                    if (ViceBridge::Instance().HasViceStopped())
                         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 128);
                     else
                         SDL_SetRenderDrawColor(renderer, 128, 128, 128, 128);
@@ -405,6 +405,7 @@ void SourceFileWindow::CalcXYFromClientPos(int x, int y, int& col, int& row)
 
 bool SourceFileWindow::HandleEvent(SDL_Event* e)
 {
+    ViceState viceState = ViceBridge::Instance().GetViceState();
     switch (e->type)
     {
         case SDL_EVENT_MOUSE_BUTTON_DOWN:
@@ -533,15 +534,16 @@ bool SourceFileWindow::HandleEvent(SDL_Event* e)
 
                 case SDLK_F10:
                 {
-                    // find next line addr
-                    // put temp breakpoint on it
-                    if (m_sourceFile->m_stepOverAddr == -1 && m_sourceFile->m_stepOverBreakpointID == 0)
+                    if (ViceBridge::Instance().HasViceStopped())
                     {
+                        u8* ram = ViceBridge::Instance().GetRam();
+
+                        // find next line addr
+                        // put temp breakpoint on it
                         auto dis = SourceFileManager::Instance().GetDisassembly(m_sourceFile);
                         if (dis)
                         {
                             // find the current stopped line
-                            auto& viceState = gViceBridge->GetViceState();
                             int addr = viceState.m_pc;
                             for (int l = 0; l < m_sourceFile->m_lines.size(); l++)
                             {
@@ -558,31 +560,21 @@ bool SourceFileWindow::HandleEvent(SDL_Event* e)
                                         if (offsetAddress > dis->m_info->m_memoryLength)
                                             return true;
 
-                                        u8 byte = dis->m_info->m_memory[offsetAddress];
-                                        if (byte == 0x20)
+                                        u8 byte = ram[addr];
+                                        // find next line...
+                                        for (int ll = l + 1; ll < m_sourceFile->m_lines.size(); ll++)
                                         {
-                                            // find next line...
-                                            for (int ll = l + 1; ll < m_sourceFile->m_lines.size(); ll++)
+                                            auto stopln = m_sourceFile->m_lines[ll];
+                                            if (stopln->m_assembledLine >= 0 && stopln->m_assembledLine < dis->m_lines.size())
                                             {
-                                                auto stopln = m_sourceFile->m_lines[ll];
-                                                if (stopln->m_assembledLine >= 0 && stopln->m_assembledLine < dis->m_lines.size())
+                                                int breakAddr = dis->m_lines[stopln->m_assembledLine].m_addressStart;
+                                                if (breakAddr != 0)
                                                 {
-                                                    int breakAddr = dis->m_lines[stopln->m_assembledLine].m_addressStart;
-                                                    auto cmd = new VBC_SetBreakpoint;
-                                                    cmd->m_fileID = m_sourceFile->m_fileID;
-                                                    cmd->m_lineID = ln->m_uniqueID;
-                                                    cmd->m_addr = breakAddr;
-                                                    gViceBridge->SendMad2Vice(cmd);
-                                                    gViceBridge->Continue();
-                                                    m_sourceFile->m_stepOverAddr = breakAddr;
+                                                    ViceBridge::Instance().SetBreakpoint(m_sourceFile->m_fileID, ln->m_uniqueID, breakAddr, true);
+                                                    ViceBridge::Instance().Continue();
                                                     return true;
                                                 }
                                             }
-                                        }
-                                        else
-                                        {
-                                            gViceBridge->SingleStep();
-                                            return true;
                                         }
                                     }
                                 }
@@ -594,9 +586,9 @@ bool SourceFileWindow::HandleEvent(SDL_Event* e)
 
                 case SDLK_F11:
                     if (e->key.mod & SDL_KMOD_SHIFT)
-                        gViceBridge->MultiStep();
+                        ViceBridge::Instance().MultiStep();
                     else
-                        gViceBridge->SingleStep();
+                        ViceBridge::Instance().SingleStep();
                     return true;
 
                 case SDLK_F5:
@@ -611,26 +603,26 @@ bool SourceFileWindow::HandleEvent(SDL_Event* e)
                             if (std::filesystem::exists(outputPrg))
                             {
                                 SourceFileManager::Instance().Run(outputPrg);
-                                gViceBridge->SetActiveFileID(m_sourceFile->m_fileID);
+                                ViceBridge::Instance().SetActiveFileID(m_sourceFile->m_fileID);
                             }
                             else if (std::filesystem::exists(outputD64))
                             {
                                 SourceFileManager::Instance().Run(outputD64);
-                                gViceBridge->SetActiveFileID(m_sourceFile->m_fileID);
+                                ViceBridge::Instance().SetActiveFileID(m_sourceFile->m_fileID);
                             }
                             else
                             {
                                 SourceFileManager::Instance().Compile(m_sourceFile, true);
-                                gViceBridge->SetActiveFileID(m_sourceFile->m_fileID);
+                                ViceBridge::Instance().SetActiveFileID(m_sourceFile->m_fileID);
                             }
                         }
                         else
                         {
-                            bool isActiveVice = gViceBridge->GetActiveFileID() == m_sourceFile->m_fileID;
-                            bool viceStopped = gViceBridge->HasViceStopped();
+                            bool isActiveVice = ViceBridge::Instance().GetActiveFileID() == m_sourceFile->m_fileID;
+                            bool viceStopped = ViceBridge::Instance().HasViceStopped();
                             if (isActiveVice && viceStopped)
                             {
-                                gViceBridge->Continue();
+                                ViceBridge::Instance().Continue();
                             }
                         }
                     }
@@ -982,12 +974,26 @@ void SourceFileWindow::MakeRowVisible(int row)
 
 void SourceFileWindow::MakeCursorVisible()
 {
-    int yOffset = m_cursor.y * LINE_HEIGHT;
-    if (yOffset < m_clientContentOffset.y)
-        m_clientContentOffset.y = yOffset;
-    if (yOffset > (m_clientContentOffset.y + m_clientArea.h - LINE_HEIGHT * 2))
-        m_clientContentOffset.y = yOffset - m_clientArea.h + LINE_HEIGHT * 2;
+    // is it already visible?
+    int firstLine = m_clientContentOffset.y / LINE_HEIGHT;
+    int lastLine = firstLine + m_clientArea.h / LINE_HEIGHT;
+    if (m_cursor.y >= firstLine && m_cursor.y < lastLine)
+        return;
 
+    int linesOnScreen = m_clientArea.h / LINE_HEIGHT;
+    int targetTopLine = Max(m_cursor.y - linesOnScreen / 2, 0);
+
+    // if we are just 1 line off, then just move that one line
+    if (m_cursor.y == firstLine - 1)
+    {
+        targetTopLine = firstLine - 1;
+    }
+    else if (m_cursor.y == lastLine)
+    {
+        targetTopLine = firstLine + 1;
+    }
+
+    m_clientContentOffset.y = targetTopLine * LINE_HEIGHT;
     if (m_clientContentSize.x < m_clientArea.w)
         m_clientContentOffset.x = 0;
     else
@@ -1016,7 +1022,7 @@ void SourceFileWindow::MakeAddressVisible(int addr)
                 {
                     MakeRowVisible(row);
                     m_cursor.y = row;
-                    m_cursor.x = m_sourceFile->m_lines[row]->m_chars.size();
+                    m_cursor.x = (int)m_sourceFile->m_lines[row]->m_chars.size();
                     return;
                 }
             }
@@ -1255,7 +1261,7 @@ void SourceFileWindow::SetBreakpoint(int lineID, int breakpointID)
             // clear out the old breakpoint if somehow its set and doesn't match
             if (line->m_breakpointID && line->m_breakpointID != breakpointID)
             {
-                gViceBridge->ClearBreakpoint(line->m_breakpointID);
+                ViceBridge::Instance().ClearBreakpoint(line->m_breakpointID);
             }
 
             line->m_breakpointID = breakpointID;
@@ -1264,7 +1270,7 @@ void SourceFileWindow::SetBreakpoint(int lineID, int breakpointID)
     }
 
     // line doesn't exist anymore so just destroy this breakpoint
-    gViceBridge->ClearBreakpoint(breakpointID);
+    ViceBridge::Instance().ClearBreakpoint(breakpointID);
 }
 
 void SourceFileWindow::ToggleBreakpoint(int line)
@@ -1278,17 +1284,12 @@ void SourceFileWindow::ToggleBreakpoint(int line)
             if (dis && ln->m_assembledLine >= 0 && ln->m_assembledLine < dis->m_lines.size())
             {
                 auto& disline = dis->m_lines[ln->m_assembledLine];
-
-                auto cmd = new VBC_SetBreakpoint;
-                cmd->m_fileID = m_sourceFile->m_fileID;
-                cmd->m_lineID = ln->m_uniqueID;
-                cmd->m_addr = disline.m_addressStart;
-                gViceBridge->SendMad2Vice(cmd);
+                ln->m_breakpointID = ViceBridge::Instance().SetBreakpoint(m_sourceFile->m_fileID, ln->m_uniqueID, disline.m_addressStart, false);
             }
         }
         else
         {
-            gViceBridge->ClearBreakpoint(ln->m_breakpointID);
+            ViceBridge::Instance().ClearBreakpoint(ln->m_breakpointID);
             ln->m_breakpointID = 0;
         }
     }
@@ -1502,6 +1503,7 @@ bool SourceFileWindow::CreateFromLayoutTokens(WindowLayout* layout, const std::v
 
 void SourceFileWindow::MessageChild(WindowLayout *layout, struct WindowMessageStruct& msg)
 {
+    ViceState viceState = ViceBridge::Instance().GetViceState();
     switch (msg.m_type)
     {
         case WindowMessage::Window_SetCursor:
@@ -1509,6 +1511,7 @@ void SourceFileWindow::MessageChild(WindowLayout *layout, struct WindowMessageSt
                 m_cursor.x = msg.m_x;
                 m_cursor.y = msg.m_y;
                 m_marking = false;
+                m_marked = false;
                 ClampCursor();
                 MakeCursorVisible();
             }
@@ -1518,18 +1521,8 @@ void SourceFileWindow::MessageChild(WindowLayout *layout, struct WindowMessageSt
         {
             if (m_sourceFile == msg.m_sourceFile)
             {
-                auto& viceState = gViceBridge->GetViceState();
                 MakeAddressVisible(viceState.m_pc);
-                if (m_sourceFile->m_stepOverAddr == viceState.m_pc)
-                {
-                    gViceBridge->ClearBreakpoint(m_sourceFile->m_stepOverBreakpointID);
-                    m_sourceFile->m_stepOverBreakpointID = 0;
-                }
-                else
-                {
-                    m_breakpointFlash = 1.0f;
-                }
-                m_sourceFile->m_stepOverAddr = -1;
+                m_breakpointFlash = 1.0f;
             }
         }
         break;

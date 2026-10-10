@@ -741,7 +741,7 @@ void WindowManager::Paint()
     bool anyDirty = false;
 
     ViceFrame frame;
-    bool hasFrame = gViceBridge->PopFrame(frame);
+    bool hasFrame = ViceBridge::Instance().PopFrame(frame);
 
     for (auto tree : m_windowTrees)
     {

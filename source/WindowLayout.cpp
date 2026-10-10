@@ -6,6 +6,7 @@
 #include "OutputWindow.h"
 #include "UndoBufferWindow.h"
 #include "ProjectListWindow.h"
+#include "MemViewWindow.h"
 #include "SearchWindow.h"
 #include "EmuScreenWindow.h"
 #include "FunctionsWindow.h"
@@ -554,7 +555,10 @@ void WindowLayout::LoadLayout(const std::vector<std::string>& layoutTokens, size
                                 {
                                     if (!EmuScreenWindow::CreateFromLayoutTokens(this, layoutTokens, idx))
                                     {
-                                        Log(LogGroup::System, "Unknown window token: {}", layoutTokens[idx]);
+                                        if (!MemViewWindow::CreateFromLayoutTokens(this, layoutTokens, idx))
+                                        {
+                                            Log(LogGroup::System, "Unknown window token: {}", layoutTokens[idx]);
+                                        }
                                     }
                                 }
                             }

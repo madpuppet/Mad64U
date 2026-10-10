@@ -6,6 +6,7 @@
 #include "mon_breakpoint.h"
 #include "machine.h"
 #include "maincpu.h"
+#include "mem.h"  // Vice/src in your include paths
 
 void helper_autostart_prg(const char* path)
 {
@@ -13,43 +14,10 @@ void helper_autostart_prg(const char* path)
     autostart_prg(path, AUTOSTART_MODE_RUN);
 }
 
-int helper_set_breakpoint(int memaddr)
+void helper_get_raster_pos(unsigned int *rasterLine, unsigned int *rasterCycle)
 {
-    MON_ADDR addr = new_addr(e_comp_space, (uint16_t)memaddr);
-
-    int id = mon_breakpoint_add_checkpoint(addr, addr,
-        true,       // Stop execution when hit
-        e_exec,     // Instruction execution breakpoint
-        false,      // Persistent, not temporary
-        false);     // Don't print checkpoint information
-    return id;
-}
-
-void helper_update_vice_state()
-{
-    struct monitor_cpu_type_s *cpu = monitor_cpu_for_memspace[e_comp_space];
-    if (cpu)
-    {
-        int pc, acc, x, y, flags;
-        pc = (int)cpu->mon_register_get_val(e_comp_space, e_PC);
-        acc = (int)cpu->mon_register_get_val(e_comp_space, e_A);
-        x = (int)cpu->mon_register_get_val(e_comp_space, e_X);
-        y = (int)cpu->mon_register_get_val(e_comp_space, e_Y);
-        flags = (int)cpu->mon_register_get_val(e_comp_space, e_FLAGS);
-
-        unsigned int rasterLine;
-        unsigned int rasterCycle;
-        int halfCycle;
-        machine_get_line_cycle(&rasterLine, &rasterCycle, &halfCycle);
-
-        extern void mad64_update_vice_state(int rasterline, int rasterCycle, int pc, int acc, int x, int y, int flags);
-        mad64_update_vice_state(rasterLine, rasterCycle, pc, acc, x, y, flags);
-    }
-}
-
-void capture_and_update_vice_state(uint16_t currentPc, void* userData)
-{
-    helper_update_vice_state();
+    int halfCycle;
+    machine_get_line_cycle(rasterLine, rasterCycle, &halfCycle);
 }
 
 void helper_set_video_mode(int pal)

@@ -118,12 +118,5 @@ void uimon_set_interface(struct monitor_interface_s **interf, int i)
 
 char *uimon_get_in(char **ppchCommandLine, const char *prompt)
 {
-    video_canvas_refresh_all_tracked();
-
-    extern helper_update_vice_state();
-    helper_update_vice_state();
-
-    extern void mad64_breakpoint_hit(void);
-    mad64_breakpoint_hit();
     return NULL;
 }

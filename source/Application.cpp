@@ -8,6 +8,7 @@
 #include "SourceFileManager.h"
 #include "LogManager.h"
 #include "ProjectListWindow.h"
+#include "MemViewWindow.h"
 #include "OutputWindow.h"
 #include "UndoBufferWindow.h"
 #include "NetworkManager.h"
@@ -15,6 +16,7 @@
 #include "EmuScreenWindow.h"
 #include "ViceBridge.h"
 #include "FunctionsWindow.h"
+#include "Cpu6502.h"
 #include <filesystem>
 
 extern "C" {
@@ -290,6 +292,12 @@ void Application::CreateMenus()
             WindowManager::Instance().LayoutWindows();
         };
 
+    auto newWindowMemView = []()
+        {
+            WindowManager::Instance().AddWindow(new MemViewWindow);
+            WindowManager::Instance().LayoutWindows();
+        };
+
     auto newWindowSystemOutput = []()
         {
             WindowManager::Instance().AddWindow(new OutputWindow(LogGroup::System));
@@ -308,19 +316,19 @@ void Application::CreateMenus()
             WindowManager::Instance().LayoutWindows();
         };
 
-    auto newSearchWindow = []()
+    auto newWindowSearch = []()
         {
             WindowManager::Instance().AddWindow(new SearchWindow);
             WindowManager::Instance().LayoutWindows();
         };
 
-    auto newEmuScreenWindow = []()
+    auto newWindowEmuScreen = []()
         {
             WindowManager::Instance().AddWindow(new EmuScreenWindow);
             WindowManager::Instance().LayoutWindows();
         };
 
-    auto newFunctionsWindow = []()
+    auto newWindowFunctions = []()
         {
             WindowManager::Instance().AddWindow(new FunctionsWindow);
             WindowManager::Instance().LayoutWindows();
@@ -336,13 +344,14 @@ void Application::CreateMenus()
     auto windowMenu = new WindowMenu;
     windowMenu->m_name = "Windows";
     windowMenu->m_items.push_back(new WindowMenuItem("Project Files", newWindowProjectList ));
-    windowMenu->m_items.push_back(new WindowMenuItem("Function List", newFunctionsWindow));
+    windowMenu->m_items.push_back(new WindowMenuItem("Function List", newWindowFunctions));
     windowMenu->m_items.push_back(new WindowMenuItem("Debug Output", newWindowSystemOutput));
     windowMenu->m_items.push_back(new WindowMenuItem("Build Output", newWindowBuildOutput));
     windowMenu->m_items.push_back(new WindowMenuItem("Undo Buffer", newWindowUndoBuffer));
-    windowMenu->m_items.push_back(new WindowMenuItem("Search And Replace", newSearchWindow));
+    windowMenu->m_items.push_back(new WindowMenuItem("Search And Replace", newWindowSearch));
     windowMenu->m_items.push_back(new WindowMenuItem("- - - - - - - - - -", []() {}));
-    windowMenu->m_items.push_back(new WindowMenuItem("Emulator Screen", newEmuScreenWindow));
+    windowMenu->m_items.push_back(new WindowMenuItem("Emulator Screen", newWindowEmuScreen));
+    windowMenu->m_items.push_back(new WindowMenuItem("Memory View", newWindowMemView));
     windowMenu->m_items.push_back(new WindowMenuItem("- - - - - - - - - -", []() {}));
     windowMenu->m_items.push_back(new WindowMenuItem("Toggle Frame Lock", toggleFrameLock));
     windowMenu->m_items.push_back(new WindowMenuItem("Save Window Layout", []() { WindowManager::Instance().SaveWindowLayout(); Settings::Instance().Save(); }));
@@ -642,6 +651,7 @@ int Application::Run()
 
     // create 
     CreateSettings();
+    Cpu6502::Startup();
     NetworkManager::Startup();
     FontRenderer::Startup();
     IconRenderer::Startup();
@@ -680,8 +690,7 @@ int Application::Run()
     auto& nm = NetworkManager::Instance();
     nm.Message(new NMS_SetIP("192.168.50.15"));
 
-    gViceBridge = new ViceBridge;
-    gViceBridge->Start();
+    ViceBridge::Startup();
 
     bool isPal = Settings::Instance().GetBool(SETTING_VICE_IS_PAL);
 
@@ -716,7 +725,7 @@ int Application::Run()
             else
                 wm.HandleEvent(&e);
         }
-        gViceBridge->ExecuteMadCmds();
+        ViceBridge::Instance().ExecuteMadCmds();
 
         wm.Paint();
 
@@ -778,7 +787,7 @@ void Application::Vice_EnablePAL(bool enable)
 {
     auto cmd = new VBC_SetVideoStandard;
     cmd->m_palMode = enable;
-    gViceBridge->SendMad2Vice(cmd);
+    ViceBridge::Instance().SendMad2Vice(cmd);
 
     std::string mode = enable ? "PAL" : "NTSC";
     m_viceVideoStandardMenu->m_name = std::format("Video Standard : {}", mode);

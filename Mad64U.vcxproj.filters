@@ -97,6 +97,12 @@
     <ClCompile Include="source\FunctionsWindow.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="source\MemViewWindow.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="source\cpu6502.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\common.h">
@@ -448,6 +454,12 @@
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="source\FunctionsWindow.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="source\MemViewWindow.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="source\cpu6502.h">
       <Filter>source</Filter>
     </ClInclude>
   </ItemGroup>

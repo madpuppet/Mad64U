@@ -55,10 +55,6 @@ public:
     SourceType m_sourceType = SourceType::Asm;
     Recti m_fragmentArea;
     class SourceFileCmdBuffer *m_cmdBuffer;
-
-    // putting in a temporary breakpoint
-    int m_stepOverAddr = -1;
-    int m_stepOverBreakpointID = 0;
 };
 
 

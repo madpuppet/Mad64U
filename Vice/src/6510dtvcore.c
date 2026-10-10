@@ -1791,6 +1791,9 @@ static const uint8_t fetch_tab[] = {
 
         SET_LAST_ADDR(reg_pc);
 
+        extern mad64_process_cycle(uint64_t clock, uint16_t pc_addr, uint8_t a, uint8_t x, uint8_t y, uint8_t flags, uint8_t sp);
+        mad64_process_cycle(maincpu_clk, reg_pc, reg_a_read, reg_x, reg_y, reg_p, reg_sp);
+
         /* HACK: The real CPU would stop fetching opcodes all together when
          * "jammed" - however, our code may rely on FETCH_OPCODE being called
          * here, so we can not simply skip it. What we do instead is remembering

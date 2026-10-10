@@ -934,7 +934,7 @@ void SourceFileManager::Run(const std::filesystem::path& outputFile)
     {
         auto cmd = new VBC_RunPrg;
         cmd->m_path = outputFile.string();
-        gViceBridge->SendMad2Vice(cmd);
+        ViceBridge::Instance().SendMad2Vice(cmd);
     }
 }
 
@@ -1139,38 +1139,3 @@ DisassemblyFile *SourceFileManager::GetDisassembly(SourceFile* file)
     }
     return nullptr;
 }
-
-void SourceFileManager::OnBreakpointSet(int fileID, int lineID, int breakpointID, int addr)
-{
-    for (auto file : m_sourceFiles)
-    {
-        if (file->m_fileID == fileID)
-        {
-            if (file->m_stepOverAddr == addr)
-            {
-                file->m_stepOverBreakpointID = breakpointID;
-                return;
-            }
-            else
-            {
-                for (auto line : file->m_lines)
-                {
-                    if (line->m_uniqueID == lineID)
-                    {
-                        if (line->m_breakpointID != 0 && line->m_breakpointID != breakpointID)
-                        {
-                            // delete the old breakpoint
-                            gViceBridge->ClearBreakpoint(line->m_breakpointID);
-                        }
-                        line->m_breakpointID = breakpointID;
-                        return;
-                    }
-                }
-            }
-        }
-    }
-
-    // couldn't find the file/line, so just clear the breakpoint ID
-    gViceBridge->ClearBreakpoint(breakpointID);
-}
-

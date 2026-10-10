@@ -141,6 +141,8 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <UseStandardPreprocessor>true</UseStandardPreprocessor>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>common.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -152,7 +154,10 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="source\Application.cpp" />
+    <ClCompile Include="source\Application.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="source\cpu6502.cpp" />
     <ClCompile Include="source\EmuScreenWindow.cpp" />
     <ClCompile Include="source\FontRenderer.cpp" />
     <ClCompile Include="source\FunctionsWindow.cpp" />
@@ -160,6 +165,7 @@
     <ClCompile Include="source\JSON.cpp" />
     <ClCompile Include="source\LogManager.cpp" />
     <ClCompile Include="source\Mad64U.cpp" />
+    <ClCompile Include="source\MemViewWindow.cpp" />
     <ClCompile Include="source\NetworkManager.cpp" />
     <ClCompile Include="source\OutputWindow.cpp" />
     <ClCompile Include="source\ProjectListWindow.cpp" />
@@ -270,6 +276,7 @@
     <ClInclude Include="include\SDL3_ttf\SDL_ttf.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="source\Application.h" />
+    <ClInclude Include="source\cpu6502.h" />
     <ClInclude Include="source\EmuScreenWindow.h" />
     <ClInclude Include="source\FontRenderer.h" />
     <ClInclude Include="source\common.h" />
@@ -277,6 +284,7 @@
     <ClInclude Include="source\JSON.h" />
     <ClInclude Include="source\FunctionsWindow.h" />
     <ClInclude Include="source\LogManager.h" />
+    <ClInclude Include="source\MemViewWindow.h" />
     <ClInclude Include="source\NetworkManager.h" />
     <ClInclude Include="source\OutputWIndow.h" />
     <ClInclude Include="source\ProjectListWindow.h" />

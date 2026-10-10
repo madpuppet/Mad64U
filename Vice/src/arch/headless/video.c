@@ -41,6 +41,7 @@
 #include <string.h>
 #include "viewport.h"
 #include "viciitypes.h"
+#include "mem.h"
 
 
 /** \brief  Command line options related to generic video output
@@ -229,12 +230,14 @@ void video_canvas_refresh(struct video_canvas_s *canvas,
                           unsigned int xi, unsigned int yi,
                           unsigned int w, unsigned int h)
 {
-    extern void mad64_video_refresh(unsigned char * buffer, int width, int height, int firstLine, int lastLine);
+    extern void mad64_update_ram(unsigned char * ram);
+    extern void mad64_video_refresh(unsigned char* buffer, int width, int height, int firstLine, int lastLine);
 
     struct draw_buffer_s *db = canvas->draw_buffer;
     if (!db)
         return;
 
+#if 0
     extern bool monitor_is_inside_monitor();
     if (monitor_is_inside_monitor())
     {
@@ -247,8 +250,12 @@ void video_canvas_refresh(struct video_canvas_s *canvas,
         extern void capture_and_update_vice_state(uint16_t currentPc, void* userData);
         interrupt_maincpu_trigger_trap(capture_and_update_vice_state, 0);
     }
+#endif
+
+    
 
     const geometry_t* geo = canvas->geometry;
+    mad64_update_ram(mem_ram);
     mad64_video_refresh(db->draw_buffer, db->draw_buffer_width, db->draw_buffer_height, geo->first_displayed_line, geo->last_displayed_line);
 }
 
