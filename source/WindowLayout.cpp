@@ -9,6 +9,7 @@
 #include "MemViewWindow.h"
 #include "SearchWindow.h"
 #include "EmuScreenWindow.h"
+#include "SpriteViewWindow.h"
 #include "DisAssemblyWindow.h"
 #include "FunctionsWindow.h"
 #include <format>
@@ -556,11 +557,14 @@ void WindowLayout::LoadLayout(const std::vector<std::string>& layoutTokens, size
                                 {
                                     if (!EmuScreenWindow::CreateFromLayoutTokens(this, layoutTokens, idx))
                                     {
-                                        if (!DisAssemblyWindow::CreateFromLayoutTokens(this, layoutTokens, idx))
+                                        if (!SpriteViewWindow::CreateFromLayoutTokens(this, layoutTokens, idx))
                                         {
-                                            if (!MemViewWindow::CreateFromLayoutTokens(this, layoutTokens, idx))
+                                            if (!DisAssemblyWindow::CreateFromLayoutTokens(this, layoutTokens, idx))
                                             {
-                                                Log(LogGroup::System, "Unknown window token: {}", layoutTokens[idx]);
+                                                if (!MemViewWindow::CreateFromLayoutTokens(this, layoutTokens, idx))
+                                                {
+                                                    Log(LogGroup::System, "Unknown window token: {}", layoutTokens[idx]);
+                                                }
                                             }
                                         }
                                     }

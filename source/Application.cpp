@@ -14,6 +14,7 @@
 #include "NetworkManager.h"
 #include "SearchWindow.h"
 #include "EmuScreenWindow.h"
+#include "SpriteViewWindow.h"
 #include "DisAssemblyWindow.h"
 #include "ViceBridge.h"
 #include "FunctionsWindow.h"
@@ -28,6 +29,10 @@ u32 CustomEvent_Timer = 0;
 
 typedef void (SDLCALL* SDL_DialogFileCallback)(void* userdata, const char* const* filelist, int filter);
 
+extern u32 C64Palette[16] = {
+    0xff000000,  0xffffffff,  0xff68372b,  0xff70a4b2,  0xff6f3d86,  0xff588d43,  0xff352879,  0xffb8c76f,
+    0xff6f4f25,  0xff433900,  0xff9a6759,  0xff444444,  0xff6c6c6c,  0xff9ad284,  0xff6c5eb5,  0xff959595
+};
 
 static const char* s_themecolor_name[NumThemeColor] =
 {
@@ -329,6 +334,12 @@ void Application::CreateMenus()
             WindowManager::Instance().LayoutWindows();
         };
 
+    auto newWindowSpriteView = []()
+        {
+            WindowManager::Instance().AddWindow(new SpriteViewWindow);
+            WindowManager::Instance().LayoutWindows();
+        };
+
     auto newWindowDisassembly = []()
         {
             WindowManager::Instance().AddWindow(new DisAssemblyWindow);
@@ -359,6 +370,7 @@ void Application::CreateMenus()
     windowMenu->m_items.push_back(new WindowMenuItem("- - - - - - - - - -", []() {}));
     windowMenu->m_items.push_back(new WindowMenuItem("Emulator Screen", newWindowEmuScreen));
     windowMenu->m_items.push_back(new WindowMenuItem("Memory View", newWindowMemView));
+    windowMenu->m_items.push_back(new WindowMenuItem("Sprite View", newWindowSpriteView));
     windowMenu->m_items.push_back(new WindowMenuItem("Dissasembly", newWindowDisassembly));
     windowMenu->m_items.push_back(new WindowMenuItem("- - - - - - - - - -", []() {}));
     windowMenu->m_items.push_back(new WindowMenuItem("Toggle Frame Lock", toggleFrameLock));

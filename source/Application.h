@@ -7,6 +7,8 @@
 #include "Singleton.h"
 #include <array>
 
+extern u32 C64Palette[16];
+
 enum class ThemeColor
 {
     TitleBar,

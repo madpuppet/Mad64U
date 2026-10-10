@@ -176,6 +176,7 @@
     <ClCompile Include="source\SourceFileCmdBuffer.cpp" />
     <ClCompile Include="source\SourceFileManager.cpp" />
     <ClCompile Include="source\SourceFileWindow.cpp" />
+    <ClCompile Include="source\SpriteViewWindow.cpp" />
     <ClCompile Include="source\UndoBufferWindow.cpp" />
     <ClCompile Include="source\ViceBridge.cpp" />
     <ClCompile Include="source\WindowBase.cpp" />
@@ -297,6 +298,7 @@
     <ClInclude Include="source\SourceFileCmdBuffer.h" />
     <ClInclude Include="source\SourceFileManager.h" />
     <ClInclude Include="source\SourceFileWindow.h" />
+    <ClInclude Include="source\SpriteViewWindow.h" />
     <ClInclude Include="source\UndoBufferWindow.h" />
     <ClInclude Include="source\ViceBridge.h" />
     <ClInclude Include="source\WindowLayout.h" />
