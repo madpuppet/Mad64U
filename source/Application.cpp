@@ -14,6 +14,7 @@
 #include "NetworkManager.h"
 #include "SearchWindow.h"
 #include "EmuScreenWindow.h"
+#include "DisAssemblyWindow.h"
 #include "ViceBridge.h"
 #include "FunctionsWindow.h"
 #include "Cpu6502.h"
@@ -328,6 +329,12 @@ void Application::CreateMenus()
             WindowManager::Instance().LayoutWindows();
         };
 
+    auto newWindowDisassembly = []()
+        {
+            WindowManager::Instance().AddWindow(new DisAssemblyWindow);
+            WindowManager::Instance().LayoutWindows();
+        };
+
     auto newWindowFunctions = []()
         {
             WindowManager::Instance().AddWindow(new FunctionsWindow);
@@ -352,6 +359,7 @@ void Application::CreateMenus()
     windowMenu->m_items.push_back(new WindowMenuItem("- - - - - - - - - -", []() {}));
     windowMenu->m_items.push_back(new WindowMenuItem("Emulator Screen", newWindowEmuScreen));
     windowMenu->m_items.push_back(new WindowMenuItem("Memory View", newWindowMemView));
+    windowMenu->m_items.push_back(new WindowMenuItem("Dissasembly", newWindowDisassembly));
     windowMenu->m_items.push_back(new WindowMenuItem("- - - - - - - - - -", []() {}));
     windowMenu->m_items.push_back(new WindowMenuItem("Toggle Frame Lock", toggleFrameLock));
     windowMenu->m_items.push_back(new WindowMenuItem("Save Window Layout", []() { WindowManager::Instance().SaveWindowLayout(); Settings::Instance().Save(); }));

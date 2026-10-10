@@ -188,8 +188,8 @@ public:
     // HELPERS
     void ClearBreakpoint(int breakpointID);
     bool HasViceStopped() { return m_vice_stopped; }
-    void SetViceStopped() { m_vice_stopped = true; }
-    void ClearViceStopped() { m_vice_stopped = false; }
+    void SetViceStopped();
+    void ClearViceStopped();
     void ProcessViceCmdsTillContinue();
 
     void MultiStep();
@@ -200,6 +200,7 @@ public:
     // general state info
     ViceState GetViceState();
     u8* GetRam();
+    u64* GetPCTouchRam();
 
     void SetActiveFileID(int fileID) { m_activeFileID = fileID; }
     int GetActiveFileID() { return m_activeFileID; }

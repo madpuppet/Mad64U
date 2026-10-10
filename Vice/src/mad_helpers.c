@@ -7,6 +7,7 @@
 #include "machine.h"
 #include "maincpu.h"
 #include "mem.h"  // Vice/src in your include paths
+#include "sound.h"
 
 void helper_autostart_prg(const char* path)
 {
@@ -30,4 +31,15 @@ uint64_t helper_get_clock_cycle()
 {
     return maincpu_clk;
 }
+
+void helper_suspend_sound()
+{
+    sound_suspend();
+}
+
+void helper_resume_sound()
+{
+    sound_resume();
+}
+
 

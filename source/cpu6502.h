@@ -21,15 +21,8 @@ public:
         AM_Abs,             // operand value
         AM_AbsX,            // operand value,x
         AM_AbsY,            // operand value,y
-        AM_Ind              // operand (value)
-    };
-
-    enum ForceAddressing
-    {
-        FA_Auto,
-        FA_Zero,
-        FA_Absolute,
-        FA_Error
+        AM_Ind,             // operand (value)
+        AM_Unknown          // .byte a,b,c 
     };
 
     enum CpuStatusRegisters
@@ -49,6 +42,7 @@ public:
         AddressingMode addressMode;
         u8 opc;
         u8 cycles;
+        u8 size;
     };
 
     Opcode* GetOpcode(u8 opcode) { return &m_opcodes[opcode]; }

@@ -7,6 +7,8 @@
 extern "C" int helper_set_video_mode(int pal);
 extern "C" uint64_t helper_get_clock_cycle();
 extern "C" void helper_get_raster_pos(unsigned int* rasterLine, unsigned int* rasterCycle);
+extern "C" int helper_suspend_sound();
+extern "C" int helper_resume_sound();
 
 //==================================================================================================================================
 // Emulation internals
@@ -227,6 +229,11 @@ u8* ViceBridge::GetRam()
     return s_emulationState.m_ram;
 }
 
+u64* ViceBridge::GetPCTouchRam()
+{
+    return s_emulationState.m_pcTouch;
+}
+
 void ViceBridge::BreakpointHit(const CPUBreakpoint &bp)
 {
     auto cmd = new VBC_BreakPointHit;
@@ -292,6 +299,19 @@ void VBC_SetVideoStandard::Execute()
 {
     helper_set_video_mode(m_palMode);
 }
+
+void ViceBridge::SetViceStopped()
+{
+    m_vice_stopped = true;
+    helper_suspend_sound();
+}
+
+void ViceBridge::ClearViceStopped()
+{
+    m_vice_stopped = false;
+    helper_resume_sound();
+}
+
 
 void ViceBridge::ExecuteViceCmds()
 {

@@ -158,6 +158,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="source\cpu6502.cpp" />
+    <ClCompile Include="source\DisAssemblyWindow.cpp" />
     <ClCompile Include="source\EmuScreenWindow.cpp" />
     <ClCompile Include="source\FontRenderer.cpp" />
     <ClCompile Include="source\FunctionsWindow.cpp" />
@@ -277,6 +278,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="source\Application.h" />
     <ClInclude Include="source\cpu6502.h" />
+    <ClInclude Include="source\DisAssemblyWindow.h" />
     <ClInclude Include="source\EmuScreenWindow.h" />
     <ClInclude Include="source\FontRenderer.h" />
     <ClInclude Include="source\common.h" />

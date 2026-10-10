@@ -2,10 +2,9 @@
 #include "cpu6502.h"
 
 #define OPC( n, am, o, cyc ) m_opcodes[o].name = #n; m_opcodes[o].addressMode = AM_##am;\
-     m_opcodes[o].opc = o; m_opcodes[o].cycles = cyc;
+     m_opcodes[o].opc = o; m_opcodes[o].cycles = cyc; m_opcodes[o].size = gAddressingModeSize[AM_##am];
 
-
-Cpu6502::Opcode gOpcodeUnknown = { "???", Cpu6502::AM_Imp, 0x00, 2 };
+Cpu6502::Opcode gOpcodeUnknown = { ".byte", Cpu6502::AM_Unknown, 0x00, 1, 1 };
 
 int gAddressingModeSize[] =
 {
@@ -20,7 +19,8 @@ int gAddressingModeSize[] =
     3,  //    AM_Abs,             // operand value
     3,  //    AM_AbsX,            // operand value,x
     3,  //    AM_AbsY,            // operand value,y
-    3   //    AM_Ind              // operand (value)
+    3,  //    AM_Ind              // operand (value)
+    3   //    AM_Unknown
 };
 
 const char* gAddressingModeName[] =
@@ -71,7 +71,7 @@ Cpu6502::Cpu6502()
     OPC(BNE, Rel,  0xD0, 2);
     OPC(BPL, Rel,  0x10, 2);
 
-    OPC(BRK, Imp,   0x00, 7);
+//    OPC(BRK, Imp,   0x00, 7);     // just show .byte for BRKs
 
     OPC(BVC, Rel,  0x50, 2);
     OPC(BVS, Rel,  0x70, 2);
@@ -238,7 +238,7 @@ void Cpu6502::Disassemble(u16 addr, u8 opcode, u8 operand1, u8 operand2, std::st
     opcodeBuffer = op.name;
     bytes = gAddressingModeSize[op.addressMode];
     cycles = op.cycles;
-    u16 absolute = ((int)operand1 << 16) | (int)operand2;
+    u16 absolute = ((int)operand2 << 8) | (int)operand1;
     switch (op.addressMode)
     {
         case AM_Imp:             // operand
@@ -266,7 +266,7 @@ void Cpu6502::Disassemble(u16 addr, u8 opcode, u8 operand1, u8 operand2, std::st
             operandBuffer = std::format("(${:04x}),y", absolute);
             break;
         case AM_Abs:             // operand value
-            operandBuffer = std::format("(${:04x}),y", absolute);
+            operandBuffer = std::format("${:04x}", absolute);
             break;
         case AM_AbsX:            // operand value,x
             operandBuffer = std::format("${:04x},x", absolute);
@@ -276,6 +276,9 @@ void Cpu6502::Disassemble(u16 addr, u8 opcode, u8 operand1, u8 operand2, std::st
             break;
         case AM_Ind:              // operand (value)
             operandBuffer = std::format("(${:04x})", absolute);
+            break;
+        case AM_Unknown:
+            operandBuffer = std::format("${:02x},${:02x},${:02x}", opcode, operand1, operand2);
             break;
     }
 }

@@ -103,6 +103,9 @@
     <ClCompile Include="source\cpu6502.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="source\DisAssemblyWindow.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\common.h">
@@ -460,6 +463,9 @@
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="source\cpu6502.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="source\DisAssemblyWindow.h">
       <Filter>source</Filter>
     </ClInclude>
   </ItemGroup>

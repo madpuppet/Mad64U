@@ -555,26 +555,32 @@ bool SourceFileWindow::HandleEvent(SDL_Event* e)
                                     int addrEnd = addrStart + disln.m_addressLength;
                                     if (addr >= addrStart && addr < addrEnd)
                                     {
-                                        // is this a JSR?
                                         u32 offsetAddress = disln.m_addressStart - dis->m_info->m_memoryAddress;
                                         if (offsetAddress > dis->m_info->m_memoryLength)
                                             return true;
 
+                                        // is this a JSR? then skip to next line, otherwise just singlestep since branches won't be next line
                                         u8 byte = ram[addr];
-                                        // find next line...
-                                        for (int ll = l + 1; ll < m_sourceFile->m_lines.size(); ll++)
+                                        if (byte == 0x20)
                                         {
-                                            auto stopln = m_sourceFile->m_lines[ll];
-                                            if (stopln->m_assembledLine >= 0 && stopln->m_assembledLine < dis->m_lines.size())
+                                            for (int ll = l + 1; ll < m_sourceFile->m_lines.size(); ll++)
                                             {
-                                                int breakAddr = dis->m_lines[stopln->m_assembledLine].m_addressStart;
-                                                if (breakAddr != 0)
+                                                auto stopln = m_sourceFile->m_lines[ll];
+                                                if (stopln->m_assembledLine >= 0 && stopln->m_assembledLine < dis->m_lines.size())
                                                 {
-                                                    ViceBridge::Instance().SetBreakpoint(m_sourceFile->m_fileID, ln->m_uniqueID, breakAddr, true);
-                                                    ViceBridge::Instance().Continue();
-                                                    return true;
+                                                    int breakAddr = dis->m_lines[stopln->m_assembledLine].m_addressStart;
+                                                    if (breakAddr != 0)
+                                                    {
+                                                        ViceBridge::Instance().SetBreakpoint(m_sourceFile->m_fileID, ln->m_uniqueID, breakAddr, true);
+                                                        ViceBridge::Instance().Continue();
+                                                        return true;
+                                                    }
                                                 }
                                             }
+                                        }
+                                        else
+                                        {
+                                            ViceBridge::Instance().SingleStep();
                                         }
                                     }
                                 }
