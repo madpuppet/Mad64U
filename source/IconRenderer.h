@@ -24,7 +24,9 @@ enum class Icons
     ReplaceAll,
     Breakpoint,
     Pause,
-    SingleStep
+    SingleStep,
+    Zoom,
+    Multicolour
 };
 
 class IconRenderer : public Singleton<IconRenderer>

@@ -22,9 +22,11 @@ void DisAssemblyWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     ViceState vs = ViceBridge::Instance().GetViceState();
     u8* ram = ViceBridge::Instance().GetRam();
 
-    if (vs.m_pc != m_cacheAddr)
+    int visLines = m_clientArea.h / LINE_HEIGHT + 1;
+    if (vs.m_pc != m_cacheAddr || m_lines.size() != visLines)
     {
         m_cacheAddr = vs.m_pc;
+        m_lines.resize(visLines);
         BuildLines();
     }
 
@@ -79,7 +81,7 @@ void DisAssemblyWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
 
 DisAssemblyWindow::DisAssemblyWindow()
 {
-    m_name = "DisAssembly";
+    m_name = "Disassembly";
 }
 
 DisAssemblyWindow::~DisAssemblyWindow()
@@ -178,11 +180,8 @@ void DisAssemblyWindow::BuildLines()
     u64* pcTouchRam = vb.GetPCTouchRam();
     auto& cpu = Cpu6502::Instance();
 
-    // trace up to the top
-    m_lines.resize(MAX_DISASSEMBLY_LINES);
-
     int addr = state.m_pc;
-    int l = MAX_DISASSEMBLY_LINES / 2;
+    int l = (int)m_lines.size() / 2;
 
     if (addr == 0x811)
         stopme = true;
@@ -223,7 +222,7 @@ void DisAssemblyWindow::BuildLines()
     }
 
     addr = state.m_pc + m_lines[l].bytes;
-    for (int i = l+1; i < MAX_DISASSEMBLY_LINES; i++)
+    for (int i = l+1; i < (int)m_lines.size(); i++)
     {
         addr += DisassembleLine(cpu, ram, i, addr);
     }

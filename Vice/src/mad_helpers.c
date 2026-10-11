@@ -8,11 +8,32 @@
 #include "maincpu.h"
 #include "mem.h"  // Vice/src in your include paths
 #include "sound.h"
+#include "keyboard.h"
+#include "drive.h"
+#include "sysFile.h"
 
 void helper_autostart_prg(const char* path)
 {
     resources_set_int("AutostartPrgMode", 1);
     autostart_prg(path, AUTOSTART_MODE_RUN);
+}
+
+int helper_autostart_d64(const char* path)
+{
+    resources_set_string("DosName1541", "dos1541");
+    const char* romPath = NULL;
+    resources_get_string("DosName1541", &romPath);
+    resources_set_int("Drive8Type", DRIVE_TYPE_1541);
+    auto filesize = sysfile_locate(romPath, "DRIVES", NULL);
+
+
+    return autostart_disk(
+        8,                   // Device number
+        0,                   // Drive within device
+        path,                // D64 filename
+        NULL,                // Program name: NULL defaults to "*"
+        0,                   // No specific directory entry
+        AUTOSTART_MODE_RUN);
 }
 
 void helper_get_raster_pos(unsigned int *rasterLine, unsigned int *rasterCycle)
@@ -40,6 +61,11 @@ void helper_suspend_sound()
 void helper_resume_sound()
 {
     sound_resume();
+}
+
+void helper_keyboard_set(int row, int column, int value)
+{
+    keyboard_set_keyarr(row, column, value);
 }
 
 

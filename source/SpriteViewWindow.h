@@ -22,7 +22,9 @@ protected:
     SDL_Texture* m_viceTexture = nullptr;
     int m_viceTextureWidth = 0;
     int m_viceTextureHeight = 0;
+
     bool m_snapToClientArea = false;
     int m_zoom = 3;
     float m_animTime = 0.0f;
+    bool m_multicolour = false;
 };

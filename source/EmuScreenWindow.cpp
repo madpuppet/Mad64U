@@ -50,6 +50,8 @@ void EmuScreenWindow::MessageChild(WindowLayout* layout, struct WindowMessageStr
                 return;
             if (testIcon(Icons::SingleStep, m_clientArea.x + 56, m_clientArea.y + 12))
                 return;
+            if (testIcon(Icons::Zoom, m_clientArea.x + 76, m_clientArea.y + 12))
+                return;
 
             if (m_clientArea.Contains(msg.m_x, msg.m_y))
             {
@@ -74,11 +76,12 @@ bool EmuScreenWindow::Tick()
     return true;
 }
 
+
+static const char* s_zoomText[] = { "Auto", "2x", "4x", "8x" };
 void EmuScreenWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
 {
-    bool fixed;
-    int level;
-    Application::Instance().Vice_GetZoomInfo(fixed, level);
+    bool fixed = (m_zoom != 0);
+    int level = 1 << m_zoom;
     auto& wm = WindowManager::Instance();
     auto& highlight = wm.GetWindowHighlightQuery();
 
@@ -95,11 +98,11 @@ void EmuScreenWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     SDL_RenderFillRect(renderer, &body);
 
     ViceState viceState = ViceBridge::Instance().GetViceState();
+    bool isPal = Application::Instance().IsPAL();
     if (m_viceTexture)
     {
-        bool isPal = m_viceTextureWidth == 384;
         int lineCycles = isPal ? 63 : 65;
-        float textureVScale = isPal ? (float)m_viceTextureHeight * 1.07f : (float)m_viceTextureHeight * 0.75f;
+        float textureVScale = isPal ? (float)m_viceTextureHeight * 1.07f : (float)m_viceTextureHeight * 1.07f * 271.0f/246.0f;
 
         if (!fixed)
         {
@@ -153,6 +156,7 @@ void EmuScreenWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     ir.DrawIcon(renderer, Icons::Run, m_clientArea.x + 16, m_clientArea.y + 12);
     ir.DrawIcon(renderer, Icons::Pause, m_clientArea.x + 36, m_clientArea.y + 12);
     ir.DrawIcon(renderer, Icons::SingleStep, m_clientArea.x + 56, m_clientArea.y + 12);
+    ir.DrawIcon(renderer, Icons::Zoom, m_clientArea.x + 76, m_clientArea.y + 12);
 
     if (highlight.m_highlight == WindowHighlightType::EmuScreenIcon)
     {
@@ -164,7 +168,7 @@ void EmuScreenWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     // draw emulator state
     auto& fr = FontRenderer::Instance();
     SDL_Color stateCol{ 255,255,255,255 };
-    std::string text = std::format("PC {:4x} ROW {:3d} COL {:3d} A {:2x} X {:2x} Y {:2x} Flags {}{}.{}{}{}{}{}",
+    std::string text = std::format("PC {:4x} ROW {:3d} COL {:3d} A {:2x} X {:2x} Y {:2x} Flags {}{}.{}{}{}{}{} Zoom {} Mode {}",
         viceState.m_pc, viceState.m_rasterLine, viceState.m_rasterCycle, viceState.m_acc, viceState.m_x, viceState.m_y,
         viceState.m_flags & 128 ? 'N' : 'n',
         viceState.m_flags & 64 ? 'V' : 'v',
@@ -172,7 +176,9 @@ void EmuScreenWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
         viceState.m_flags & 8 ? 'D' : 'd',
         viceState.m_flags & 4 ? 'I' : 'i',
         viceState.m_flags & 2 ? 'Z' : 'z',
-        viceState.m_flags & 1 ? 'C' : 'c');
+        viceState.m_flags & 1 ? 'C' : 'c',
+        s_zoomText[m_zoom],
+        isPal ? "PAL" : "NTSC");
     fr.RenderText(renderer, text, stateCol, m_clientArea.x + 100, m_clientArea.y, FontType::UI);
 }
 
@@ -180,6 +186,89 @@ bool EmuScreenWindow::HandleEvent(SDL_Event* e)
 {
     switch (e->type)
     {
+        case SDL_EVENT_KEY_DOWN:
+        case SDL_EVENT_KEY_UP:
+        {
+            int r2 = -1;
+            int c2 = -1;
+            int row = 0;
+            int column = 0;
+            switch (e->key.scancode)
+            {
+                case SDL_SCANCODE_A:         row = 1; column = 2; break;
+                case SDL_SCANCODE_B:         row = 3; column = 4; break;
+                case SDL_SCANCODE_C:         row = 2; column = 4; break;
+                case SDL_SCANCODE_D:         row = 2; column = 2; break;
+                case SDL_SCANCODE_E:         row = 1; column = 6; break;
+                case SDL_SCANCODE_F:         row = 2; column = 5; break;
+                case SDL_SCANCODE_G:         row = 3; column = 2; break;
+                case SDL_SCANCODE_H:         row = 3; column = 5; break;
+                case SDL_SCANCODE_I:         row = 4; column = 1; break;
+                case SDL_SCANCODE_J:         row = 4; column = 2; break;
+                case SDL_SCANCODE_K:         row = 4; column = 5; break;
+                case SDL_SCANCODE_L:         row = 5; column = 2; break;
+                case SDL_SCANCODE_M:         row = 4; column = 4; break;
+                case SDL_SCANCODE_N:         row = 4; column = 7; break;
+                case SDL_SCANCODE_O:         row = 4; column = 6; break;
+                case SDL_SCANCODE_P:         row = 5; column = 1; break;
+                case SDL_SCANCODE_Q:         row = 7; column = 6; break;
+                case SDL_SCANCODE_R:         row = 2; column = 1; break;
+                case SDL_SCANCODE_S:         row = 1; column = 5; break;
+                case SDL_SCANCODE_T:         row = 2; column = 6; break;
+                case SDL_SCANCODE_U:         row = 3; column = 6; break;
+                case SDL_SCANCODE_V:         row = 3; column = 7; break;
+                case SDL_SCANCODE_W:         row = 1; column = 1; break;
+                case SDL_SCANCODE_X:         row = 2; column = 7; break;
+                case SDL_SCANCODE_Y:         row = 3; column = 1; break;
+                case SDL_SCANCODE_Z:         row = 1; column = 4; break;
+                case SDL_SCANCODE_0:         row = 4; column = 3; break;
+                case SDL_SCANCODE_1:         row = 7; column = 0; break;
+                case SDL_SCANCODE_2:         row = 7; column = 3; break;
+                case SDL_SCANCODE_3:         row = 1; column = 0; break;
+                case SDL_SCANCODE_4:         row = 1; column = 3; break;
+                case SDL_SCANCODE_5:         row = 2; column = 0; break;
+                case SDL_SCANCODE_6:         row = 2; column = 3; break;
+                case SDL_SCANCODE_7:         row = 3; column = 0; break;
+                case SDL_SCANCODE_8:         row = 3; column = 3; break;
+                case SDL_SCANCODE_9:         row = 4; column = 0; break;
+                case SDL_SCANCODE_LEFT:   r2 = 1; c2 = 7; row = 0; column = 2; break;
+                case SDL_SCANCODE_RIGHT: row = 0; column = 2; break;
+                case SDL_SCANCODE_UP: r2 = 1; c2 = 7; row = 0; column = 7; break;
+                case SDL_SCANCODE_DOWN: row = 0; column = 7; break;
+                case SDL_SCANCODE_TAB: row = 7; column = 7; break;
+                case SDL_SCANCODE_SPACE:     row = 7; column = 4; break;
+                case SDL_SCANCODE_RETURN:    row = 0; column = 1; break;
+                case SDL_SCANCODE_BACKSPACE: row = 0; column = 0; break; // DEL
+                case SDL_SCANCODE_ESCAPE:    row = 7; column = 7; break; // RUN/STOP
+                case SDL_SCANCODE_LSHIFT:    row = 1; column = 7; break;
+                case SDL_SCANCODE_RSHIFT:    row = 6; column = 4; break;
+                case SDL_SCANCODE_F1:        row = 0; column = 4; break;
+                case SDL_SCANCODE_F2:        r2 = 1; c2 = 7; row = 0; column = 4; break;
+                case SDL_SCANCODE_F3:        row = 0; column = 5; break;
+                case SDL_SCANCODE_F4:        r2 = 1; c2 = 7; row = 0; column = 5; break;
+                case SDL_SCANCODE_F5:        row = 0; column = 6; break;
+                case SDL_SCANCODE_F6:        r2 = 1; c2 = 7; row = 0; column = 6; break;
+                case SDL_SCANCODE_F7:        row = 0; column = 3; break;
+                case SDL_SCANCODE_F8:        r2 = 1; c2 = 7; row = 0; column = 3; break;
+                default:
+                    return false;
+            }
+
+            // Forward transitions only. The emulated machine handles key repeat.
+            if (e->key.repeat)
+                return true;
+
+            auto* cmd = new VBC_Key;
+            cmd->m_row = row;
+            cmd->m_column = column;
+            cmd->m_r2 = r2;
+            cmd->m_c2 = c2;
+            cmd->m_pressed = e->key.down;
+            ViceBridge::Instance().SendMad2Vice(cmd);
+        }
+        return true;
+
+
         case SDL_EVENT_MOUSE_BUTTON_DOWN:
         {
             auto& selected = WindowManager::Instance().GetWindowSelectionQuery();
@@ -197,6 +286,10 @@ bool EmuScreenWindow::HandleEvent(SDL_Event* e)
 
                     case Icons::SingleStep:
                         ViceBridge::Instance().SingleStep();
+                        break;
+
+                    case Icons::Zoom:
+                        m_zoom = (m_zoom + 1) % 4;
                         break;
                 }
             }

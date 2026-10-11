@@ -198,6 +198,7 @@ static int drive_resources_type(int val, void *param)
         case DRIVE_TYPE_8250:
         case DRIVE_TYPE_9000:
             current = unit->type;
+
             /* make sure the switch is successful before moving on */
             if (drive_set_disk_drive_type(type, diskunit_context[dnr]) < 0) {
                 return -1;

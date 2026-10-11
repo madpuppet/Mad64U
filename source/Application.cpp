@@ -83,6 +83,11 @@ SDL_DialogFileFilter s_filters[] =
     { "All Files", "*" }
 };
 
+SDL_DialogFileFilter s_autoStartFilters[] =
+{
+    { "Executables", "prg;d64;crt" }
+};
+
 void LoadFileCallback(void* userdata, const char* const* filelist, int filter)
 {
     if (filelist && *filelist)
@@ -99,6 +104,16 @@ void LoadFileCallback(void* userdata, const char* const* filelist, int filter)
     else
     {
         Log("No File Selected\n");
+    }
+}
+
+void AutoStartFileCallback(void* userdata, const char* const* filelist, int filter)
+{
+    if (filelist && *filelist)
+    {
+        auto cmd = new VBC_RunPrg;
+        cmd->m_path = std::string(*filelist);
+        ViceBridge::Instance().SendMad2Vice(cmd);
     }
 }
 
@@ -270,25 +285,28 @@ void Application::CreateMenus()
     auto viceMenu = new WindowMenu;
     viceMenu->m_name = "Vice";
 
-    m_viceZoomModeMenu = new WindowMenuItem("Zoom Mode");
-    auto sizeToFitZoom = []() { Application::Instance().Vice_SetZoomMode(false); };
-    auto zoomLevel1 = []() { Application::Instance().Vice_SetZoomLevel(1); };
-    auto zoomLevel2 = []() { Application::Instance().Vice_SetZoomLevel(2); };
-    auto zoomLevel4 = []() { Application::Instance().Vice_SetZoomLevel(4); };
-    auto zoomLevel8 = []() { Application::Instance().Vice_SetZoomLevel(8); };
-    m_viceZoomModeMenu->m_subMenus.push_back(new WindowMenuItem("Size To Fit", sizeToFitZoom));
-    m_viceZoomModeMenu->m_subMenus.push_back(new WindowMenuItem("Fixed 1x", zoomLevel1));
-    m_viceZoomModeMenu->m_subMenus.push_back(new WindowMenuItem("Fixed 2x", zoomLevel2));
-    m_viceZoomModeMenu->m_subMenus.push_back(new WindowMenuItem("Fixed 4x", zoomLevel4));
-    m_viceZoomModeMenu->m_subMenus.push_back(new WindowMenuItem("Fixed 8x", zoomLevel8));
-    viceMenu->m_items.push_back(m_viceZoomModeMenu);
-
     m_viceVideoStandardMenu = new WindowMenuItem("Video Standard");
     auto setToPAL = []() { Application::Instance().Vice_EnablePAL(true); };
     auto setToNTSC = []() { Application::Instance().Vice_EnablePAL(false); };
     m_viceVideoStandardMenu->m_subMenus.push_back(new WindowMenuItem("PAL", setToPAL));
     m_viceVideoStandardMenu->m_subMenus.push_back(new WindowMenuItem("NTSC", setToNTSC));
     viceMenu->m_items.push_back(m_viceVideoStandardMenu);
+
+    auto autoStart = []()
+        {
+            std::string cwd = std::filesystem::current_path().string();
+
+            SDL_ShowOpenFileDialog(
+                AutoStartFileCallback,
+                nullptr,
+                nullptr,        // parent window
+                s_autoStartFilters,
+                SDL_arraysize(s_autoStartFilters),
+                cwd.c_str(),
+                true
+            );
+        };
+    viceMenu->m_items.push_back(new WindowMenuItem("Autostart PRG/D64", autoStart));
 
     wm.AddWindowMenu(viceMenu);
 
@@ -700,11 +718,6 @@ int Application::Run()
     ShowLines(showLines);
     ShowBytes(showBytes);
 
-    bool viceZoomMode = Settings::Instance().GetBool(SETTING_VICE_ZOOM_MODE);
-    int viceZoomLevel = Settings::Instance().GetInt(SETTING_VICE_ZOOM_LEVEL);
-    Vice_SetZoomLevel(viceZoomLevel);
-    Vice_SetZoomMode(viceZoomMode);
-
     wm.LoadWindowLayout();
 
     auto& nm = NetworkManager::Instance();
@@ -784,27 +797,10 @@ void Application::SelectTheme(const char *themeName)
     }
 }
 
-void Application::Vice_SetZoomMode(bool fixed)
-{
-    int level = Settings::Instance().GetInt(SETTING_VICE_ZOOM_LEVEL);
-    std::string result = fixed ? std::format("Fixed {}x", level) : "Scale To Fit";
-    m_viceZoomModeMenu->m_name = std::format("Zoom Mode : {}", result);
-    Settings::Instance().SetBool(SETTING_VICE_ZOOM_MODE, fixed);
-    Settings::Instance().Save();
-    WindowManager::Instance().LayoutMenu();
-    m_vice_zoomFixed = fixed;
-}
-
-void Application::Vice_SetZoomLevel(int zoom)
-{
-    // force fixed if your gonna set the zoom level
-    m_vice_zoomLevel = zoom;
-    Settings::Instance().SetInt(SETTING_VICE_ZOOM_LEVEL, zoom);
-    Vice_SetZoomMode(true);
-}
-
 void Application::Vice_EnablePAL(bool enable)
 {
+    m_vice_pal = enable;
+
     auto cmd = new VBC_SetVideoStandard;
     cmd->m_palMode = enable;
     ViceBridge::Instance().SendMad2Vice(cmd);

@@ -92,6 +92,17 @@ struct VBC_SetVideoStandard : ViceBridgeCmd
     bool m_palMode;
 };
 
+struct VBC_Key : ViceBridgeCmd
+{
+    int m_row;
+    int m_column;
+    int m_r2 = -1;
+    int m_c2 = -1;
+    bool m_pressed;
+    void Execute() override;
+};
+
+
 struct ViceState
 {
     u64 m_clock;

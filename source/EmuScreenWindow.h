@@ -23,6 +23,6 @@ protected:
     int m_viceTextureWidth = 0;
     int m_viceTextureHeight = 0;
     bool m_snapToClientArea = false;
-    int m_zoom = 3;
+    int m_zoom = 0;
     float m_animTime = 0.0f;
 };

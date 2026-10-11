@@ -94,13 +94,6 @@ public:
     void ShowLines(bool enable);
     void ShowBytes(bool enable);
 
-    void Vice_SetZoomMode(bool fixed);
-    void Vice_SetZoomLevel(int zoom);
-    void Vice_GetZoomInfo(bool& fixed, int &level)
-    {
-        fixed = m_vice_zoomFixed;
-        level = m_vice_zoomLevel;
-    }
     void Vice_EnablePAL(bool enable);
     bool IsPAL() { return m_vice_pal; }
 
@@ -133,11 +126,8 @@ protected:
     WindowMenuItem* m_showLinesMenu;
     WindowMenuItem* m_showBytesMenu;
 
-    WindowMenuItem* m_viceZoomModeMenu;
     WindowMenuItem* m_viceVideoStandardMenu;
 
-    bool m_vice_zoomFixed = false;
-    int m_vice_zoomLevel = 0;
     bool m_vice_pal = true;
 
     std::mutex m_watcherLock;

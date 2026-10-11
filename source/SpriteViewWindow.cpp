@@ -48,11 +48,9 @@ void SpriteViewWindow::MessageChild(WindowLayout* layout, struct WindowMessageSt
                     return false;
                 };
 
-            if (testIcon(Icons::Run, m_clientArea.x + 16, m_clientArea.y + 12))
+            if (testIcon(Icons::Zoom, m_clientArea.x + 16, m_clientArea.y + 12))
                 return;
-            if (testIcon(Icons::Pause, m_clientArea.x + 36, m_clientArea.y + 12))
-                return;
-            if (testIcon(Icons::SingleStep, m_clientArea.x + 56, m_clientArea.y + 12))
+            if (testIcon(Icons::Multicolour, m_clientArea.x + 36, m_clientArea.y + 12))
                 return;
 
             if (m_clientArea.Contains(msg.m_x, msg.m_y))
@@ -78,13 +76,14 @@ bool SpriteViewWindow::Tick()
     return true;
 }
 
+static const char* s_zoomText[] = { "Auto", "1x", "2x", "4x", "8x" };
 void SpriteViewWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
 {
     UpdateTexture(renderer);
 
-    bool fixed;
-    int level;
-    Application::Instance().Vice_GetZoomInfo(fixed, level);
+    bool fixed = (m_zoom != 0);
+    int level = 1<<(m_zoom-1);
+
     auto& wm = WindowManager::Instance();
     auto& highlight = wm.GetWindowHighlightQuery();
 
@@ -108,18 +107,9 @@ void SpriteViewWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
         float textureVScale = (float)m_viceTextureHeight;
         if (!fixed)
         {
-            float frameAR = (float)m_viceTextureWidth / textureVScale;
-            float clientAreaAR = body.w / body.h;
-            if (clientAreaAR > frameAR)
-            {
-                // widescreen - use full height, scale width
-                body.w = body.h * frameAR;
-            }
-            else
-            {
-                // tallscreen - use full width
-                body.h = body.w / frameAR;
-            }
+            body.h = body.w / m_viceTextureWidth * m_viceTextureHeight;
+            body.x -= m_clientContentOffset.x;
+            body.y -= m_clientContentOffset.y;
             SDL_RenderTexture(renderer, m_viceTexture, nullptr, &body);
         }
         else
@@ -144,9 +134,8 @@ void SpriteViewWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     headerArea.h = LINE_HEIGHT;
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderFillRect(renderer, &headerArea);
-    ir.DrawIcon(renderer, Icons::Run, m_clientArea.x + 16, m_clientArea.y + 12);
-    ir.DrawIcon(renderer, Icons::Pause, m_clientArea.x + 36, m_clientArea.y + 12);
-    ir.DrawIcon(renderer, Icons::SingleStep, m_clientArea.x + 56, m_clientArea.y + 12);
+    ir.DrawIcon(renderer, Icons::Zoom, m_clientArea.x + 16, m_clientArea.y + 12);
+    ir.DrawIcon(renderer, Icons::Multicolour, m_clientArea.x + 36, m_clientArea.y + 12);
 
     if (highlight.m_highlight == WindowHighlightType::EmuScreenIcon)
     {
@@ -154,6 +143,13 @@ void SpriteViewWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
         int iy = highlight.m_area.y + 8;
         ir.DrawIcon(renderer, Icons::Highlight, ix, iy);
     }
+
+    // draw emulator state
+    auto& fr = FontRenderer::Instance();
+    SDL_Color stateCol{ 255,255,255,255 };
+    std::string isMulti = m_multicolour ? "Multicol" : "Hires";
+    std::string text = std::format("{} Zoom {}", isMulti, s_zoomText[m_zoom]);
+    fr.RenderText(renderer, text, stateCol, m_clientArea.x + 100, m_clientArea.y, FontType::UI);
 }
 
 bool SpriteViewWindow::HandleEvent(SDL_Event* e)
@@ -167,16 +163,12 @@ bool SpriteViewWindow::HandleEvent(SDL_Event* e)
             {
                 switch (selected.m_emuScreen.m_icon)
                 {
-                    case Icons::Run:
-                        ViceBridge::Instance().Continue();
+                    case Icons::Zoom:
+                        m_zoom = (m_zoom + 1) % 5;
                         break;
 
-                    case Icons::Pause:
-                        ViceBridge::Instance().Pause();
-                        break;
-
-                    case Icons::SingleStep:
-                        ViceBridge::Instance().SingleStep();
+                    case Icons::Multicolour:
+                        m_multicolour = !m_multicolour;
                         break;
                 }
             }
@@ -190,6 +182,7 @@ void SpriteViewWindow::SaveTokens(std::vector<std::string>& layoutTokens)
     layoutTokens.push_back("SPRITEVIEW");
 }
 
+static u32 s_col[4] = { 0xff000000, 0xffff0000, 0xff00ff00, 0xff0000ff };
 void SpriteViewWindow::UpdateTexture(SDL_Renderer* renderer)
 {
     if (renderer != m_renderer)
@@ -206,23 +199,48 @@ void SpriteViewWindow::UpdateTexture(SDL_Renderer* renderer)
 
     u32* pixels = new u32[TEX_WIDTH*TEX_HEIGHT];
     u8* ram = ViceBridge::Instance().GetRam();
-    for (int sy = 0; sy < SPRITES_Y; sy++)
+    
+    if (m_multicolour)
     {
-        for (int sx = 0; sx < SPRITES_X; sx++)
+        for (int sy = 0; sy < SPRITES_Y; sy++)
         {
-            for (int y = 0; y < 21; y++)
+            for (int sx = 0; sx < SPRITES_X; sx++)
             {
-                for (int x = 0; x < 24; x++)
+                for (int y = 0; y < 21; y++)
                 {
-                    int sprite_addr = sx * 64 + sy * 16 * 64 + x/8 + y*3;
-                    int bit = ram[sprite_addr] & (1 << (7-(x & 7)));
-                    int px = sx * 24 + x;
-                    int py = sy * 21 + y;
-                    int pixel_addr = py * TEX_WIDTH + px;
-                    pixels[pixel_addr] = bit ? 0xffffffff : 0xff000000;
+                    for (int x = 0; x < 12; x++)
+                    {
+                        int sprite_addr = sx * 64 + sy * 16 * 64 + x / 4 + y * 3;
+                        int bit = (ram[sprite_addr] >> (6 - ((x & 3)*2))) & 3;
+                        int px = sx * 24 + x*2;
+                        int py = sy * 21 + y;
+                        int pixel_addr = py * TEX_WIDTH + px;
+                        pixels[pixel_addr] = s_col[bit];
+                        pixels[pixel_addr+1] = s_col[bit];
+                    }
                 }
             }
-
+        }
+    }
+    else
+    {
+        for (int sy = 0; sy < SPRITES_Y; sy++)
+        {
+            for (int sx = 0; sx < SPRITES_X; sx++)
+            {
+                for (int y = 0; y < 21; y++)
+                {
+                    for (int x = 0; x < 24; x++)
+                    {
+                        int sprite_addr = sx * 64 + sy * 16 * 64 + x / 8 + y * 3;
+                        int bit = ram[sprite_addr] & (1 << (7 - (x & 7)));
+                        int px = sx * 24 + x;
+                        int py = sy * 21 + y;
+                        int pixel_addr = py * TEX_WIDTH + px;
+                        pixels[pixel_addr] = bit ? 0xffffffff : 0xff000000;
+                    }
+                }
+            }
         }
     }
 

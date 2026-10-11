@@ -9,6 +9,11 @@ extern "C" uint64_t helper_get_clock_cycle();
 extern "C" void helper_get_raster_pos(unsigned int* rasterLine, unsigned int* rasterCycle);
 extern "C" int helper_suspend_sound();
 extern "C" int helper_resume_sound();
+extern "C" void helper_keyboard_set(int row, int column, int value);
+extern "C" void helper_autostart_prg(const char* path);
+extern "C" void helper_autostart_d64(const char* path);
+extern "C" int helper_set_breakpoint(int memaddr);
+extern "C" void mon_breakpoint_delete_checkpoint(int checkpointId);
 
 //==================================================================================================================================
 // Emulation internals
@@ -218,8 +223,8 @@ ViceState ViceBridge::GetViceState()
     state.m_flags = tp.flags;
     state.m_x = tp.x;
     state.m_y = tp.y;
-    state.m_rasterCycle = 0;
-    state.m_rasterLine = 0;
+    state.m_rasterCycle = tp.cycle;
+    state.m_rasterLine = tp.raster;
     state.m_clock = tp.clock;
     return state;
 }
@@ -385,15 +390,19 @@ void VBC_NewFrame::Execute()
     delete m_buffer;
 }
 
-
-extern "C" void helper_autostart_prg(const char* path);
-extern "C" int helper_set_breakpoint(int memaddr);
-extern "C" void mon_breakpoint_delete_checkpoint(int checkpointId);
-
 void VBC_RunPrg::Execute()
 {
     ViceBridge::Instance().ClearViceStopped();
-    helper_autostart_prg(m_path.c_str());
+    std::filesystem::path path = m_path;
+    std::filesystem::path ext = path.extension();
+    if (ext == ".d64" || ext == ".D64")
+    {
+        helper_autostart_d64(m_path.c_str());
+    }
+    else
+    {
+        helper_autostart_prg(m_path.c_str());
+    }
 }
 
 void VBC_SetBreakpoint::Execute()
@@ -418,3 +427,21 @@ void ViceBridge::ClearBreakpoint(int breakpointID)
     cmd->m_breakpointID = breakpointID;
     SendMad2Vice(cmd);
 }
+
+void VBC_Key::Execute()
+{
+    if (m_pressed)
+    {
+        if (m_r2 != -1)
+            helper_keyboard_set(m_r2, m_c2, 1);
+        helper_keyboard_set(m_row, m_column, 1);
+    }
+    else
+    {
+        helper_keyboard_set(m_row, m_column, 0);
+        if (m_r2 != -1)
+            helper_keyboard_set(m_r2, m_c2, 0);
+    }
+}
+
+
