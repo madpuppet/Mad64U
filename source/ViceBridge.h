@@ -212,6 +212,7 @@ public:
     ViceState GetViceState();
     u8* GetRam();
     u64* GetPCTouchRam();
+    u64* GetHeatMap();
 
     void SetActiveFileID(int fileID) { m_activeFileID = fileID; }
     int GetActiveFileID() { return m_activeFileID; }

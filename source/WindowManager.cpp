@@ -104,11 +104,19 @@ void WindowManager::HandleEvent(SDL_Event* e)
                 msg.m_y = (int)e->button.y;
                 Message(msg);
 
+                if (msg.m_response > 0 && msg.m_layout && msg.m_window)
+                {
+                    m_activeWindow = msg.m_window;
+                    m_activeTree = msg.m_tree;
+                    m_activeLayout = msg.m_layout;
+                }
+
                 switch (m_mouseSelectionQuery.m_highlight)
                 {
                     case WindowHighlightType::ProjectListFile:
                     case WindowHighlightType::ProjectListIcon:
                     case WindowHighlightType::EmuScreenIcon:
+                    case WindowHighlightType::MemoryAddress:
                         if (m_mouseSelectionQuery.m_window)
                             m_mouseSelectionQuery.m_window->HandleEvent(e);
                         return;
@@ -201,6 +209,12 @@ void WindowManager::HandleEvent(SDL_Event* e)
                         SDL_CaptureMouse(true);
                     }
                     return;
+
+                    case WindowHighlightType::TabClose:
+                    {
+                        m_mouseSelectionQuery.m_layout->m_tabs[m_mouseSelectionQuery.m_id]->Close();
+                        return;
+                    };
 
                     case WindowHighlightType::Tab:
                     {

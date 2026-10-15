@@ -157,6 +157,7 @@
     <ClCompile Include="source\Application.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="source\BitmapViewWindow.cpp" />
     <ClCompile Include="source\cpu6502.cpp" />
     <ClCompile Include="source\DisAssemblyWindow.cpp" />
     <ClCompile Include="source\EmuScreenWindow.cpp" />
@@ -278,6 +279,7 @@
     <ClInclude Include="include\SDL3_ttf\SDL_ttf.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="source\Application.h" />
+    <ClInclude Include="source\BitmapViewWindow.h" />
     <ClInclude Include="source\cpu6502.h" />
     <ClInclude Include="source\DisAssemblyWindow.h" />
     <ClInclude Include="source\EmuScreenWindow.h" />

@@ -109,6 +109,9 @@
     <ClCompile Include="source\SpriteViewWindow.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="source\BitmapViewWindow.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\common.h">
@@ -472,6 +475,9 @@
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="source\SpriteViewWindow.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="source\BitmapViewWindow.h">
       <Filter>source</Filter>
     </ClInclude>
   </ItemGroup>

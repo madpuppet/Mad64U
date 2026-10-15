@@ -15,6 +15,7 @@
 #include "SearchWindow.h"
 #include "EmuScreenWindow.h"
 #include "SpriteViewWindow.h"
+#include "BitmapViewWindow.h"
 #include "DisAssemblyWindow.h"
 #include "ViceBridge.h"
 #include "FunctionsWindow.h"
@@ -200,13 +201,6 @@ void Application::CreateMenus()
             }
         };
 
-    auto closeFile = []()
-        {
-            auto window = WindowManager::Instance().GetActiveWindowBase();
-            if (window)
-                window->Close();
-        };
-
     auto exitEditor = []()
         {
             Application::Instance().Quit();
@@ -218,7 +212,6 @@ void Application::CreateMenus()
     fileMenu->m_items.push_back(new WindowMenuItem("Load", loadFile));
     fileMenu->m_items.push_back(new WindowMenuItem("Save", saveFile));
     fileMenu->m_items.push_back(new WindowMenuItem("SaveAs", saveAsFile));
-    fileMenu->m_items.push_back(new WindowMenuItem("Close", closeFile));
     fileMenu->m_items.push_back(new WindowMenuItem("Quit Mad64U", exitEditor));
     wm.AddWindowMenu(fileMenu);
 
@@ -352,6 +345,12 @@ void Application::CreateMenus()
             WindowManager::Instance().LayoutWindows();
         };
 
+    auto newWindowBitmapView = []()
+        {
+            WindowManager::Instance().AddWindow(new BitmapViewWindow);
+            WindowManager::Instance().LayoutWindows();
+        };
+
     auto newWindowSpriteView = []()
         {
             WindowManager::Instance().AddWindow(new SpriteViewWindow);
@@ -389,6 +388,7 @@ void Application::CreateMenus()
     windowMenu->m_items.push_back(new WindowMenuItem("Emulator Screen", newWindowEmuScreen));
     windowMenu->m_items.push_back(new WindowMenuItem("Memory View", newWindowMemView));
     windowMenu->m_items.push_back(new WindowMenuItem("Sprite View", newWindowSpriteView));
+    windowMenu->m_items.push_back(new WindowMenuItem("Bitmap View", newWindowBitmapView));
     windowMenu->m_items.push_back(new WindowMenuItem("Dissasembly", newWindowDisassembly));
     windowMenu->m_items.push_back(new WindowMenuItem("- - - - - - - - - -", []() {}));
     windowMenu->m_items.push_back(new WindowMenuItem("Toggle Frame Lock", toggleFrameLock));

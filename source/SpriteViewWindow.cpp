@@ -102,9 +102,6 @@ void SpriteViewWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     ViceState viceState = ViceBridge::Instance().GetViceState();
     if (m_viceTexture)
     {
-        bool isPal = m_viceTextureWidth == 384;
-        int lineCycles = isPal ? 63 : 65;
-        float textureVScale = (float)m_viceTextureHeight;
         if (!fixed)
         {
             body.h = body.w / m_viceTextureWidth * m_viceTextureHeight;
@@ -116,7 +113,7 @@ void SpriteViewWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
         {
             float zoom = (float)level;
             body.w = m_viceTextureWidth * zoom;
-            body.h = textureVScale * zoom;
+            body.h = m_viceTextureHeight * zoom;
             body.x -= m_clientContentOffset.x;
             body.y -= m_clientContentOffset.y;
             SDL_RenderTexture(renderer, m_viceTexture, nullptr, &body);

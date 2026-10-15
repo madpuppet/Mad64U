@@ -130,15 +130,18 @@ void EmuScreenWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
             SDL_RenderTexture(renderer, m_viceTexture, nullptr, &body);
         }
 
-        int rasterX = (viceState.m_rasterCycle - 14) * 8;
-        if (rasterX >= 0 && rasterX < 384 && viceState.m_rasterLine >= 16)
+        if (ViceBridge::Instance().HasViceStopped())
         {
-            float pixelWidth = body.w / m_viceTextureWidth;
-            float pixelHeight = body.h / m_viceTextureHeight;
+            int rasterX = (viceState.m_rasterCycle - 14) * 8;
+            if (rasterX >= 0 && rasterX < 384 && viceState.m_rasterLine >= 16)
+            {
+                float pixelWidth = body.w / m_viceTextureWidth;
+                float pixelHeight = body.h / m_viceTextureHeight;
 
-            SDL_FRect cycleArea{ body.x + rasterX * pixelWidth, body.y + pixelHeight * (viceState.m_rasterLine - 16), pixelWidth * 8.0f, pixelHeight };
-            SDL_SetRenderDrawColor(m_renderer, 255, 255, 0, 128);
-            SDL_RenderRect(m_renderer, &cycleArea);
+                SDL_FRect cycleArea{ body.x + rasterX * pixelWidth, body.y + pixelHeight * (viceState.m_rasterLine - 16), pixelWidth * 8.0f, pixelHeight };
+                SDL_SetRenderDrawColor(m_renderer, 255, 255, 0, 128);
+                SDL_RenderRect(m_renderer, &cycleArea);
+            }
         }
 
         m_clientContentSize.x = (int)body.w;

@@ -10,9 +10,12 @@
 #include "SearchWindow.h"
 #include "EmuScreenWindow.h"
 #include "SpriteViewWindow.h"
+#include "BitmapViewWindow.h"
 #include "DisAssemblyWindow.h"
 #include "FunctionsWindow.h"
 #include <format>
+
+#define CLOSE_BUTTON_WIDTH 20
 
 void WindowLayout::Layout(SDL_Renderer* renderer, const Recti& area)
 {
@@ -33,8 +36,9 @@ void WindowLayout::Layout(SDL_Renderer* renderer, const Recti& area)
                 t->m_area = clientArea;
                 Recti tabTextArea;
                 fr.CalcTextArea(renderer, t->m_name, { tabX, tabY }, FontType::UI, tabTextArea);
-                t->m_tabArea = { tabX, tabY, tabTextArea.w + TEXT_HBORDER * 2, tabTextArea.h };
-                tabX = tabTextArea.x + tabTextArea.w + TEXT_HBORDER * 3;
+                t->m_tabArea = { tabX, tabY, tabTextArea.w + TEXT_HBORDER * 2 + CLOSE_BUTTON_WIDTH, tabTextArea.h };
+                t->m_tabCloseIconPos = { t->m_tabArea.x + t->m_tabArea.w - 12, t->m_tabArea.y + 13 };
+                tabX = tabTextArea.x + tabTextArea.w + TEXT_HBORDER * 3 + CLOSE_BUTTON_WIDTH;
                 t->LayoutScrollbars();
             }
         }
@@ -220,6 +224,7 @@ void WindowLayout::Paint(SDL_Renderer* renderer, const Recti& area)
     auto& tp = Application::Instance().GetThemeProperties();
     auto& highlight = wm.GetWindowHighlightQuery();
     auto& selection = wm.GetWindowSelectionQuery();
+    auto& ir = IconRenderer::Instance();
 
     if (m_area.Overlaps(area))
     {
@@ -253,7 +258,7 @@ void WindowLayout::Paint(SDL_Renderer* renderer, const Recti& area)
                 }
 
                 // render tab highlighted
-                if (highlight.m_highlight == WindowHighlightType::Tab && highlight.m_layout == this)
+                if ((highlight.m_highlight == WindowHighlightType::Tab || highlight.m_highlight == WindowHighlightType::TabClose) && highlight.m_layout == this)
                 {
                     SDL_FRect area = highlight.m_area.AsSDLFRect();
                     tp.SetRenderDrawColor(renderer, ThemeColor::HighlightArea);
@@ -267,6 +272,8 @@ void WindowLayout::Paint(SDL_Renderer* renderer, const Recti& area)
                     if (w->IsModified())
                         col = tp.m_colors[(int)ThemeColor::TabTextModified];
                     fr.RenderText(renderer, w->m_name, col, w->m_tabArea.x + TEXT_HBORDER, w->m_tabArea.y + 4, FontType::UI);
+                    ir.DrawIcon(renderer, Icons::TabClose, w->m_tabCloseIconPos.x, w->m_tabCloseIconPos.y);
+
                     if (m_activeTab != -1 && m_tabs[m_activeTab] == w)
                     {
                         tp.SetRenderDrawColor(renderer, ThemeColor::TabHighlight);
@@ -559,11 +566,14 @@ void WindowLayout::LoadLayout(const std::vector<std::string>& layoutTokens, size
                                     {
                                         if (!SpriteViewWindow::CreateFromLayoutTokens(this, layoutTokens, idx))
                                         {
-                                            if (!DisAssemblyWindow::CreateFromLayoutTokens(this, layoutTokens, idx))
+                                            if (!BitmapViewWindow::CreateFromLayoutTokens(this, layoutTokens, idx))
                                             {
-                                                if (!MemViewWindow::CreateFromLayoutTokens(this, layoutTokens, idx))
+                                                if (!DisAssemblyWindow::CreateFromLayoutTokens(this, layoutTokens, idx))
                                                 {
-                                                    Log(LogGroup::System, "Unknown window token: {}", layoutTokens[idx]);
+                                                    if (!MemViewWindow::CreateFromLayoutTokens(this, layoutTokens, idx))
+                                                    {
+                                                        Log(LogGroup::System, "Unknown window token: {}", layoutTokens[idx]);
+                                                    }
                                                 }
                                             }
                                         }
@@ -689,6 +699,19 @@ void WindowLayout::Message(struct WindowMessageStruct& msg)
 
                     for (int i = 0; i < m_tabs.size(); i++)
                     {
+                        auto win = m_tabs[i];
+                        Recti closeArea{ win->m_tabCloseIconPos.x - 10, win->m_tabCloseIconPos.y - 10, 20, 20 };
+                        if (closeArea.Contains(msg.m_x, msg.m_y))
+                        {
+                            query->m_area = closeArea;
+                            query->m_highlight = WindowHighlightType::TabClose;
+                            query->m_tree = msg.m_tree;
+                            query->m_layout = this;
+                            query->m_id = i;
+                            msg.m_response++;
+                            return;
+                        }
+
                         if (m_tabs[i]->m_tabArea.Contains(msg.m_x, msg.m_y))
                         {
                             query->m_area = m_tabs[i]->m_tabArea;
@@ -757,6 +780,10 @@ bool WindowLayout::HandleEvent(SDL_Event* e)
                     m_locked = !m_locked;
                     selection.m_tree->m_dirty;
                     return true;
+
+                case WindowHighlightType::TabClose:
+                    m_tabs[selection.m_id]->Close();
+                    break;
             }
         }
         break;

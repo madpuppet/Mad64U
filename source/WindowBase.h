@@ -9,6 +9,7 @@ public:
     std::string m_name;
     Recti m_area;
     Recti m_tabArea;
+    Vec2i m_tabCloseIconPos;
 
     Vec2i m_clientContentSize{ 0,0 };     // size of client
     Vec2i m_clientContentOffset{ 0,0 };   // offset to start rendering client (adjust by scrollbars)

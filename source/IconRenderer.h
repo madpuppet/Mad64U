@@ -26,7 +26,9 @@ enum class Icons
     Pause,
     SingleStep,
     Zoom,
-    Multicolour
+    Multicolour,
+    Aligned,
+    TabClose
 };
 
 class IconRenderer : public Singleton<IconRenderer>

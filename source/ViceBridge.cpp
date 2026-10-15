@@ -61,6 +61,14 @@ struct EmulationState
         memset(m_trace, 0, sizeof(m_trace));
     }
 
+    void ClearBreakpoint(int id)
+    {
+        std::erase_if(m_breakpoints, [id](const CPUBreakpoint& bp)
+            {
+                return bp.m_id == id;
+            });
+    }
+
     void ClearOnceBreakpoints(u16 addr)
     {
         std::erase_if(m_breakpoints, [addr](const CPUBreakpoint& bp)
@@ -237,6 +245,11 @@ u8* ViceBridge::GetRam()
 u64* ViceBridge::GetPCTouchRam()
 {
     return s_emulationState.m_pcTouch;
+}
+
+u64* ViceBridge::GetHeatMap()
+{
+    return s_emulationState.m_heatMap;
 }
 
 void ViceBridge::BreakpointHit(const CPUBreakpoint &bp)
@@ -418,7 +431,7 @@ void VBC_SetBreakpoint::Execute()
 
 void VBC_ClearBreakpoint::Execute()
 {
-    mon_breakpoint_delete_checkpoint(m_breakpointID);
+    s_emulationState.ClearBreakpoint(m_breakpointID);
 }
 
 void ViceBridge::ClearBreakpoint(int breakpointID)

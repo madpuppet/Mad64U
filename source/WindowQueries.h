@@ -58,6 +58,7 @@ enum class WindowHighlightType
     LayoutSplit,
     Menu,
     Tab,
+    TabClose,
     WindowTitleBar,
     WindowTreeIcon,
     WindowLayoutIcon,
@@ -66,7 +67,8 @@ enum class WindowHighlightType
     ProjectListFile,
     ClientArea,
     EmuScreenIcon,
-    FunctionsWindow
+    FunctionsWindow,
+    MemoryAddress
 };
 
 struct WindowHighlightQuery

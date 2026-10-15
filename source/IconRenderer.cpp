@@ -27,6 +27,8 @@ IconRenderer::IconRenderer()
     LoadImage("data/icon_step.png");
     LoadImage("data/icon_zoom.png");
     LoadImage("data/icon_multicolour.png");
+    LoadImage("data/icon_aligned.png");
+    LoadImage("data/icon_tabClose.png");
 }
 
 IconRenderer::~IconRenderer()
