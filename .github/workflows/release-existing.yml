@@ -1,0 +1,88 @@
+name: Release existing build
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "New release tag, e.g. v1.2.0"
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: release-existing
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      RELEASE_TAG: ${{ inputs.tag }}
+
+    steps:
+      - name: Download build and create release
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Require a new, conventional version tag.
+          if [[ ! "$RELEASE_TAG" =~ ^v[0-9][A-Za-z0-9._-]*$ ]]; then
+            echo "::error::Use a version tag such as v1.2.0"
+            exit 1
+          fi
+
+          # Prevent an existing tag from pointing at a different build.
+          refs=$(gh api \
+            "repos/$GH_REPO/git/matching-refs/tags/$RELEASE_TAG")
+
+          if jq -e --arg ref "refs/tags/$RELEASE_TAG" \
+            'any(.[]; .ref == $ref)' <<< "$refs" >/dev/null; then
+            echo "::error::Tag $RELEASE_TAG already exists"
+            exit 1
+          fi
+
+          # Select one successful main push build and retain its commit.
+          runs=$(gh run list \
+            --workflow msbuild.yml \
+            --branch main \
+            --event push \
+            --status success \
+            --limit 1 \
+            --json databaseId,headSha)
+
+          run_id=$(jq -r '.[0].databaseId // empty' <<< "$runs")
+          commit=$(jq -r '.[0].headSha // empty' <<< "$runs")
+
+          if [[ -z "$run_id" || -z "$commit" ]]; then
+            echo "::error::No successful main build found"
+            exit 1
+          fi
+
+          echo "Releasing build $run_id from commit $commit"
+
+          gh run download "$run_id" \
+            --name Mad64U-windows-x64 \
+            --dir downloaded
+
+          # Your build artifact contains the packaged release ZIP.
+          shopt -s nullglob
+          archives=(downloaded/*.zip)
+
+          if [[ ${#archives[@]} -ne 1 ]]; then
+            echo "::error::Expected exactly one release ZIP"
+            exit 1
+          fi
+
+          asset="Mad64U-${RELEASE_TAG}-windows-x64.zip"
+          mv "${archives[0]}" "$asset"
+
+          gh release create "$RELEASE_TAG" "$asset" \
+            --target "$commit" \
+            --title "Mad64U $RELEASE_TAG" \
+            --generate-notes
