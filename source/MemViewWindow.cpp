@@ -151,7 +151,7 @@ bool MemViewWindow::HandleEvent(SDL_Event* e)
                     }
                     if (setBP)
                     {
-                        m_breakpointID = ViceBridge::Instance().SetBreakpoint(0, 0, memAddress, false);
+                        m_breakpointID = ViceBridge::Instance().SetBreakpoint(0, 0, memAddress, false, true);
                         m_breakpointAddr = memAddress;
                     }
                 }

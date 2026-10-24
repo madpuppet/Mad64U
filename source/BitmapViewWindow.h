@@ -18,6 +18,8 @@ public:
     void UpdateTexture(SDL_Renderer* renderer);
 
 protected:
+    void WriteColourSettings();
+
     SDL_Renderer* m_renderer = nullptr;
     SDL_Texture* m_viceTexture = nullptr;
     int m_viceTextureWidth = 0;

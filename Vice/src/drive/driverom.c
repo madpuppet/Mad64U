@@ -105,8 +105,8 @@ int driverom_test_load(const char *resource_name, unsigned int *loaded,
 
     if (filesize < 0) {
 #if 1
-        log_error(driverom_log, "%s ROM image not found. "
-                  "Hardware-level %s emulation is not available.", name, name);
+        log_error(driverom_log, "%s ROM image not found. (%s)"
+                  "Hardware-level %s emulation is not available.", name, rom_name, name);
 #endif
         goto exiterror;
     }
@@ -114,8 +114,8 @@ int driverom_test_load(const char *resource_name, unsigned int *loaded,
     if ((min < max)) {
         if ((filesize > max)) {
 #if 1
-            log_error(driverom_log, "%s ROM image too large. "
-                    "Hardware-level %s emulation is not available.", name, name);
+            log_error(driverom_log, "%s ROM image too large. (%s) "
+                    "Hardware-level %s emulation is not available.", name, rom_name, name);
 #endif
             goto exiterror;
         }

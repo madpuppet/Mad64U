@@ -6,6 +6,7 @@
 #include "WindowManager.h"
 #include "Application.h"
 #include "ViceBridge.h"
+#include "Settings.h"
 
 #define TEX_WIDTH (40*8)
 #define TEX_HEIGHT (25*8*8)
@@ -55,6 +56,14 @@ void BitmapViewWindow::MessageChild(WindowLayout* layout, struct WindowMessageSt
                 return;
             if (testIcon(Icons::Aligned, m_clientArea.x + 56, m_clientArea.y + 12))
                 return;
+            for (int i = 0; i < 4; i++)
+            {
+                if (testIcon(Icons::ColourBall, m_clientArea.x + 76 + i * 20, m_clientArea.y + 12))
+                {
+                    query->m_id = i;
+                    return;
+                }
+            }
 
             if (m_clientArea.Contains(msg.m_x, msg.m_y))
             {
@@ -136,6 +145,12 @@ void BitmapViewWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     ir.DrawIcon(renderer, Icons::Zoom, m_clientArea.x + 16, m_clientArea.y + 12);
     ir.DrawIcon(renderer, Icons::Multicolour, m_clientArea.x + 36, m_clientArea.y + 12);
     ir.DrawIcon(renderer, Icons::Aligned, m_clientArea.x + 56, m_clientArea.y + 12);
+    
+    for (int i = 0; i < 4; i++)
+    {
+        ir.SetIconColor(renderer, Icons::ColourBall, C64Palette[ViewColours[i]]);
+        ir.DrawIcon(renderer, Icons::ColourBall, m_clientArea.x + 76 + i*20, m_clientArea.y + 12);
+    }
 
     if (highlight.m_highlight == WindowHighlightType::EmuScreenIcon)
     {
@@ -150,7 +165,7 @@ void BitmapViewWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     std::string isMulti = m_multicolour ? "Multicol" : "Hires";
     std::string aligned = m_aligned ? "Aligned" : "Unaligned";
     std::string text = std::format("{} Zoom {} {}", isMulti, s_zoomText[m_zoom], aligned);
-    fr.RenderText(renderer, text, stateCol, m_clientArea.x + 100, m_clientArea.y, FontType::UI);
+    fr.RenderText(renderer, text, stateCol, m_clientArea.x + 180, m_clientArea.y, FontType::UI);
 }
 
 bool BitmapViewWindow::HandleEvent(SDL_Event* e)
@@ -174,6 +189,11 @@ bool BitmapViewWindow::HandleEvent(SDL_Event* e)
 
                     case Icons::Aligned:
                         m_aligned = !m_aligned;
+                        break;
+
+                    case Icons::ColourBall:
+                        ViewColours[selected.m_id] = (ViewColours[selected.m_id] + 1) & 15;
+                        WriteViewColourSettings();
                         break;
                 }
             }
@@ -235,8 +255,8 @@ void BitmapViewWindow::UpdateTexture(SDL_Renderer* renderer)
                                 int dest_x = col * 8 + x * 2;
                                 int dest_y = page * (25 * 8) + row * 8 + y;
                                 int dest_addr = dest_y * m_viceTextureWidth + dest_x;
-                                pixels[dest_addr] = s_col[bit];
-                                pixels[dest_addr+1] = s_col[bit];
+                                pixels[dest_addr] = C64Palette[ViewColours[bit]];
+                                pixels[dest_addr+1] = C64Palette[ViewColours[bit]];
                             }
                         }
                     }
@@ -285,8 +305,8 @@ void BitmapViewWindow::UpdateTexture(SDL_Renderer* renderer)
                             int dest_x = col * 8 + x * 2;
                             int dest_y = row * 8 + y;
                             int dest_addr = dest_y * m_viceTextureWidth + dest_x;
-                            pixels[dest_addr] = s_col[bit];
-                            pixels[dest_addr + 1] = s_col[bit];
+                            pixels[dest_addr] = C64Palette[ViewColours[bit]];
+                            pixels[dest_addr + 1] = C64Palette[ViewColours[bit]];
                         }
                     }
                 }

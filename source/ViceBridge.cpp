@@ -5,6 +5,7 @@
 #include "WindowManager.h"
 
 extern "C" int helper_set_video_mode(int pal);
+extern "C" int helper_set_volume(int volume);
 extern "C" uint64_t helper_get_clock_cycle();
 extern "C" void helper_get_raster_pos(unsigned int* rasterLine, unsigned int* rasterCycle);
 extern "C" int helper_suspend_sound();
@@ -12,8 +13,10 @@ extern "C" int helper_resume_sound();
 extern "C" void helper_keyboard_set(int row, int column, int value);
 extern "C" void helper_autostart_prg(const char* path);
 extern "C" void helper_autostart_d64(const char* path);
+extern "C" void helper_autostart_crt(const char* path);
 extern "C" int helper_set_breakpoint(int memaddr);
-extern "C" void mon_breakpoint_delete_checkpoint(int checkpointId);
+extern "C" void helper_mount_d64(const char* path);
+extern "C" void helper_set_warp_mode(bool enable);
 
 //==================================================================================================================================
 // Emulation internals
@@ -26,6 +29,7 @@ struct CPUBreakpoint
     int m_lineID = 0;
     u16 m_addr = 0;
     bool m_once = false;
+    bool m_isMemBP = false;
 };
 struct TracePoint
 {
@@ -79,12 +83,12 @@ struct EmulationState
 };
 EmulationState s_emulationState;
 
-void CheckBreakpoints(u16 addr)
+void CheckBreakpoints(u16 addr, bool memBP)
 {
     // check any breakpoints...
     for (auto bp : s_emulationState.m_breakpoints)
     {
-        if (bp.m_addr == addr)
+        if (bp.m_addr == addr && memBP == bp.m_isMemBP)
         {
             auto& vb = ViceBridge::Instance();
 
@@ -108,10 +112,11 @@ extern "C" void mad64_update_ram(u8 *ram)
     memcpy(s_emulationState.m_ram, ram, 65536);
 }
 
-extern "C" void mad64_track_ram_store(u64 clock, u16 addr)
+extern "C" void mad64_track_ram_store(u8* ram, u64 clock, u16 addr)
 {
     s_emulationState.m_heatMap[addr] = clock;
-    CheckBreakpoints(addr);
+    s_emulationState.m_ram[addr] = ram[addr];
+    CheckBreakpoints(addr, true);
 }
 
 extern "C" void mad64_process_cycle(u64 clock, u16 pc_addr, u8 a, u8 x, u8 y, u8 flags, u8 sp)
@@ -155,10 +160,10 @@ extern "C" void mad64_process_cycle(u64 clock, u16 pc_addr, u8 a, u8 x, u8 y, u8
         vb.ProcessViceCmdsTillContinue();
     }
     else
-        CheckBreakpoints(pc_addr);
+        CheckBreakpoints(pc_addr, false);
 }
 
-int ViceBridge::SetBreakpoint(int fileID, int lineID, u16 addr, bool oneShot)
+int ViceBridge::SetBreakpoint(int fileID, int lineID, u16 addr, bool oneShot, bool memBP)
 {
     int breakpointID = m_nextBreakpointID++;
     auto cmd = new VBC_SetBreakpoint;
@@ -167,6 +172,7 @@ int ViceBridge::SetBreakpoint(int fileID, int lineID, u16 addr, bool oneShot)
     cmd->m_addr = addr;
     cmd->m_breakpointID = breakpointID;
     cmd->m_oneShot = oneShot;
+    cmd->m_memBP = memBP;
     SendMad2Vice(cmd);
     return breakpointID;
 }
@@ -261,6 +267,11 @@ void ViceBridge::BreakpointHit(const CPUBreakpoint &bp)
     SendVice2Mad(cmd);
 }
 
+void VBC_SetWarpMode::Execute()
+{
+    helper_set_warp_mode(m_enable);
+}
+
 void VBC_BreakPointHit::Execute()
 {
     int fileID = m_fileID ? m_fileID : ViceBridge::Instance().GetActiveFileID();
@@ -316,6 +327,11 @@ void VBC_Pause::Execute()
 void VBC_SetVideoStandard::Execute()
 {
     helper_set_video_mode(m_palMode);
+}
+
+void VBC_SetVolume::Execute()
+{
+    helper_set_volume(m_volume);
 }
 
 void ViceBridge::SetViceStopped()
@@ -403,6 +419,11 @@ void VBC_NewFrame::Execute()
     delete m_buffer;
 }
 
+void VBC_MountDisk::Execute()
+{
+    helper_mount_d64(m_path.c_str());
+}
+
 void VBC_RunPrg::Execute()
 {
     ViceBridge::Instance().ClearViceStopped();
@@ -411,6 +432,10 @@ void VBC_RunPrg::Execute()
     if (ext == ".d64" || ext == ".D64")
     {
         helper_autostart_d64(m_path.c_str());
+    }
+    else if (ext == ".crt" || ext == ".CRT")
+    {
+        helper_autostart_crt(m_path.c_str());
     }
     else
     {
@@ -426,6 +451,7 @@ void VBC_SetBreakpoint::Execute()
     bp.m_fileID = m_fileID;
     bp.m_lineID = m_lineID;
     bp.m_once = m_oneShot;
+    bp.m_isMemBP = m_memBP;
     s_emulationState.m_breakpoints.push_back(bp);
 }
 
@@ -454,6 +480,11 @@ void VBC_Key::Execute()
         helper_keyboard_set(m_row, m_column, 0);
         if (m_r2 != -1)
             helper_keyboard_set(m_r2, m_c2, 0);
+    }
+    if (m_cancelShift)
+    {
+        helper_keyboard_set(1, 7, 0);
+        helper_keyboard_set(6, 4, 0);
     }
 }
 

@@ -39,7 +39,19 @@ struct VBC_NewFrame : ViceBridgeCmd
     int m_lastLine;
 };
 
+struct VBC_SetWarpMode : ViceBridgeCmd
+{
+    virtual void Execute() override;
+    bool m_enable;
+};
+
 struct VBC_RunPrg : ViceBridgeCmd
+{
+    virtual void Execute() override;
+    std::string m_path;
+};
+
+struct VBC_MountDisk : ViceBridgeCmd
 {
     virtual void Execute() override;
     std::string m_path;
@@ -52,6 +64,7 @@ struct VBC_SetBreakpoint : ViceBridgeCmd
     int m_lineID;
     int m_breakpointID;
     bool m_oneShot;
+    bool m_memBP;
     u16 m_addr;
 };
 
@@ -92,6 +105,12 @@ struct VBC_SetVideoStandard : ViceBridgeCmd
     bool m_palMode;
 };
 
+struct VBC_SetVolume : ViceBridgeCmd
+{
+    virtual void Execute() override;
+    int m_volume;
+};
+
 struct VBC_Key : ViceBridgeCmd
 {
     int m_row;
@@ -99,9 +118,9 @@ struct VBC_Key : ViceBridgeCmd
     int m_r2 = -1;
     int m_c2 = -1;
     bool m_pressed;
+    bool m_cancelShift;
     void Execute() override;
 };
-
 
 struct ViceState
 {
@@ -194,7 +213,7 @@ public:
 
     // create a breakpoint at an addr
     // returns the breakpoint ID
-    int SetBreakpoint(int fileID, int lineID, u16 addr, bool oneShot);
+    int SetBreakpoint(int fileID, int lineID, u16 addr, bool oneShot, bool memBP);
 
     // HELPERS
     void ClearBreakpoint(int breakpointID);

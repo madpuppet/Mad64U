@@ -67,6 +67,7 @@ enum class WindowHighlightType
     ProjectListFile,
     ClientArea,
     EmuScreenIcon,
+    SpriteArea,
     FunctionsWindow,
     MemoryAddress
 };

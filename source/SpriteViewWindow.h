@@ -18,6 +18,10 @@ public:
     void UpdateTexture(SDL_Renderer* renderer);
 
 protected:
+    int CursorToSpriteIdx(int x, int y);
+    Recti CalcSpriteRenderArea();
+    Recti SpriteIdxToArea(int idx);
+
     SDL_Renderer* m_renderer = nullptr;
     SDL_Texture* m_viceTexture = nullptr;
     int m_viceTextureWidth = 0;

@@ -28,7 +28,12 @@ enum class Icons
     Zoom,
     Multicolour,
     Aligned,
-    TabClose
+    TabClose,
+    ColourBall,
+    Digit1,
+    Digit2,
+    Digit3,
+    Digit4
 };
 
 class IconRenderer : public Singleton<IconRenderer>
@@ -37,6 +42,7 @@ public:
     IconRenderer();
     ~IconRenderer();
 
+    void SetIconColor(SDL_Renderer* renderer, Icons icon, u32 color32);
     void DrawIcon(SDL_Renderer *renderer, Icons icon, int x, int y);
     Recti CalcIconArea(Icons icon, int x, int y);
 

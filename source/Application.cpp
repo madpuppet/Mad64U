@@ -30,10 +30,20 @@ u32 CustomEvent_Timer = 0;
 
 typedef void (SDLCALL* SDL_DialogFileCallback)(void* userdata, const char* const* filelist, int filter);
 
-extern u32 C64Palette[16] = {
+u32 C64Palette[16] = {
     0xff000000,  0xffffffff,  0xff68372b,  0xff70a4b2,  0xff6f3d86,  0xff588d43,  0xff352879,  0xffb8c76f,
     0xff6f4f25,  0xff433900,  0xff9a6759,  0xff444444,  0xff6c6c6c,  0xff9ad284,  0xff6c5eb5,  0xff959595
 };
+
+u32 ViewColours[4] = { 2,3,4,5 };
+
+void WriteViewColourSettings()
+{
+    Settings::Instance().SetInt(SETTING_COLOUR_1, ViewColours[0]);
+    Settings::Instance().SetInt(SETTING_COLOUR_2, ViewColours[1]);
+    Settings::Instance().SetInt(SETTING_COLOUR_3, ViewColours[2]);
+    Settings::Instance().SetInt(SETTING_COLOUR_4, ViewColours[3]);
+}
 
 static const char* s_themecolor_name[NumThemeColor] =
 {
@@ -89,6 +99,11 @@ SDL_DialogFileFilter s_autoStartFilters[] =
     { "Executables", "prg;d64;crt" }
 };
 
+SDL_DialogFileFilter s_mountDiskFilters[] =
+{
+    { "Executables", "d64" }
+};
+
 void LoadFileCallback(void* userdata, const char* const* filelist, int filter)
 {
     if (filelist && *filelist)
@@ -117,6 +132,18 @@ void AutoStartFileCallback(void* userdata, const char* const* filelist, int filt
         ViceBridge::Instance().SendMad2Vice(cmd);
     }
 }
+
+void MountDiskFileCallback(void* userdata, const char* const* filelist, int filter)
+{
+    if (filelist && *filelist)
+    {
+        auto cmd = new VBC_MountDisk;
+        cmd->m_path = std::string(*filelist);
+        ViceBridge::Instance().SendMad2Vice(cmd);
+    }
+}
+
+
 
 void SaveFileCallback(void* userdata, const char* const* filelist, int filter)
 {
@@ -285,6 +312,21 @@ void Application::CreateMenus()
     m_viceVideoStandardMenu->m_subMenus.push_back(new WindowMenuItem("NTSC", setToNTSC));
     viceMenu->m_items.push_back(m_viceVideoStandardMenu);
 
+    m_viceVolumeMenu = new WindowMenuItem("Volume");
+    auto volumeMute = []() { Application::Instance().Vice_SetVolume(0); };
+    auto volume20 = []() { Application::Instance().Vice_SetVolume(20); };
+    auto volume40 = []() { Application::Instance().Vice_SetVolume(40); };
+    auto volume60 = []() { Application::Instance().Vice_SetVolume(60); };
+    auto volume80 = []() { Application::Instance().Vice_SetVolume(80); };
+    auto volumeMax = []() { Application::Instance().Vice_SetVolume(100); };
+    m_viceVolumeMenu->m_subMenus.push_back(new WindowMenuItem("Mute", volumeMute));
+    m_viceVolumeMenu->m_subMenus.push_back(new WindowMenuItem("20", volume20));
+    m_viceVolumeMenu->m_subMenus.push_back(new WindowMenuItem("20", volume40));
+    m_viceVolumeMenu->m_subMenus.push_back(new WindowMenuItem("60", volume60));
+    m_viceVolumeMenu->m_subMenus.push_back(new WindowMenuItem("80", volume80));
+    m_viceVolumeMenu->m_subMenus.push_back(new WindowMenuItem("Max", volumeMax));
+    viceMenu->m_items.push_back(m_viceVolumeMenu);
+
     auto autoStart = []()
         {
             std::string cwd = std::filesystem::current_path().string();
@@ -300,6 +342,21 @@ void Application::CreateMenus()
             );
         };
     viceMenu->m_items.push_back(new WindowMenuItem("Autostart PRG/D64", autoStart));
+
+    auto mountDisk = []()
+        {
+            std::string cwd = std::filesystem::current_path().string();
+            SDL_ShowOpenFileDialog(
+                MountDiskFileCallback,
+                nullptr,
+                nullptr,        // parent window
+                s_mountDiskFilters,
+                SDL_arraysize(s_mountDiskFilters),
+                cwd.c_str(),
+                true
+            );
+        };
+    viceMenu->m_items.push_back(new WindowMenuItem("Mount D64 as Drive 8", mountDisk));
 
     wm.AddWindowMenu(viceMenu);
 
@@ -663,6 +720,18 @@ void Application::CreateSettings()
     // load settings from existing settings file
     Settings::Instance().Load();
 
+    ViewColours[0] = Settings::Instance().GetInt(SETTING_COLOUR_1);
+    ViewColours[1] = Settings::Instance().GetInt(SETTING_COLOUR_2);
+    ViewColours[2] = Settings::Instance().GetInt(SETTING_COLOUR_3);
+    ViewColours[3] = Settings::Instance().GetInt(SETTING_COLOUR_4);
+    if (!ViewColours[0] && !ViewColours[1] && !ViewColours[2] && !ViewColours[3])
+    {
+        ViewColours[0] = 2;
+        ViewColours[1] = 3;
+        ViewColours[2] = 4;
+        ViewColours[3] = 5;
+    }
+
     // pull any changed themes
     LoadThemesFromSettings();
 }
@@ -725,6 +794,7 @@ int Application::Run()
 
     ViceBridge::Startup();
 
+    int volume = Settings::Instance().GetInt(SETTING_VICE_VOLUME);
     bool isPal = Settings::Instance().GetBool(SETTING_VICE_IS_PAL);
 
     auto emulator = [this]()
@@ -796,6 +866,22 @@ void Application::SelectTheme(const char *themeName)
         WindowManager::Instance().LayoutMenu();
     }
 }
+
+void Application::Vice_SetVolume(int vol)
+{
+    m_vice_vol = vol;
+
+    auto cmd = new VBC_SetVolume;
+    cmd->m_volume = vol;
+    ViceBridge::Instance().SendMad2Vice(cmd);
+
+  
+    m_viceVolumeMenu->m_name = std::format("Volume : {}%", m_vice_vol);
+    Settings::Instance().SetInt(SETTING_VICE_VOLUME, m_vice_vol);
+    Settings::Instance().Save();
+    WindowManager::Instance().LayoutMenu();
+}
+
 
 void Application::Vice_EnablePAL(bool enable)
 {

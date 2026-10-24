@@ -29,6 +29,11 @@ IconRenderer::IconRenderer()
     LoadImage("data/icon_multicolour.png");
     LoadImage("data/icon_aligned.png");
     LoadImage("data/icon_tabClose.png");
+    LoadImage("data/icon_colour_ball.png");
+    LoadImage("data/icon_1.png");
+    LoadImage("data/icon_2.png");
+    LoadImage("data/icon_3.png");
+    LoadImage("data/icon_4.png");
 }
 
 IconRenderer::~IconRenderer()
@@ -50,6 +55,27 @@ size_t IconRenderer::Hash(SDL_Renderer* renderer, Icons icon)
         size_t hash = (intptr_t)renderer;
         hash = HashU8(hash, (u8)icon);
         return hash;
+}
+
+void IconRenderer::SetIconColor(SDL_Renderer* renderer, Icons icon, u32 color32)
+{
+    CachedIcon* ci = nullptr;
+    size_t hash = Hash(renderer, icon);
+    auto it = m_map.find(hash);
+    if (it != m_map.end())
+    {
+        ci = it->second;
+    }
+    else
+    {
+        ci = new CachedIcon;
+        ci->icon = icon;
+        ci->renderer = renderer;
+        ci->texture = SDL_CreateTextureFromSurface(renderer, m_iconSurfaces[(int)icon]);
+        m_map[hash] = ci;
+    }
+
+    SDL_SetTextureColorMod(ci->texture, (color32>>16)&255, (color32 >> 8) & 255, color32 & 255);
 }
 
 void IconRenderer::DrawIcon(SDL_Renderer* renderer, Icons icon, int x, int y)

@@ -116,6 +116,7 @@ void WindowManager::HandleEvent(SDL_Event* e)
                     case WindowHighlightType::ProjectListFile:
                     case WindowHighlightType::ProjectListIcon:
                     case WindowHighlightType::EmuScreenIcon:
+                    case WindowHighlightType::SpriteArea:
                     case WindowHighlightType::MemoryAddress:
                         if (m_mouseSelectionQuery.m_window)
                             m_mouseSelectionQuery.m_window->HandleEvent(e);

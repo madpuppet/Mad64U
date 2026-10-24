@@ -8,6 +8,8 @@
 #include <array>
 
 extern u32 C64Palette[16];
+extern u32 ViewColours[4];
+extern void WriteViewColourSettings();
 
 enum class ThemeColor
 {
@@ -95,6 +97,7 @@ public:
     void ShowBytes(bool enable);
 
     void Vice_EnablePAL(bool enable);
+    void Vice_SetVolume(int volume);
     bool IsPAL() { return m_vice_pal; }
 
 protected:
@@ -127,8 +130,10 @@ protected:
     WindowMenuItem* m_showBytesMenu;
 
     WindowMenuItem* m_viceVideoStandardMenu;
+    WindowMenuItem* m_viceVolumeMenu;
 
     bool m_vice_pal = true;
+    int m_vice_vol = 100;
 
     std::mutex m_watcherLock;
     std::vector<OutputWatcherFunc> m_watchers;

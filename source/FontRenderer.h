@@ -143,6 +143,7 @@ public:
 
     void RenderText(SDL_Renderer *renderer, const std::string& str, const SDL_Color& col, int x, int y, FontType fontIdx);
     void CalcTextArea(SDL_Renderer* renderer, const std::string& str, const Vec2i &pos, FontType fontIdx, Recti& area);
+    void RenderTextCentered(SDL_Renderer* renderer, const std::string& str, const SDL_Color& col, int x, int y, FontType fontIdx);
 
     // split render into 2 phases, allowing you to do other things with the render rectangle
     // do not retain the cached string over long periods as it could be reused eventually (after 256 renders)

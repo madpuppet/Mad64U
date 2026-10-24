@@ -102,7 +102,7 @@ void EmuScreenWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     if (m_viceTexture)
     {
         int lineCycles = isPal ? 63 : 65;
-        float textureVScale = isPal ? (float)m_viceTextureHeight * 1.07f : (float)m_viceTextureHeight * 1.07f * 271.0f/246.0f;
+        float textureVScale = isPal ? (float)m_viceTextureHeight * 1.07f : (float)m_viceTextureHeight * 1.07f * 271.0f / 246.0f;
 
         if (!fixed)
         {
@@ -171,7 +171,7 @@ void EmuScreenWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     // draw emulator state
     auto& fr = FontRenderer::Instance();
     SDL_Color stateCol{ 255,255,255,255 };
-    std::string text = std::format("PC {:4x} ROW {:3d} COL {:3d} A {:2x} X {:2x} Y {:2x} Flags {}{}.{}{}{}{}{} Zoom {} Mode {}",
+    std::string text = std::format("PC {:4x} ROW {:3d} COL {:3d} A {:2x} X {:2x} Y {:2x} Flags {}{}.{}{}{}{}{} Zoom {} Mode {}{}",
         viceState.m_pc, viceState.m_rasterLine, viceState.m_rasterCycle, viceState.m_acc, viceState.m_x, viceState.m_y,
         viceState.m_flags & 128 ? 'N' : 'n',
         viceState.m_flags & 64 ? 'V' : 'v',
@@ -181,7 +181,8 @@ void EmuScreenWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
         viceState.m_flags & 2 ? 'Z' : 'z',
         viceState.m_flags & 1 ? 'C' : 'c',
         s_zoomText[m_zoom],
-        isPal ? "PAL" : "NTSC");
+        isPal ? "PAL" : "NTSC",
+        m_warpMode ? " WARP" : "");
     fr.RenderText(renderer, text, stateCol, m_clientArea.x + 100, m_clientArea.y, FontType::UI);
 }
 
@@ -192,10 +193,26 @@ bool EmuScreenWindow::HandleEvent(SDL_Event* e)
         case SDL_EVENT_KEY_DOWN:
         case SDL_EVENT_KEY_UP:
         {
+            if (e->key.mod & SDL_KMOD_LCTRL)
+            {
+                if (e->type == SDL_EVENT_KEY_DOWN)
+                {
+                    if (e->key.scancode == SDL_SCANCODE_W)
+                    {
+                        m_warpMode = !m_warpMode;
+                        auto cmd = new VBC_SetWarpMode;
+                        cmd->m_enable = m_warpMode;
+                        ViceBridge::Instance().SendMad2Vice(cmd);
+                    }
+                }
+                return true;
+            }
+
             int r2 = -1;
             int c2 = -1;
             int row = 0;
             int column = 0;
+            bool cancelShift = false;
             switch (e->key.scancode)
             {
                 case SDL_SCANCODE_A:         row = 1; column = 2; break;
@@ -234,6 +251,7 @@ bool EmuScreenWindow::HandleEvent(SDL_Event* e)
                 case SDL_SCANCODE_7:         row = 3; column = 0; break;
                 case SDL_SCANCODE_8:         row = 3; column = 3; break;
                 case SDL_SCANCODE_9:         row = 4; column = 0; break;
+
                 case SDL_SCANCODE_LEFT:   r2 = 1; c2 = 7; row = 0; column = 2; break;
                 case SDL_SCANCODE_RIGHT: row = 0; column = 2; break;
                 case SDL_SCANCODE_UP: r2 = 1; c2 = 7; row = 0; column = 7; break;
@@ -253,6 +271,25 @@ bool EmuScreenWindow::HandleEvent(SDL_Event* e)
                 case SDL_SCANCODE_F6:        r2 = 1; c2 = 7; row = 0; column = 6; break;
                 case SDL_SCANCODE_F7:        row = 0; column = 3; break;
                 case SDL_SCANCODE_F8:        r2 = 1; c2 = 7; row = 0; column = 3; break;
+
+                case SDL_SCANCODE_COMMA:     row = 5; column = 7; break;
+                case SDL_SCANCODE_PERIOD:    row = 5; column = 4; break;
+                case SDL_SCANCODE_EQUALS:
+                {
+                    if (e->key.mod & SDL_KMOD_SHIFT)
+                    {
+                        // PLUS key
+                        cancelShift = true;
+                        row = 5; column = 0; break;
+                    }
+                    else
+                    {
+                        row = 6; column = 5; break;
+                    }
+                }
+                break;
+                case SDL_SCANCODE_MINUS:     row = 5; column = 3; break;
+
                 default:
                     return false;
             }
@@ -267,6 +304,7 @@ bool EmuScreenWindow::HandleEvent(SDL_Event* e)
             cmd->m_r2 = r2;
             cmd->m_c2 = c2;
             cmd->m_pressed = e->key.down;
+            cmd->m_cancelShift = cancelShift;
             ViceBridge::Instance().SendMad2Vice(cmd);
         }
         return true;

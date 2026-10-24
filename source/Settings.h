@@ -16,6 +16,12 @@
 #define SETTING_VICE_ZOOM_LEVEL "vice_zoomLevel"
 
 #define SETTING_VICE_IS_PAL "vice_isPal"
+#define SETTING_VICE_VOLUME "vice_volume"
+
+#define SETTING_COLOUR_1 "col1"
+#define SETTING_COLOUR_2 "col2"
+#define SETTING_COLOUR_3 "col3"
+#define SETTING_COLOUR_4 "col4"
 
 class Settings : public Singleton<Settings>
 {

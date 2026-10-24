@@ -157,3 +157,12 @@ void FontRenderer::CalcTextArea(SDL_Renderer* renderer, const std::string& str, 
     auto cs = PrepareRender(renderer, str, pos.x, pos.y, fontIdx);
     area = Recti{ (int)cs->rect.x, (int)cs->rect.y, (int)cs->rect.w, (int)cs->rect.h };
 }
+
+void FontRenderer::RenderTextCentered(SDL_Renderer* renderer, const std::string& str, const SDL_Color& col, int x, int y, FontType fontIdx)
+{
+    Recti area;
+    CalcTextArea(renderer, str, { x,y }, fontIdx, area);
+    RenderText(renderer, str, col, x - area.w / 2, y - area.h - 2, fontIdx);
+}
+
+

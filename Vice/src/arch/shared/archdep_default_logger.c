@@ -68,9 +68,9 @@ int archdep_default_logger(const char *level_string, const char *txt)
     char *out;
 
     if (level_string != NULL && *level_string != '\0') {
-        out = lib_msprintf("%s %s", level_string, txt);
+        out = lib_msprintf("%s %s\n", level_string, txt);
     } else {
-        out = lib_strdup(txt);
+        out = lib_msprintf("%s\n", txt);
     }
 
     /* first output to stdout as usual, and flush the output so it

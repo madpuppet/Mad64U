@@ -1,9 +1,6 @@
 #include "vice.h"
 #include "autostart.h"
-#include "montypes.h"
-#include "monitor.h"
 #include "resources.h"
-#include "mon_breakpoint.h"
 #include "machine.h"
 #include "maincpu.h"
 #include "mem.h"  // Vice/src in your include paths
@@ -11,6 +8,17 @@
 #include "keyboard.h"
 #include "drive.h"
 #include "sysFile.h"
+#include "cartridge.h"
+#include "attach.h"
+#include "vsync.h"
+
+void helper_autostart_crt(const char* path)
+{
+    if (cartridge_attach_image(CARTRIDGE_CRT, path) < 0)
+        return;
+
+    machine_trigger_reset(MACHINE_RESET_MODE_POWER_CYCLE);
+}
 
 void helper_autostart_prg(const char* path)
 {
@@ -18,15 +26,20 @@ void helper_autostart_prg(const char* path)
     autostart_prg(path, AUTOSTART_MODE_RUN);
 }
 
+void helper_mount_d64(const char* path)
+{
+    resources_set_int("Drive8Type", DRIVE_TYPE_1541);
+    file_system_attach_disk(8, 0, path);
+}
+
+void helper_set_warp_mode(bool enable)
+{
+    vsync_set_warp_mode(enable);
+}
+
 int helper_autostart_d64(const char* path)
 {
-    resources_set_string("DosName1541", "dos1541");
-    const char* romPath = NULL;
-    resources_get_string("DosName1541", &romPath);
     resources_set_int("Drive8Type", DRIVE_TYPE_1541);
-    auto filesize = sysfile_locate(romPath, "DRIVES", NULL);
-
-
     return autostart_disk(
         8,                   // Device number
         0,                   // Drive within device
@@ -46,6 +59,11 @@ void helper_set_video_mode(int pal)
 {
     resources_set_int("MachineVideoStandard", pal ? MACHINE_SYNC_PAL : MACHINE_SYNC_NTSC);
     resources_set_int("MachinePowerFrequency", pal ? 50 : 60);
+}
+
+void helper_set_volume(int volume)
+{
+    resources_set_int("SoundVolume", volume);
 }
 
 uint64_t helper_get_clock_cycle()

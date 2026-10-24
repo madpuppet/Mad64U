@@ -571,7 +571,7 @@ bool SourceFileWindow::HandleEvent(SDL_Event* e)
                                                     int breakAddr = dis->m_lines[stopln->m_assembledLine].m_addressStart;
                                                     if (breakAddr != 0)
                                                     {
-                                                        ViceBridge::Instance().SetBreakpoint(m_sourceFile->m_fileID, ln->m_uniqueID, breakAddr, true);
+                                                        ViceBridge::Instance().SetBreakpoint(m_sourceFile->m_fileID, ln->m_uniqueID, breakAddr, true, false);
                                                         ViceBridge::Instance().Continue();
                                                         return true;
                                                     }
@@ -1290,7 +1290,7 @@ void SourceFileWindow::ToggleBreakpoint(int line)
             if (dis && ln->m_assembledLine >= 0 && ln->m_assembledLine < dis->m_lines.size())
             {
                 auto& disline = dis->m_lines[ln->m_assembledLine];
-                ln->m_breakpointID = ViceBridge::Instance().SetBreakpoint(m_sourceFile->m_fileID, ln->m_uniqueID, disline.m_addressStart, false);
+                ln->m_breakpointID = ViceBridge::Instance().SetBreakpoint(m_sourceFile->m_fileID, ln->m_uniqueID, disline.m_addressStart, false, false);
             }
         }
         else
