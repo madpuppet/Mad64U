@@ -18,6 +18,7 @@ void Settings::Load()
     path /= "settings.txt";
 
     std::ifstream file(path);
+    Log("Attempt to load settings: %s\n", path.c_str());
     if (!file)
     {
         Log("Cannot open settings file: %s\n", path.c_str());

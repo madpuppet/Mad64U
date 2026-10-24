@@ -235,6 +235,10 @@ void Application::CreateMenus()
 
     auto fileMenu = new WindowMenu;
     fileMenu->m_name = "File";
+
+    std::string versionStr = std::format("Mad64U {}", VERSION);
+    fileMenu->m_items.push_back(new WindowMenuItem(versionStr, []() {}));
+    fileMenu->m_items.push_back(new WindowMenuItem("- - - - - - - - - -", []() {}));
     fileMenu->m_items.push_back(new WindowMenuItem("New", newFile));
     fileMenu->m_items.push_back(new WindowMenuItem("Load", loadFile));
     fileMenu->m_items.push_back(new WindowMenuItem("Save", saveFile));
@@ -738,7 +742,7 @@ void Application::CreateSettings()
 
 int Application::Run()
 {
-    Log("START");
+    Log("START\n");
 
     LogManager::Startup();
 
@@ -789,8 +793,14 @@ int Application::Run()
 
     wm.LoadWindowLayout();
 
+    std::string u64ip = Settings::Instance().GetString(SETTING_U64_IP);
+    if (u64ip.empty())
+    {
+        u64ip = "192.168.50.15";
+        Settings::Instance().SetString(SETTING_U64_IP, u64ip);
+    }
     auto& nm = NetworkManager::Instance();
-    nm.Message(new NMS_SetIP("192.168.50.15"));
+    nm.Message(new NMS_SetIP(u64ip));
 
     ViceBridge::Startup();
 

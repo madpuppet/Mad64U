@@ -7,6 +7,8 @@
 #include "Singleton.h"
 #include <array>
 
+#define VERSION "1.1.0"
+
 extern u32 C64Palette[16];
 extern u32 ViewColours[4];
 extern void WriteViewColourSettings();
