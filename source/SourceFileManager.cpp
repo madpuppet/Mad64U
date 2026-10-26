@@ -949,6 +949,11 @@ void SourceFileManager::Deploy(const std::filesystem::path& outputFile)
             auto msg = new NMS_Command("runners:run_prg", mem, size, outputFile.filename().string(), false);
             NetworkManager::Instance().Message(msg);
         }
+        else if (outputFile.extension() == ".crt")
+        {
+            auto msg = new NMS_Command("runners:run_crt", mem, size, outputFile.filename().string(), false);
+            NetworkManager::Instance().Message(msg);
+        }
         else
         {
             auto msg = new NMS_Command("drives/{}:mount?type=d64&mode=unlinked", mem, size, outputFile.filename().string(), false);

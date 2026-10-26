@@ -212,7 +212,6 @@ void WindowMenuList::Message(WindowMessageStruct& msg)
                         }
                     }
                 }
-                return;
             }
         }
     }

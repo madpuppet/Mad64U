@@ -27,10 +27,13 @@ void NetworkManager::Message(NetworkMessageStruct* msg)
     auto cmd = [this, msg]()
         {
             NetworkStatus status;
-            GetNetworkStatus(status);
-            if (status.m_hostName.empty())
+            if (msg->m_msgType != NetworkMessage::SetIP)
             {
-                UpdateHostName();
+                GetNetworkStatus(status);
+                if (status.m_hostName.empty())
+                {
+                    UpdateHostName();
+                }
             }
 
             GetNetworkStatus(status);

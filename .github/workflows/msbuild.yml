@@ -1,4 +1,4 @@
-name: Build and Release Mad64U
+name: Build Latest Commit
 
 on:
   push:

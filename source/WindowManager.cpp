@@ -80,6 +80,20 @@ void WindowManager::Tick()
         tree->Tick();
 }
 
+void WindowManager::CloseMenus()
+{
+    for (auto menu : m_menuList.m_menus)
+    {
+        if (menu->m_open)
+        {
+            menu->m_open = false;
+            for (auto item : menu->m_items)
+            {
+                item->m_subMenuOpen = false;
+            }
+        }
+    }
+}
 
 void WindowManager::HandleEvent(SDL_Event* e)
 {
@@ -89,7 +103,44 @@ void WindowManager::HandleEvent(SDL_Event* e)
         {
             if (e->button.button == 1)
             {
-//                m_mouseHighlightQuery.Reset();
+                if (m_mouseSelectionQuery.m_highlight == WindowHighlightType::Menu)
+                {
+                    auto menu = m_menuList.m_menus[m_mouseSelectionQuery.m_menu.m_menuIdx];
+                    menu->m_open = false;
+                    m_activeTree->m_dirty = true;
+                    if (m_mouseSelectionQuery.m_menu.m_itemIdx != -1)
+                    {
+                        auto item = menu->m_items[m_mouseSelectionQuery.m_menu.m_itemIdx];
+                        item->m_subMenuOpen = false;
+                        if (m_mouseSelectionQuery.m_menu.m_subItemIdx != -1)
+                        {
+                            auto subitem = item->m_subMenus[m_mouseSelectionQuery.m_menu.m_subItemIdx];
+                            if (subitem->m_activate)
+                            {
+                                subitem->m_activate();
+                            }
+                        }
+                        else
+                        {
+                            if (item->m_activate)
+                            {
+                                item->m_activate();
+                            }
+                        }
+                    }
+                    m_mouseMode = MouseMode_Idle;
+                    SDL_CaptureMouse(false);
+                    m_mouseSelectionQuery.Reset();
+                    return;
+                }
+                else if (m_mouseMode == MouseMode_UsingMenu)
+                {
+                    CloseMenus();
+                    m_mouseMode = MouseMode_Idle;
+                    SDL_CaptureMouse(false);
+                    m_mouseSelectionQuery.Reset();
+                }
+
                 m_mouseSelectionQuery.Reset();
 
                 WindowMessageStruct msg;
@@ -323,6 +374,17 @@ void WindowManager::HandleEvent(SDL_Event* e)
                     break;
                 }
             }
+            else
+            {
+                // any other button pressed - close the menu
+                if (m_mouseMode == MouseMode_UsingMenu)
+                {
+                    CloseMenus();
+                    m_mouseMode = MouseMode_Idle;
+                    SDL_CaptureMouse(false);
+                    m_mouseSelectionQuery.Reset();
+                }
+            }
         }
         break;
 
@@ -338,30 +400,6 @@ void WindowManager::HandleEvent(SDL_Event* e)
                         break;
 
                     case MouseMode_UsingMenu:
-                        SDL_CaptureMouse(false);
-                        if (m_mouseSelectionQuery.m_highlight == WindowHighlightType::Menu)
-                        {
-                            auto menu = m_menuList.m_menus[m_mouseSelectionQuery.m_menu.m_menuIdx];
-                            menu->m_open = false;
-                            m_activeTree->m_dirty = true;
-                            if (m_mouseSelectionQuery.m_menu.m_itemIdx != -1)
-                            {
-                                auto item = menu->m_items[m_mouseSelectionQuery.m_menu.m_itemIdx];
-                                item->m_subMenuOpen = false;
-                                if (m_mouseSelectionQuery.m_menu.m_subItemIdx != -1)
-                                {
-                                    auto subitem = item->m_subMenus[m_mouseSelectionQuery.m_menu.m_subItemIdx];
-                                    if (subitem->m_activate)
-                                        subitem->m_activate();
-                                }
-                                else
-                                {
-                                    if (item->m_activate)
-                                        item->m_activate();
-                                }
-                            }
-                        }
-                        m_mouseMode = MouseMode_Idle;
                         break;
 
                     case MouseMode_SelectingTab:
@@ -511,6 +549,21 @@ void WindowManager::HandleEvent(SDL_Event* e)
                     msg.m_y = (int)e->button.y;
                     Message(msg);
 
+
+                    // open the new menus
+                    if (m_mouseSelectionQuery.m_highlight == WindowHighlightType::Menu)
+                    {
+                        CloseMenus();
+
+                        m_menuList.m_menus[m_mouseSelectionQuery.m_menu.m_menuIdx]->m_open = true;
+                        if (m_mouseSelectionQuery.m_menu.m_itemIdx != -1)
+                        {
+                            m_menuList.m_menus[m_mouseSelectionQuery.m_menu.m_menuIdx]->m_items[m_mouseSelectionQuery.m_menu.m_itemIdx]->m_subMenuOpen = true;
+                        }
+                    }
+
+
+#if 0 // old
                     // close the old menus
                     if (oldMenuIdx != -1)
                     {
@@ -530,6 +583,14 @@ void WindowManager::HandleEvent(SDL_Event* e)
                             m_menuList.m_menus[m_mouseSelectionQuery.m_menu.m_menuIdx]->m_items[m_mouseSelectionQuery.m_menu.m_itemIdx]->m_subMenuOpen = true;
                         }
                     }
+                    else
+                    {
+                        SDL_CaptureMouse(false);
+                        m_mouseMode = MouseMode_Idle;
+                    }
+#endif
+
+
                 }
                 break;
 
@@ -910,7 +971,7 @@ void WindowManager::SaveWindowLayout()
 
         tree->m_layout.SaveLayout(layoutTokens);
     }
-    Log(LogGroup::System, "Save Window Layout : {} windows, {} tokens", m_windowTrees.size(), layoutTokens.size());
+    //Log(LogGroup::System, "Save Window Layout : {} windows, {} tokens", m_windowTrees.size(), layoutTokens.size());
 
     Settings::Instance().SetStringList(SETTING_WINDOWS, layoutTokens);
 }

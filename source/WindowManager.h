@@ -134,6 +134,8 @@ public:
     void SetActiveWindow(WindowTree *tree, WindowLayout *layout, WindowBase* window);
 
 protected:
+    void CloseMenus();
+
     std::vector<WindowMessageStruct> m_msgQueue;
     std::mutex m_msgQueueLock;
 

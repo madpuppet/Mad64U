@@ -123,6 +123,15 @@ void LoadFileCallback(void* userdata, const char* const* filelist, int filter)
     }
 }
 
+void DeplayPrgToU64Callback(void* userdata, const char* const* filelist, int filter)
+{
+    if (filelist && *filelist)
+    {
+        std::filesystem::path path = *filelist;
+        SourceFileManager::Instance().Deploy(path);
+    }
+}
+
 void AutoStartFileCallback(void* userdata, const char* const* filelist, int filter)
 {
     if (filelist && *filelist)
@@ -304,6 +313,21 @@ void Application::CreateMenus()
     ultimateMenu->m_items.push_back(new WindowMenuItem("Resume", []() {NetworkManager::Instance().SendResume(); }));
     ultimateMenu->m_items.push_back(new WindowMenuItem("Power Off", []() {NetworkManager::Instance().SendPowerOff(); }));
 
+    auto deployPrg = []()
+        {
+            std::string cwd = std::filesystem::current_path().string();
+
+            SDL_ShowOpenFileDialog(
+                DeplayPrgToU64Callback,
+                nullptr,
+                nullptr,        // parent window
+                s_autoStartFilters,
+                SDL_arraysize(s_autoStartFilters),
+                cwd.c_str(),
+                true
+            );
+        };
+    ultimateMenu->m_items.push_back(new WindowMenuItem("Deploy PRG/D64/CRT", deployPrg));
     wm.AddWindowMenu(ultimateMenu);
 
     auto viceMenu = new WindowMenu;
@@ -345,7 +369,7 @@ void Application::CreateMenus()
                 true
             );
         };
-    viceMenu->m_items.push_back(new WindowMenuItem("Autostart PRG/D64", autoStart));
+    viceMenu->m_items.push_back(new WindowMenuItem("Autostart PRG/D64/CRT", autoStart));
 
     auto mountDisk = []()
         {
