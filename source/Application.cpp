@@ -15,6 +15,7 @@
 #include "SearchWindow.h"
 #include "EmuScreenWindow.h"
 #include "VicScreenWindow.h"
+#include "SidWindow.h"
 #include "SpriteViewWindow.h"
 #include "BitmapViewWindow.h"
 #include "DisAssemblyWindow.h"
@@ -356,6 +357,13 @@ void Application::CreateMenus()
     m_viceVolumeMenu->m_subMenus.push_back(new WindowMenuItem("Max", volumeMax));
     viceMenu->m_items.push_back(m_viceVolumeMenu);
 
+    m_viceSidModelMenu = new WindowMenuItem("SID Chip");
+    auto setSid6581 = []() { Application::Instance().Vice_SetSidModel(false); };
+    auto setSid8580 = []() { Application::Instance().Vice_SetSidModel(true); };
+    m_viceSidModelMenu->m_subMenus.push_back(new WindowMenuItem("6581", setSid6581));
+    m_viceSidModelMenu->m_subMenus.push_back(new WindowMenuItem("8580", setSid8580));
+    viceMenu->m_items.push_back(m_viceSidModelMenu);
+
     auto autoStart = []()
         {
             std::string cwd = std::filesystem::current_path().string();
@@ -437,6 +445,12 @@ void Application::CreateMenus()
             WindowManager::Instance().LayoutWindows();
         };
 
+    auto newWindowSid = []()
+        {
+            WindowManager::Instance().AddWindow(new SidWindow);
+            WindowManager::Instance().LayoutWindows();
+        };
+
     auto newWindowBitmapView = []()
         {
             WindowManager::Instance().AddWindow(new BitmapViewWindow);
@@ -479,6 +493,7 @@ void Application::CreateMenus()
     windowMenu->m_items.push_back(new WindowMenuItem("- - - - - - - - - -", []() {}));
     windowMenu->m_items.push_back(new WindowMenuItem("Emulator Screen", newWindowEmuScreen));
     windowMenu->m_items.push_back(new WindowMenuItem("VIC-II Raster View", newWindowVicScreen));
+    windowMenu->m_items.push_back(new WindowMenuItem("SID View", newWindowSid));
     windowMenu->m_items.push_back(new WindowMenuItem("Memory View", newWindowMemView));
     windowMenu->m_items.push_back(new WindowMenuItem("Sprite View", newWindowSpriteView));
     windowMenu->m_items.push_back(new WindowMenuItem("Bitmap View", newWindowBitmapView));
@@ -855,6 +870,7 @@ int Application::Run()
     std::thread(emulator).detach();
 
     Vice_EnablePAL(isPal);
+    Vice_SetSidModel(Settings::Instance().GetBool(SETTING_VICE_SID_8580));
 
     SDL_Event e;
     while (!m_quit)
@@ -924,6 +940,20 @@ void Application::Vice_SetVolume(int vol)
     WindowManager::Instance().LayoutMenu();
 }
 
+
+void Application::Vice_SetSidModel(bool is8580)
+{
+    m_vice_sid8580 = is8580;
+
+    auto cmd = new VBC_SetSidModel;
+    cmd->m_is8580 = is8580;
+    ViceBridge::Instance().SendMad2Vice(cmd);
+
+    m_viceSidModelMenu->m_name = std::format("SID Chip : {}", is8580 ? "8580" : "6581");
+    Settings::Instance().SetInt(SETTING_VICE_SID_8580, is8580);
+    Settings::Instance().Save();
+    WindowManager::Instance().LayoutMenu();
+}
 
 void Application::Vice_EnablePAL(bool enable)
 {

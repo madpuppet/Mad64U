@@ -8,6 +8,7 @@
 #include "ViceBridge.h"
 #include "EmuScreenWindow.h"
 #include "VicScreenWindow.h"
+#include "SidWindow.h"
 #include <filesystem>
 
 std::vector<std::string> GetSourceFiles(const std::string& pathStr)
@@ -881,6 +882,19 @@ void WindowManager::Paint()
             msg.m_query = &query;
             tree->Message(msg);
             if (msg.m_response > 0 && ((VicScreenWindow*)msg.m_window)->NeedsRefresh())
+                tree->m_dirty = true;
+        }
+
+        // likewise a visible SidWindow repaints when a new SID state has been captured
+        {
+            WindowMessageStruct msg;
+            WindowFindQuery query;
+            query.m_windowName = "Sid";
+            msg.m_type = WindowMessage::Query_FindWindow;
+            msg.m_flags = WMF_Window | WMF_TabActive | WMF_EarlyOut;
+            msg.m_query = &query;
+            tree->Message(msg);
+            if (msg.m_response > 0 && ((SidWindow*)msg.m_window)->NeedsRefresh())
                 tree->m_dirty = true;
         }
 

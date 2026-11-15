@@ -18,6 +18,8 @@ extern "C" int helper_set_breakpoint(int memaddr);
 extern "C" void helper_mount_d64(const char* path);
 extern "C" void helper_set_warp_mode(bool enable);
 extern "C" void helper_get_vicii_regs(unsigned char* written, unsigned char* read, int count);
+extern "C" void helper_set_sid_model(int is8580);
+extern "C" void helper_get_sid_state(unsigned char* regs, unsigned int* accumulator, unsigned int* shiftRegister, unsigned char* envelope, unsigned char* envelopeState, int* model);
 extern "C" void helper_get_vicii_beam(int* line, int* beamX, int* cyclesPerLine, int* screenHeight);
 extern "C" void helper_get_vicii_memory(unsigned char* ram, unsigned char* colourRam, unsigned char* charRom, int* vbank);
 
@@ -273,6 +275,29 @@ extern "C" void mad64_video_refresh(u8* buffer, int width, int height, int first
 extern "C" void mad64_process_vice_commands(void)
 {
     ViceBridge::Instance().ExecuteViceCmds();
+
+    // called once per frame on the emulation thread
+    ViceBridge::Instance().CaptureSidState();
+}
+
+void ViceBridge::CaptureSidState()
+{
+    SidState state;
+    helper_get_sid_state(state.m_regs, state.m_accumulator, state.m_shiftRegister, state.m_envelope, state.m_envelopeState, &state.m_model);
+
+    std::lock_guard<std::mutex> lock(m_sidStateMutex);
+    m_sidState = state;
+    m_sidStateVersion++;
+}
+
+bool ViceBridge::GetSidState(SidState& state, u32& version)
+{
+    std::lock_guard<std::mutex> lock(m_sidStateMutex);
+    if (version == m_sidStateVersion)
+        return false;
+    state = m_sidState;
+    version = m_sidStateVersion;
+    return true;
 }
 
 static uint64_t s_clock_start = 0;
@@ -454,9 +479,15 @@ void VBC_SetVolume::Execute()
     helper_set_volume(m_volume);
 }
 
+void VBC_SetSidModel::Execute()
+{
+    helper_set_sid_model(m_is8580 ? 1 : 0);
+}
+
 void ViceBridge::SetViceStopped()
 {
     m_vice_stopped = true;
+    CaptureSidState();
     helper_suspend_sound();
 }
 

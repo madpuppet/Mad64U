@@ -100,6 +100,7 @@ public:
 
     void Vice_EnablePAL(bool enable);
     void Vice_SetVolume(int volume);
+    void Vice_SetSidModel(bool is8580);
     bool IsPAL() { return m_vice_pal; }
 
 protected:
@@ -133,9 +134,11 @@ protected:
 
     WindowMenuItem* m_viceVideoStandardMenu;
     WindowMenuItem* m_viceVolumeMenu;
+    WindowMenuItem* m_viceSidModelMenu;
 
     bool m_vice_pal = true;
     int m_vice_vol = 100;
+    bool m_vice_sid8580 = false;
 
     std::mutex m_watcherLock;
     std::vector<OutputWatcherFunc> m_watchers;

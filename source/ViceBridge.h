@@ -131,6 +131,12 @@ struct VBC_SetVolume : ViceBridgeCmd
     int m_volume;
 };
 
+struct VBC_SetSidModel : ViceBridgeCmd
+{
+    virtual void Execute() override;
+    bool m_is8580;
+};
+
 struct VBC_Key : ViceBridgeCmd
 {
     int m_row;
@@ -181,6 +187,17 @@ struct VicRasterState
             return m_charRom[addr & 0xfff];
         return m_ram[addr];
     }
+};
+
+// Snapshot of the SID chip
+struct SidState
+{
+    u8 m_regs[0x20] = {};           // registers as last written by the CPU
+    u32 m_accumulator[3] = {};      // 24 bit oscillator phase
+    u32 m_shiftRegister[3] = {};    // noise LFSR
+    u8 m_envelope[3] = {};          // current envelope level 0..255
+    u8 m_envelopeState[3] = {};     // 0 attack, 1 decay/sustain, 2 release, 3 frozen
+    int m_model = 0;                // 0 = 6581, otherwise 8580
 };
 
 class ViceBridge : public Singleton<ViceBridge>
@@ -288,6 +305,11 @@ public:
     bool GetVicSnapshot(VicRasterState& state, u32& version);
     u32 GetVicSnapshotVersion() { return m_vicSnapshotVersion; }
 
+    // SID state, captured on the emulation thread once per frame and whenever the emulator stops
+    void CaptureSidState();
+    bool GetSidState(SidState& state, u32& version);
+    u32 GetSidStateVersion() { return m_sidStateVersion; }
+
     // general state info
     ViceState GetViceState();
     u8* GetRam();
@@ -324,5 +346,9 @@ protected:
     std::mutex m_vicSnapshotMutex;
     VicRasterState m_vicSnapshot;
     std::atomic<u32> m_vicSnapshotVersion{ 0 };
+
+    std::mutex m_sidStateMutex;
+    SidState m_sidState;
+    std::atomic<u32> m_sidStateVersion{ 0 };
 };
 

@@ -140,3 +140,46 @@ void helper_get_vicii_regs(unsigned char *written, unsigned char *read, int coun
         read[i] = vicii_peek((uint16_t)i);
     }
 }
+
+#include "sid.h"
+#include "sid-snapshot.h"
+
+/* MAD64: select the emulated SID chip, keeping the current SID engine. is8580: 0 = 6581, 1 = 8580 */
+void helper_set_sid_model(int is8580)
+{
+    int engine = SID_ENGINE_RESID;
+
+    resources_get_int("SidEngine", &engine);
+    sid_set_engine_model(engine, is8580 ? SID_MODEL_8580 : SID_MODEL_6581);
+}
+
+/* MAD64: snapshot of the SID chip state for the SidWindow.
+   regs: the 32 registers as last written by the CPU
+   accumulator / shiftRegister / envelope / envelopeState: 3 entries each, the live state of the voices
+   (envelopeState: 0 attack, 1 decay/sustain, 2 release, 3 frozen)
+   model: 0 = 6581, otherwise 8580 */
+void helper_get_sid_state(unsigned char *regs, unsigned int *accumulator, unsigned int *shiftRegister,
+                          unsigned char *envelope, unsigned char *envelopeState, int *model)
+{
+    sid_snapshot_state_t state;
+    uint8_t *written;
+    int i, sidModel = 0;
+
+    memset(&state, 0, sizeof(state));
+    sid_state_read(0, &state);
+
+    written = sid_get_siddata(0);
+    for (i = 0; i < 0x20; i++) {
+        regs[i] = written ? written[i] : state.sid_register[i];
+    }
+
+    for (i = 0; i < 3; i++) {
+        accumulator[i] = state.accumulator[i];
+        shiftRegister[i] = state.shift_register[i];
+        envelope[i] = state.envelope_counter[i];
+        envelopeState[i] = state.envelope_state[i];
+    }
+
+    resources_get_int("SidModel", &sidModel);
+    *model = sidModel;
+}
