@@ -171,7 +171,7 @@ void EmuScreenWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     // draw emulator state
     auto& fr = FontRenderer::Instance();
     SDL_Color stateCol{ 255,255,255,255 };
-    std::string text = std::format("PC {:4x} ROW {:3d} COL {:3d} A {:2x} X {:2x} Y {:2x} Flags {}{}.{}{}{}{}{} Zoom {} Mode {}{}",
+    std::string text = std::format("PC {:4x} ROW {:03x} COL {:3d} A {:2x} X {:2x} Y {:2x} Flags {}{}.{}{}{}{}{} Zoom {} Mode {}{}",
         viceState.m_pc, viceState.m_rasterLine, viceState.m_rasterCycle, viceState.m_acc, viceState.m_x, viceState.m_y,
         viceState.m_flags & 128 ? 'N' : 'n',
         viceState.m_flags & 64 ? 'V' : 'v',
@@ -193,6 +193,8 @@ bool EmuScreenWindow::HandleEvent(SDL_Event* e)
         case SDL_EVENT_KEY_DOWN:
         case SDL_EVENT_KEY_UP:
         {
+            m_shift = (e->key.mod & SDL_KMOD_SHIFT);
+
             if (e->key.mod & SDL_KMOD_LCTRL)
             {
                 if (e->type == SDL_EVENT_KEY_DOWN)
@@ -326,7 +328,14 @@ bool EmuScreenWindow::HandleEvent(SDL_Event* e)
                         break;
 
                     case Icons::SingleStep:
-                        ViceBridge::Instance().SingleStep();
+                        if (m_shift)
+                        {
+                            ViceBridge::Instance().MultiStep();
+                        }
+                        else
+                        {
+                            ViceBridge::Instance().SingleStep();
+                        }
                         break;
 
                     case Icons::Zoom:

@@ -289,7 +289,7 @@ void VBC_BreakPointHit::Execute()
 void ViceBridge::MultiStep()
 {
     auto cmd = new VBC_Continue;
-    cmd->m_steps = 20;
+    cmd->m_steps = 64;
     SendMad2Vice(cmd);
 }
 

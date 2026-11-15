@@ -26,4 +26,5 @@ protected:
     int m_zoom = 0;
     float m_animTime = 0.0f;
     bool m_warpMode = false;
+    bool m_shift = false;
 };

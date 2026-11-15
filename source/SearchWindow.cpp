@@ -110,6 +110,7 @@ bool TextBox::HandleEvent(SDL_Event* e)
             }
             break;
         case SDL_EVENT_TEXT_INPUT:
+            m_cursor = Clamp(m_cursor, 0, (int)m_text.size());
             m_text.insert(m_cursor, e->text.text);
             m_cursor += (int)strlen(e->text.text);
             break;
