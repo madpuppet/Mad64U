@@ -11,6 +11,8 @@
 #include "cartridge.h"
 #include "attach.h"
 #include "vsync.h"
+#include "viciitypes.h"
+#include <string.h>
 
 void helper_autostart_crt(const char* path)
 {
@@ -87,3 +89,54 @@ void helper_keyboard_set(int row, int column, int value)
 }
 
 
+
+
+
+/* MAD64: VIC-II beam position for the VicScreen visualiser.
+   beamX is the number of pixels of the current raster line that have been output (8 per cycle). */
+void helper_get_vicii_beam(int *line, int *beamX, int *cyclesPerLine, int *screenHeight)
+{
+    int count = vicii.dbuf_offset;
+    int curLine = (int)vicii.raster_line;
+
+    /* at raster cycle index 0 the previous line has just been completed; nothing of the new line is drawn yet */
+    if (vicii.raster_cycle == 0) {
+        count = 0;
+        if (vicii.start_of_frame)
+            curLine = 0;
+    }
+
+    *line = curLine;
+    *beamX = count;
+    *cyclesPerLine = vicii.cycles_per_line;
+    *screenHeight = (int)vicii.screen_height;
+}
+
+/* MAD64: snapshot of everything the VIC-II can see, so MAD64 can render a frame itself.
+   ram: 64k, colourRam: 1k, charRom: 4k, vbank: base address of the 16k video bank (0, $4000, $8000, $c000) */
+void helper_get_vicii_memory(unsigned char *ram, unsigned char *colourRam, unsigned char *charRom, int *vbank)
+{
+    extern uint8_t mem_chargen_rom[];
+
+    memcpy(ram, mem_ram, 0x10000);
+    memcpy(colourRam, mem_color_ram_vicii, 0x400);
+    memcpy(charRom, mem_chargen_rom, 0x1000);
+    *vbank = vicii.vbank_phi1 & 0xc000;
+}
+
+/* MAD64: VIC-II registers for the VicScreen register panel.
+   written: values last written by the CPU (e.g. raster IRQ compare in $d011/$d012)
+   read:    what the CPU would read now, without side effects (e.g. current raster line, collisions) */
+void helper_get_vicii_regs(unsigned char *written, unsigned char *read, int count)
+{
+    extern uint8_t vicii_peek(uint16_t addr);
+    int i;
+
+    if (count > 0x40)
+        count = 0x40;
+
+    for (i = 0; i < count; i++) {
+        written[i] = vicii.regs[i];
+        read[i] = vicii_peek((uint16_t)i);
+    }
+}

@@ -14,6 +14,7 @@
 #include "NetworkManager.h"
 #include "SearchWindow.h"
 #include "EmuScreenWindow.h"
+#include "VicScreenWindow.h"
 #include "SpriteViewWindow.h"
 #include "BitmapViewWindow.h"
 #include "DisAssemblyWindow.h"
@@ -430,6 +431,12 @@ void Application::CreateMenus()
             WindowManager::Instance().LayoutWindows();
         };
 
+    auto newWindowVicScreen = []()
+        {
+            WindowManager::Instance().AddWindow(new VicScreenWindow);
+            WindowManager::Instance().LayoutWindows();
+        };
+
     auto newWindowBitmapView = []()
         {
             WindowManager::Instance().AddWindow(new BitmapViewWindow);
@@ -471,6 +478,7 @@ void Application::CreateMenus()
     windowMenu->m_items.push_back(new WindowMenuItem("Search And Replace", newWindowSearch));
     windowMenu->m_items.push_back(new WindowMenuItem("- - - - - - - - - -", []() {}));
     windowMenu->m_items.push_back(new WindowMenuItem("Emulator Screen", newWindowEmuScreen));
+    windowMenu->m_items.push_back(new WindowMenuItem("VIC-II Raster View", newWindowVicScreen));
     windowMenu->m_items.push_back(new WindowMenuItem("Memory View", newWindowMemView));
     windowMenu->m_items.push_back(new WindowMenuItem("Sprite View", newWindowSpriteView));
     windowMenu->m_items.push_back(new WindowMenuItem("Bitmap View", newWindowBitmapView));

@@ -17,6 +17,9 @@ extern "C" void helper_autostart_crt(const char* path);
 extern "C" int helper_set_breakpoint(int memaddr);
 extern "C" void helper_mount_d64(const char* path);
 extern "C" void helper_set_warp_mode(bool enable);
+extern "C" void helper_get_vicii_regs(unsigned char* written, unsigned char* read, int count);
+extern "C" void helper_get_vicii_beam(int* line, int* beamX, int* cyclesPerLine, int* screenHeight);
+extern "C" void helper_get_vicii_memory(unsigned char* ram, unsigned char* colourRam, unsigned char* charRom, int* vbank);
 
 //==================================================================================================================================
 // Emulation internals
@@ -49,6 +52,12 @@ struct EmulationState
 {
     uint64_t m_clock = 0;
     int m_runCycles = -1;
+
+    // the raster point: beam position within the frame, in cycles (line * cyclesPerLine + cycle)
+    VicRasterPointMode m_rasterMode = VicRasterPointMode::Off;
+    int m_rasterPos = 0;
+    int m_rasterLastPos = 0;
+
     std::vector<CPUBreakpoint> m_breakpoints;
     TracePoint m_trace[MAX_TRACE_POINTS];
     int m_traceCurrIdx = 0;
@@ -107,6 +116,43 @@ void CheckBreakpoints(u16 addr, bool memBP)
     }
 }
 
+// beam position within the frame in cycles, and the number of cycles in a frame
+static int GetBeamPos(int& frameCycles)
+{
+    int line = 0, beamX = 0, cyclesPerLine = 63, screenHeight = 312;
+    helper_get_vicii_beam(&line, &beamX, &cyclesPerLine, &screenHeight);
+    frameCycles = cyclesPerLine * screenHeight;
+    return line * cyclesPerLine + beamX / 8;
+}
+
+// Called once per instruction while the raster point is in use.
+// If the beam reached or passed the point since the last instruction, either captures a VIC snapshot
+// (TopOfFrame / Refresh) or returns true to stop the emulator (Break).
+static bool CheckRasterPoint()
+{
+    auto& es = s_emulationState;
+    int frameCycles;
+    int pos = GetBeamPos(frameCycles);
+    int last = es.m_rasterLastPos;
+    int target = es.m_rasterPos;
+    es.m_rasterLastPos = pos;
+
+    bool crossed;
+    if (pos >= last)
+        crossed = target > last && target <= pos;
+    else
+        crossed = target > last || target <= pos;       // beam wrapped into the next frame
+
+    if (!crossed)
+        return false;
+
+    if (es.m_rasterMode == VicRasterPointMode::Break)
+        return true;
+
+    ViceBridge::Instance().CaptureVicSnapshot();
+    return false;
+}
+
 extern "C" void mad64_update_ram(u8 *ram)
 {
     memcpy(s_emulationState.m_ram, ram, 65536);
@@ -143,6 +189,10 @@ extern "C" void mad64_process_cycle(u64 clock, u16 pc_addr, u8 a, u8 x, u8 y, u8
     s_emulationState.m_pcTouch[pc_addr] = clock;
     s_emulationState.m_traceCurrIdx = nextIdx;
 
+    bool rasterHit = false;
+    if (s_emulationState.m_rasterMode != VicRasterPointMode::Off)
+        rasterHit = CheckRasterPoint();
+
     if (s_emulationState.m_runCycles != -1 && (--s_emulationState.m_runCycles == 0))
     {
         auto& vb = ViceBridge::Instance();
@@ -155,6 +205,16 @@ extern "C" void mad64_process_cycle(u64 clock, u16 pc_addr, u8 a, u8 x, u8 y, u8
 
         // clear all oneshot breakpoints at this addr
         s_emulationState.ClearOnceBreakpoints(pc_addr);
+
+        // busy wait till we get a cmd from the editor to run some more emulation
+        vb.ProcessViceCmdsTillContinue();
+    }
+    else if (rasterHit)
+    {
+        auto& vb = ViceBridge::Instance();
+
+        vb.SetViceStopped();
+        vb.SendVice2Mad(new VBC_BreakPointHit);
 
         // busy wait till we get a cmd from the editor to run some more emulation
         vb.ProcessViceCmdsTillContinue();
@@ -258,6 +318,23 @@ u64* ViceBridge::GetHeatMap()
     return s_emulationState.m_heatMap;
 }
 
+void ViceBridge::GetVicRasterState(VicRasterState& state)
+{
+    int line = 0, liveCount = 0, cyclesPerLine = 63, screenHeight = 312;
+    helper_get_vicii_beam(&line, &liveCount, &cyclesPerLine, &screenHeight);
+
+    // the VICE thread may be mid-update, so sanitise everything
+    state.m_cyclesPerLine = std::clamp(cyclesPerLine, 1, VIC_RASTER_MAX_WIDTH / 8);
+    state.m_lineCount = std::clamp(screenHeight, 1, VIC_RASTER_MAX_LINES);
+    state.m_line = std::clamp(line, 0, state.m_lineCount - 1);
+    state.m_liveCount = std::clamp(liveCount, 0, state.Width());
+    helper_get_vicii_regs(state.m_regs, state.m_regsRead, 0x40);
+
+    int bank = 0;
+    helper_get_vicii_memory(state.m_ram, state.m_colourRam, state.m_charRom, &bank);
+    state.m_bank = bank & 0xc000;
+}
+
 void ViceBridge::BreakpointHit(const CPUBreakpoint &bp)
 {
     auto cmd = new VBC_BreakPointHit;
@@ -316,6 +393,49 @@ void VBC_Continue::Execute()
 {
     ViceBridge::Instance().ClearViceStopped();
     s_emulationState.m_runCycles = m_steps;
+}
+
+void ViceBridge::SetRasterPoint(VicRasterPointMode mode, int line, int cycle)
+{
+    auto cmd = new VBC_SetRasterPoint;
+    cmd->m_mode = mode;
+    cmd->m_line = line;
+    cmd->m_cycle = cycle;
+    SendMad2Vice(cmd);
+}
+
+void VBC_SetRasterPoint::Execute()
+{
+    auto& es = s_emulationState;
+    int cyclesPerLine = 63, line = 0, beamX = 0, screenHeight = 312;
+    helper_get_vicii_beam(&line, &beamX, &cyclesPerLine, &screenHeight);
+    int frameCycles = (std::max)(cyclesPerLine * screenHeight, 1);
+
+    es.m_rasterMode = m_mode;
+    if (m_mode == VicRasterPointMode::Break || m_mode == VicRasterPointMode::Refresh)
+        es.m_rasterPos = (m_line * cyclesPerLine + m_cycle) % frameCycles;
+    else
+        es.m_rasterPos = 0;
+
+    // if the beam is already exactly there, the point triggers when it comes round again next frame
+    es.m_rasterLastPos = line * cyclesPerLine + beamX / 8;
+}
+
+void ViceBridge::CaptureVicSnapshot()
+{
+    std::lock_guard<std::mutex> lock(m_vicSnapshotMutex);
+    GetVicRasterState(m_vicSnapshot);
+    m_vicSnapshotVersion++;
+}
+
+bool ViceBridge::GetVicSnapshot(VicRasterState& state, u32& version)
+{
+    std::lock_guard<std::mutex> lock(m_vicSnapshotMutex);
+    if (version == m_vicSnapshotVersion)
+        return false;
+    state = m_vicSnapshot;
+    version = m_vicSnapshotVersion;
+    return true;
 }
 
 void VBC_Pause::Execute()

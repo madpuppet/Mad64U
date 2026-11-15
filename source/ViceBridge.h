@@ -1,6 +1,9 @@
 #pragma once
 #include <semaphore>
 #include <deque>
+#include <atomic>
+#include <mutex>
+#include <vector>
 #include "Singleton.h"
 
 // Bridge between VICE and MAD64
@@ -85,6 +88,23 @@ struct VBC_Continue : ViceBridgeCmd
     int m_steps;
 };
 
+// The single raster point used by the VicScreen
+enum class VicRasterPointMode
+{
+    Off,            // nothing watching: no snapshots are captured
+    TopOfFrame,     // no point placed: capture a VIC snapshot at the top of every frame
+    Break,          // stop the emulator when the beam reaches (or steps over) the point
+    Refresh         // capture a VIC snapshot when the beam reaches the point, keep running
+};
+
+struct VBC_SetRasterPoint : ViceBridgeCmd
+{
+    virtual void Execute() override;
+    VicRasterPointMode m_mode;
+    int m_line;
+    int m_cycle;
+};
+
 struct VBC_Pause : ViceBridgeCmd
 {
     virtual void Execute() override;
@@ -132,6 +152,35 @@ struct ViceState
     u8 m_x;
     u8 m_y;
     u8 m_flags;
+};
+
+// Snapshot of the VIC-II state (beam position, registers and all memory the VIC can see)
+#define VIC_RASTER_MAX_WIDTH (65*8)
+#define VIC_RASTER_MAX_LINES 312
+struct VicRasterState
+{
+    int m_liveCount = 0;                    // pixels of the current raster line already output (8 per cycle)
+    int m_line = 0;                         // current raster line
+    int m_cyclesPerLine = 63;
+    int m_lineCount = 312;
+    u8 m_regs[0x40] = {};                   // VIC-II registers as last written
+    u8 m_regsRead[0x40] = {};               // VIC-II registers as the CPU would read them now
+
+    int m_bank = 0;                         // base address of the 16k video bank
+    u8 m_ram[0x10000] = {};
+    u8 m_colourRam[0x400] = {};
+    u8 m_charRom[0x1000] = {};
+
+    int Width() const { return m_cyclesPerLine * 8; }
+
+    // read a byte the way the VIC-II sees memory (14 bit address inside the video bank, char ROM in banks 0 and 2)
+    u8 VicRead(int addr) const
+    {
+        addr = (addr & 0x3fff) | m_bank;
+        if ((addr & 0x7000) == 0x1000)
+            return m_charRom[addr & 0xfff];
+        return m_ram[addr];
+    }
 };
 
 class ViceBridge : public Singleton<ViceBridge>
@@ -227,11 +276,24 @@ public:
     void Continue();
     void Pause();
 
+    // set the single raster point. Instructions take several cycles, so the point triggers at the first
+    // instruction boundary at or after that beam position.
+    // cycle is in VIC beam units as reported by VicRasterState (m_liveCount / 8)
+    void SetRasterPoint(VicRasterPointMode mode, int line = 0, int cycle = 0);
+
+    // called on the emulation thread when the beam crosses a refresh point
+    void CaptureVicSnapshot();
+
+    // fetch the last captured snapshot if it is newer than 'version'. Returns true if state was updated.
+    bool GetVicSnapshot(VicRasterState& state, u32& version);
+    u32 GetVicSnapshotVersion() { return m_vicSnapshotVersion; }
+
     // general state info
     ViceState GetViceState();
     u8* GetRam();
     u64* GetPCTouchRam();
     u64* GetHeatMap();
+    void GetVicRasterState(VicRasterState& state);
 
     void SetActiveFileID(int fileID) { m_activeFileID = fileID; }
     int GetActiveFileID() { return m_activeFileID; }
@@ -258,5 +320,9 @@ protected:
     std::deque<ViceBridgeCmd*> m_syncVice2Mad;
 
     bool m_vice_stopped = false;
+
+    std::mutex m_vicSnapshotMutex;
+    VicRasterState m_vicSnapshot;
+    std::atomic<u32> m_vicSnapshotVersion{ 0 };
 };
 

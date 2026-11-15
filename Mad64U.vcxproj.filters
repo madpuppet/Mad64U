@@ -91,6 +91,9 @@
     <ClCompile Include="source\EmuScreenWindow.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="source\VicScreenWindow.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
     <ClCompile Include="source\ViceBridge.cpp">
       <Filter>source</Filter>
     </ClCompile>
@@ -457,6 +460,9 @@
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="source\EmuScreenWindow.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="source\VicScreenWindow.h">
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="source\ViceBridge.h">

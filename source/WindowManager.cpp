@@ -7,6 +7,7 @@
 #include "LogManager.h"
 #include "ViceBridge.h"
 #include "EmuScreenWindow.h"
+#include "VicScreenWindow.h"
 #include <filesystem>
 
 std::vector<std::string> GetSourceFiles(const std::string& pathStr)
@@ -383,6 +384,37 @@ void WindowManager::HandleEvent(SDL_Event* e)
                     m_mouseMode = MouseMode_Idle;
                     SDL_CaptureMouse(false);
                     m_mouseSelectionQuery.Reset();
+                }
+                else if (m_mouseMode == MouseMode_Idle)
+                {
+                    // clicking a window's client area with any button makes it the active window,
+                    // so the event below is delivered to the window under the mouse
+                    WindowHighlightQuery query;
+                    WindowMessageStruct msg;
+                    msg.m_type = WindowMessage::Query_Highlight;
+                    msg.m_flags = WMF_Menu | WMF_AreaCheck | WMF_Layout | WMF_Window | WMF_EarlyOut;
+                    msg.m_query = &query;
+                    msg.m_tree = FindWindowByID(e->button.windowID);
+                    if (msg.m_tree)
+                    {
+                        msg.m_x = (int)e->button.x;
+                        msg.m_y = (int)e->button.y;
+                        Message(msg);
+
+                        if (query.m_highlight == WindowHighlightType::ClientArea && query.m_window && query.m_layout && query.m_tree
+                            && query.m_window != m_activeWindow)
+                        {
+                            SetActiveTree(query.m_tree);
+                            m_activeLayout = query.m_layout;
+                            m_activeWindow = query.m_window;
+                            m_menuList.Layout(m_activeTree);
+                            query.m_tree->m_dirty = true;
+
+                            auto file = query.m_window->GetSourceFile();
+                            if (file)
+                                SourceFileManager::Instance().SetActiveSourceFile(file);
+                        }
+                    }
                 }
             }
         }
@@ -838,6 +870,20 @@ void WindowManager::Paint()
                 tree->m_dirty = true;
             }
         }
+
+        // a visible VicScreen repaints as soon as a new VIC snapshot has been captured (once per emulated frame)
+        {
+            WindowMessageStruct msg;
+            WindowFindQuery query;
+            query.m_windowName = "VicScreen";
+            msg.m_type = WindowMessage::Query_FindWindow;
+            msg.m_flags = WMF_Window | WMF_TabActive | WMF_EarlyOut;
+            msg.m_query = &query;
+            tree->Message(msg);
+            if (msg.m_response > 0 && ((VicScreenWindow*)msg.m_window)->NeedsRefresh())
+                tree->m_dirty = true;
+        }
+
         anyDirty |= tree->m_dirty;
     }
 
