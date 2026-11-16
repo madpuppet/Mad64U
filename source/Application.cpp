@@ -23,6 +23,7 @@
 #include "ViceBridge.h"
 #include "FunctionsWindow.h"
 #include "Cpu6502.h"
+#include "Importer.h"
 #include <filesystem>
 
 extern "C" {
@@ -107,10 +108,45 @@ SDL_DialogFileFilter s_mountDiskFilters[] =
     { "Executables", "d64" }
 };
 
+SDL_DialogFileFilter s_importFilters[] =
+{
+    { "PRG / SID / KLA / ART files", "prg;sid;kla;koa;art" },
+    { "All Files", "*" }
+};
+
+// directory the file requestors (File and Vice menus) open in: the one the last file was picked from, else the
+// current directory
+static std::string GetViceFileDir()
+{
+    std::string dir = Settings::Instance().GetString(SETTING_VICE_LAST_DIR);
+    std::error_code ec;
+    if (dir.empty() || !std::filesystem::is_directory(dir, ec))
+        dir = std::filesystem::current_path().string();
+    return dir;
+}
+
+// remember the directory of a file picked from a file requestor.
+// SDL may call the dialog callbacks on another thread, so the settings are updated on the main thread.
+static void RememberViceFileDir(const char* file)
+{
+    auto dir = new std::string(std::filesystem::path(file).parent_path().string());
+    SDL_RunOnMainThread([](void* userdata)
+        {
+            auto dir = (std::string*)userdata;
+            if (!dir->empty())
+            {
+                Settings::Instance().SetString(SETTING_VICE_LAST_DIR, *dir);
+                Settings::Instance().Save();
+            }
+            delete dir;
+        }, dir, false);
+}
+
 void LoadFileCallback(void* userdata, const char* const* filelist, int filter)
 {
     if (filelist && *filelist)
     {
+        RememberViceFileDir(*filelist);
         std::vector<std::string> paths;
         while (*filelist)
         {
@@ -135,33 +171,6 @@ void DeplayPrgToU64Callback(void* userdata, const char* const* filelist, int fil
     }
 }
 
-// directory the Vice file requestors open in: the one the last Vice file was picked from, else the current directory
-static std::string GetViceFileDir()
-{
-    std::string dir = Settings::Instance().GetString(SETTING_VICE_LAST_DIR);
-    std::error_code ec;
-    if (dir.empty() || !std::filesystem::is_directory(dir, ec))
-        dir = std::filesystem::current_path().string();
-    return dir;
-}
-
-// remember the directory of a file picked from a Vice file requestor.
-// SDL may call the dialog callbacks on another thread, so the settings are updated on the main thread.
-static void RememberViceFileDir(const char* file)
-{
-    auto dir = new std::string(std::filesystem::path(file).parent_path().string());
-    SDL_RunOnMainThread([](void* userdata)
-        {
-            auto dir = (std::string*)userdata;
-            if (!dir->empty())
-            {
-                Settings::Instance().SetString(SETTING_VICE_LAST_DIR, *dir);
-                Settings::Instance().Save();
-            }
-            delete dir;
-        }, dir, false);
-}
-
 void AutoStartFileCallback(void* userdata, const char* const* filelist, int filter)
 {
     if (filelist && *filelist)
@@ -171,6 +180,31 @@ void AutoStartFileCallback(void* userdata, const char* const* filelist, int filt
         cmd->m_path = std::string(*filelist);
         ViceBridge::Instance().SendMad2Vice(cmd);
     }
+}
+
+// File/Import: disassemble PRG / SID files into runnable KickAssembler source and open them
+void ImportFileCallback(void* userdata, const char* const* filelist, int filter)
+{
+    if (!filelist || !*filelist)
+        return;
+
+    RememberViceFileDir(*filelist);
+    std::vector<std::string> paths;
+    for (; *filelist; filelist++)
+    {
+        std::string asmPath, error;
+        if (ImportBinary(*filelist, asmPath, error))
+        {
+            Log(LogGroup::System, "Imported {} -> {}\n", *filelist, asmPath);
+            paths.push_back(asmPath);
+        }
+        else
+        {
+            Log(LogGroup::System, "Import of {} failed: {}\n", *filelist, error);
+        }
+    }
+    if (!paths.empty())
+        SourceFileManager::Instance().RequestLoadFiles(paths);
 }
 
 void MountDiskFileCallback(void* userdata, const char* const* filelist, int filter)
@@ -191,6 +225,7 @@ void SaveFileCallback(void* userdata, const char* const* filelist, int filter)
     SourceFile* file = (SourceFile*)userdata;
     if (filelist && *filelist)
     {
+        RememberViceFileDir(*filelist);
         SourceFileManager::Instance().RenameFile(file, *filelist);
         SourceFileManager::Instance().SaveFile(file);
     }
@@ -211,7 +246,7 @@ void Application::CreateMenus()
 
     auto loadFile = []()
         {
-            std::string cwd = std::filesystem::current_path().string();
+            std::string cwd = GetViceFileDir();
 
             SDL_ShowOpenFileDialog(
                 LoadFileCallback,
@@ -224,6 +259,20 @@ void Application::CreateMenus()
             );
         };
 
+    auto importFile = []()
+        {
+            std::string dir = GetViceFileDir();
+            SDL_ShowOpenFileDialog(
+                ImportFileCallback,
+                nullptr,
+                nullptr,        // parent window
+                s_importFilters,
+                SDL_arraysize(s_importFilters),
+                dir.c_str(),
+                true
+            );
+        };
+
     auto saveFile = []()
         {
             auto& sm = SourceFileManager::Instance();
@@ -232,7 +281,7 @@ void Application::CreateMenus()
             {
                 if (file->m_path.empty())
                 {
-                    std::string cwd = std::filesystem::current_path().string();
+                    std::string cwd = GetViceFileDir();
 
                     SDL_ShowSaveFileDialog(
                         SaveFileCallback,
@@ -256,7 +305,7 @@ void Application::CreateMenus()
             auto file = sm.GetActiveSourceFile();
             if (file)
             {
-                std::string cwd = std::filesystem::current_path().string();
+                std::string cwd = GetViceFileDir();
 
                 SDL_ShowSaveFileDialog(
                     SaveFileCallback,
@@ -282,6 +331,7 @@ void Application::CreateMenus()
     fileMenu->m_items.push_back(new WindowMenuItem("- - - - - - - - - -", []() {}));
     fileMenu->m_items.push_back(new WindowMenuItem("New", newFile));
     fileMenu->m_items.push_back(new WindowMenuItem("Load", loadFile));
+    fileMenu->m_items.push_back(new WindowMenuItem("Import PRG/SID/KLA/ART", importFile));
     fileMenu->m_items.push_back(new WindowMenuItem("Save", saveFile));
     fileMenu->m_items.push_back(new WindowMenuItem("SaveAs", saveAsFile));
     fileMenu->m_items.push_back(new WindowMenuItem("Quit Mad64U", exitEditor));

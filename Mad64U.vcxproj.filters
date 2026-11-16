@@ -100,6 +100,9 @@
     <ClCompile Include="source\DriveIOWindow.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="source\Importer.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
     <ClCompile Include="source\ViceBridge.cpp">
       <Filter>source</Filter>
     </ClCompile>
@@ -475,6 +478,9 @@
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="source\DriveIOWindow.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Importer.h">
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="source\ViceBridge.h">
