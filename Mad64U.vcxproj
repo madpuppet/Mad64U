@@ -163,6 +163,7 @@
     <ClCompile Include="source\EmuScreenWindow.cpp" />
     <ClCompile Include="source\VicScreenWindow.cpp" />
     <ClCompile Include="source\SidWindow.cpp" />
+    <ClCompile Include="source\DriveIOWindow.cpp" />
     <ClCompile Include="source\FontRenderer.cpp" />
     <ClCompile Include="source\FunctionsWindow.cpp" />
     <ClCompile Include="source\IconRenderer.cpp" />
@@ -287,6 +288,7 @@
     <ClInclude Include="source\EmuScreenWindow.h" />
     <ClInclude Include="source\VicScreenWindow.h" />
     <ClInclude Include="source\SidWindow.h" />
+    <ClInclude Include="source\DriveIOWindow.h" />
     <ClInclude Include="source\FontRenderer.h" />
     <ClInclude Include="source\common.h" />
     <ClInclude Include="source\IconRenderer.h" />

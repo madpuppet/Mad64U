@@ -5,6 +5,7 @@
 #include <mutex>
 #include <vector>
 #include "Singleton.h"
+#include "../Vice/src/mad_drive.h"
 
 // Bridge between VICE and MAD64
 //
@@ -210,6 +211,48 @@ struct SidState
     int m_model = 0;                // 0 = 6581, otherwise 8580
 };
 
+// Disk drive activity
+#define DRIVE_MAP_TRACKS 84         // highest track number tracked (D64 42, D71 70, D81 80)
+#define DRIVE_MAP_SECTORS 40        // most sectors per track (D81)
+#define DRIVE_EVENT_COUNT 16        // recent accesses kept per unit
+#define DRIVE_FADE_FRAMES 100       // frames an access stays visible for
+
+enum class DriveAccess : u8
+{
+    Read,
+    Write,
+    Verify,
+};
+
+struct DriveEvent
+{
+    u8 m_track = 0;
+    u8 m_sector = 0;
+    DriveAccess m_kind = DriveAccess::Read;
+    u32 m_frame = 0;
+};
+
+struct DriveUnitState
+{
+    mad_drive_info_t m_info = {};
+
+    // frame number each sector was last read, written or passed under the head (0 = never)
+    u32 m_lastRead[DRIVE_MAP_TRACKS + 1][DRIVE_MAP_SECTORS] = {};
+    u32 m_lastWrite[DRIVE_MAP_TRACKS + 1][DRIVE_MAP_SECTORS] = {};
+    u32 m_lastHead[DRIVE_MAP_TRACKS + 1][DRIVE_MAP_SECTORS] = {};
+
+    DriveEvent m_events[DRIVE_EVENT_COUNT];     // ring buffer, newest at (m_eventCount - 1) % DRIVE_EVENT_COUNT
+    u32 m_eventCount = 0;
+    u32 m_lastActivityFrame = 0;
+};
+
+// Snapshot of all disk units, captured once per frame
+struct DriveState
+{
+    u32 m_frame = 1;
+    DriveUnitState m_units[MAD_DRIVE_UNITS];
+};
+
 class ViceBridge : public Singleton<ViceBridge>
 {
 public:
@@ -323,6 +366,11 @@ public:
     // SID oscilloscope samples, written on the emulation thread as the SID is clocked
     const SidScope& GetSidScope();
 
+    // disk drive state, captured on the emulation thread once per frame and whenever the emulator stops
+    void CaptureDriveState();
+    bool GetDriveState(DriveState& state, u32& version);
+    u32 GetDriveStateVersion() { return m_driveStateVersion; }
+
     // general state info
     ViceState GetViceState();
     u8* GetRam();
@@ -363,5 +411,9 @@ protected:
     std::mutex m_sidStateMutex;
     SidState m_sidState;
     std::atomic<u32> m_sidStateVersion{ 0 };
+
+    std::mutex m_driveStateMutex;
+    DriveState m_driveState;
+    std::atomic<u32> m_driveStateVersion{ 0 };
 };
 

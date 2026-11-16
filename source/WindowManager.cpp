@@ -9,6 +9,7 @@
 #include "EmuScreenWindow.h"
 #include "VicScreenWindow.h"
 #include "SidWindow.h"
+#include "DriveIOWindow.h"
 #include <filesystem>
 
 std::vector<std::string> GetSourceFiles(const std::string& pathStr)
@@ -895,6 +896,19 @@ void WindowManager::Paint()
             msg.m_query = &query;
             tree->Message(msg);
             if (msg.m_response > 0 && ((SidWindow*)msg.m_window)->NeedsRefresh())
+                tree->m_dirty = true;
+        }
+
+        // and a visible DriveIOWindow when the drive state changes
+        {
+            WindowMessageStruct msg;
+            WindowFindQuery query;
+            query.m_windowName = "DriveIO";
+            msg.m_type = WindowMessage::Query_FindWindow;
+            msg.m_flags = WMF_Window | WMF_TabActive | WMF_EarlyOut;
+            msg.m_query = &query;
+            tree->Message(msg);
+            if (msg.m_response > 0 && ((DriveIOWindow*)msg.m_window)->NeedsRefresh())
                 tree->m_dirty = true;
         }
 

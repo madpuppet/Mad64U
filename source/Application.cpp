@@ -16,6 +16,7 @@
 #include "EmuScreenWindow.h"
 #include "VicScreenWindow.h"
 #include "SidWindow.h"
+#include "DriveIOWindow.h"
 #include "SpriteViewWindow.h"
 #include "BitmapViewWindow.h"
 #include "DisAssemblyWindow.h"
@@ -445,6 +446,12 @@ void Application::CreateMenus()
             WindowManager::Instance().LayoutWindows();
         };
 
+    auto newWindowDriveIO = []()
+        {
+            WindowManager::Instance().AddWindow(new DriveIOWindow);
+            WindowManager::Instance().LayoutWindows();
+        };
+
     auto newWindowSid = []()
         {
             WindowManager::Instance().AddWindow(new SidWindow);
@@ -494,6 +501,7 @@ void Application::CreateMenus()
     windowMenu->m_items.push_back(new WindowMenuItem("Emulator Screen", newWindowEmuScreen));
     windowMenu->m_items.push_back(new WindowMenuItem("VIC-II Raster View", newWindowVicScreen));
     windowMenu->m_items.push_back(new WindowMenuItem("SID View", newWindowSid));
+    windowMenu->m_items.push_back(new WindowMenuItem("Drive IO", newWindowDriveIO));
     windowMenu->m_items.push_back(new WindowMenuItem("Memory View", newWindowMemView));
     windowMenu->m_items.push_back(new WindowMenuItem("Sprite View", newWindowSpriteView));
     windowMenu->m_items.push_back(new WindowMenuItem("Bitmap View", newWindowBitmapView));

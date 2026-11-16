@@ -545,6 +545,24 @@ void VicScreenWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
 
         SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
+        // bad lines (from the current register values): raster $30-$f7 where the low 3 bits match YSCROLL,
+        // with the display enabled. Shaded with a 20% overlay.
+        {
+            const u8* regs = m_raster.m_regs;
+            if (regs[0x11] & 0x10)
+            {
+                int yscroll = regs[0x11] & 7;
+                SDL_SetRenderDrawColor(renderer, 255, 0, 0, 51);
+                for (int line = 0x30; line <= 0xf7 && line < m_textureHeight; line++)
+                {
+                    if ((line & 7) != yscroll)
+                        continue;
+                    SDL_FRect badLine{ body.x, body.y + line * pixelHeight, body.w, (std::max)(pixelHeight, 1.0f) };
+                    SDL_RenderFillRect(renderer, &badLine);
+                }
+            }
+        }
+
         // outline the 40x25 display window
         SDL_FRect displayArea{ body.x + VIC_DISPLAY_X * pixelWidth, body.y + VIC_DISPLAY_Y * pixelHeight, VIC_DISPLAY_W * pixelWidth, VIC_DISPLAY_H * pixelHeight };
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 64);

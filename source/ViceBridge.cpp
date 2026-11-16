@@ -278,6 +278,7 @@ extern "C" void mad64_process_vice_commands(void)
 
     // called once per frame on the emulation thread
     ViceBridge::Instance().CaptureSidState();
+    ViceBridge::Instance().CaptureDriveState();
 }
 
 static SidScope s_sidScope;
@@ -315,6 +316,131 @@ extern "C" void mad64_sid_voice_output(int cycles, int v0, int v1, int v2)
 const SidScope& ViceBridge::GetSidScope()
 {
     return s_sidScope;
+}
+
+//==================================================================================================================================
+// Disk drive activity
+//
+// Accesses come from two places:
+//  - the disk image layer reports every sector read/written through it (virtual drives, image writeback)
+//  - with true drive emulation, once per frame we look at the drive mechanics (motor, head, write mode and the sector
+//    header under the head) and the DOS job queue in drive RAM
+// Everything is kept in s_driveState on the emulation thread and copied out for the UI.
+//==================================================================================================================================
+static DriveState s_driveState;
+static u8 s_prevJobCode[MAD_DRIVE_UNITS][MAD_DRIVE_MAX_JOBS];
+
+static void RecordDriveAccess(int unit, int track, int sector, DriveAccess kind, bool logEvent)
+{
+    if (unit < 0 || unit >= MAD_DRIVE_UNITS || track < 1 || track > DRIVE_MAP_TRACKS || sector < 0 || sector >= DRIVE_MAP_SECTORS)
+        return;
+
+    auto& u = s_driveState.m_units[unit];
+    u32 frame = s_driveState.m_frame;
+    if (kind == DriveAccess::Write)
+        u.m_lastWrite[track][sector] = frame;
+    else
+        u.m_lastRead[track][sector] = frame;
+    u.m_lastActivityFrame = frame;
+
+    if (logEvent)
+    {
+        // repeated access to the same sector just refreshes the newest event
+        if (u.m_eventCount > 0)
+        {
+            auto& last = u.m_events[(u.m_eventCount - 1) % DRIVE_EVENT_COUNT];
+            if (last.m_track == track && last.m_sector == sector && last.m_kind == kind)
+            {
+                last.m_frame = frame;
+                return;
+            }
+        }
+        auto& ev = u.m_events[u.m_eventCount % DRIVE_EVENT_COUNT];
+        ev.m_track = (u8)track;
+        ev.m_sector = (u8)sector;
+        ev.m_kind = kind;
+        ev.m_frame = frame;
+        u.m_eventCount++;
+    }
+}
+
+extern "C" void mad64_disk_sector_access(const void* image, unsigned int track, unsigned int sector, int isWrite)
+{
+    int unit = helper_disk_image_unit(image);
+    RecordDriveAccess(unit, (int)track, (int)sector, isWrite ? DriveAccess::Write : DriveAccess::Read, true);
+}
+
+void ViceBridge::CaptureDriveState()
+{
+    auto& ds = s_driveState;
+    bool changed = false;
+
+    for (int unit = 0; unit < MAD_DRIVE_UNITS; unit++)
+    {
+        auto& u = ds.m_units[unit];
+        mad_drive_info_t info;
+        helper_get_drive_info(unit, &info);
+        if (memcmp(&info, &u.m_info, sizeof(info)) != 0)
+            changed = true;
+        u.m_info = info;
+
+        if (!info.trueEmulation)
+            continue;
+
+        // mechanics: the sector passing under the head, and anything being written to it
+        if (info.motorOn && info.headerTrack >= 1 && info.headerTrack <= DRIVE_MAP_TRACKS && info.headerSector >= 0 && info.headerSector < DRIVE_MAP_SECTORS)
+        {
+            u.m_lastHead[info.headerTrack][info.headerSector] = ds.m_frame;
+            if (info.writeMode)
+                RecordDriveAccess(unit, info.headerTrack, info.headerSector, DriveAccess::Write, true);
+        }
+
+        // DOS job queue: codes with bit 7 set are pending jobs
+        for (int j = 0; j < info.jobCount; j++)
+        {
+            u8 code = info.jobCode[j];
+            bool isNew = code != s_prevJobCode[unit][j];
+            s_prevJobCode[unit][j] = code;
+            if (!(code & 0x80))
+                continue;
+
+            switch (code & 0xf0)
+            {
+                case 0x80: RecordDriveAccess(unit, info.jobTrack[j], info.jobSector[j], DriveAccess::Read, isNew); break;
+                case 0x90: RecordDriveAccess(unit, info.jobTrack[j], info.jobSector[j], DriveAccess::Write, isNew); break;
+                case 0xa0: RecordDriveAccess(unit, info.jobTrack[j], info.jobSector[j], DriveAccess::Verify, isNew); break;
+                default: break;
+            }
+        }
+
+        if (info.motorOn)
+            u.m_lastActivityFrame = ds.m_frame;
+    }
+
+    // only publish while something is changing or still fading out
+    for (auto& u : ds.m_units)
+    {
+        if (u.m_lastActivityFrame != 0 && ds.m_frame - u.m_lastActivityFrame <= DRIVE_FADE_FRAMES)
+            changed = true;
+    }
+
+    if (changed || m_driveStateVersion == 0)
+    {
+        std::lock_guard<std::mutex> lock(m_driveStateMutex);
+        m_driveState = ds;
+        m_driveStateVersion++;
+    }
+    ds.m_frame++;
+}
+
+bool ViceBridge::GetDriveState(DriveState& state, u32& version)
+{
+    std::lock_guard<std::mutex> lock(m_driveStateMutex);
+    if (version == m_driveStateVersion)
+        return false;
+    state = m_driveState;
+    version = m_driveStateVersion;
+    return true;
 }
 
 void ViceBridge::CaptureSidState()
@@ -525,6 +651,7 @@ void ViceBridge::SetViceStopped()
 {
     m_vice_stopped = true;
     CaptureSidState();
+    CaptureDriveState();
     helper_suspend_sound();
 }
 

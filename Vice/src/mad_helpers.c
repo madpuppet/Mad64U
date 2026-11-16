@@ -183,3 +183,211 @@ void helper_get_sid_state(unsigned char *regs, unsigned int *accumulator, unsign
     resources_get_int("SidModel", &sidModel);
     *model = sidModel;
 }
+
+/* ---------------------------------------------------------------------------------------------------------------- */
+/* MAD64: disk drive status for the DriveIOWindow */
+
+#include "diskimage.h"
+#include "mad_drive.h"
+
+/* GCR 5 bit code -> nibble, 0xff for invalid codes */
+static unsigned char s_gcrDecode[32];
+static int s_gcrDecodeInit = 0;
+
+static void gcr_decode_init(void)
+{
+    static const unsigned char encode[16] = {
+        0x0a, 0x0b, 0x12, 0x13, 0x0e, 0x0f, 0x16, 0x17, 0x09, 0x19, 0x1a, 0x1b, 0x0d, 0x1d, 0x1e, 0x15
+    };
+    int i;
+
+    memset(s_gcrDecode, 0xff, sizeof(s_gcrDecode));
+    for (i = 0; i < 16; i++) {
+        s_gcrDecode[encode[i]] = (unsigned char)i;
+    }
+    s_gcrDecodeInit = 1;
+}
+
+/* decodes 'count' bytes from GCR data starting at byte 'pos' of a circular track. returns 0 on an invalid code */
+static int gcr_decode(const uint8_t *track, unsigned int size, unsigned int pos, unsigned char *out, int count)
+{
+    unsigned int bits = 0;
+    int bitCount = 0;
+    int nibbles = 0;
+
+    while (nibbles < count * 2) {
+        unsigned char nib;
+        if (bitCount < 5) {
+            bits = (bits << 8) | track[pos % size];
+            pos++;
+            bitCount += 8;
+        }
+        nib = s_gcrDecode[(bits >> (bitCount - 5)) & 0x1f];
+        bitCount -= 5;
+        if (nib == 0xff) {
+            return 0;
+        }
+        if (nibbles & 1) {
+            out[nibbles >> 1] = (unsigned char)((out[nibbles >> 1] << 4) | nib);
+        } else {
+            out[nibbles >> 1] = nib;
+        }
+        nibbles++;
+    }
+    return 1;
+}
+
+/* finds the last sector header the head has passed on the current GCR track */
+static void find_header_under_head(const drive_t *drive, int *track, int *sector)
+{
+    const uint8_t *data = drive->GCR_track_start_ptr;
+    unsigned int size = drive->GCR_current_track_size;
+    unsigned int head, back;
+
+    *track = -1;
+    *sector = -1;
+    if (data == NULL || size < 16) {
+        return;
+    }
+    if (!s_gcrDecodeInit) {
+        gcr_decode_init();
+    }
+
+    head = (drive->GCR_head_offset >> 3) % size;
+    for (back = 0; back < size; back++) {
+        unsigned int pos = (head + size - back) % size;
+        /* header block: sync ($ff) then GCR of $08 which starts with $52 */
+        if (data[pos] == 0x52 && data[(pos + size - 1) % size] == 0xff) {
+            unsigned char hdr[8];
+            if (gcr_decode(data, size, pos, hdr, 8) && hdr[0] == 0x08
+                && hdr[1] == (hdr[2] ^ hdr[3] ^ hdr[4] ^ hdr[5])) {
+                *sector = hdr[2];
+                *track = hdr[3];
+                return;
+            }
+        }
+    }
+}
+
+static const char *drive_type_name(int type)
+{
+    switch (type) {
+        case DRIVE_TYPE_NONE: return "None";
+        case DRIVE_TYPE_1540: return "1540";
+        case DRIVE_TYPE_1541: return "1541";
+        case DRIVE_TYPE_1541II: return "1541-II";
+        case DRIVE_TYPE_1551: return "1551";
+        case DRIVE_TYPE_1570: return "1570";
+        case DRIVE_TYPE_1571: return "1571";
+        case DRIVE_TYPE_1571CR: return "1571CR";
+        case DRIVE_TYPE_1581: return "1581";
+        case DRIVE_TYPE_2000: return "FD2000";
+        case DRIVE_TYPE_4000: return "FD4000";
+        case DRIVE_TYPE_2031: return "2031";
+        case DRIVE_TYPE_2040: return "2040";
+        case DRIVE_TYPE_3040: return "3040";
+        case DRIVE_TYPE_4040: return "4040";
+        case DRIVE_TYPE_1001: return "1001";
+        case DRIVE_TYPE_8050: return "8050";
+        case DRIVE_TYPE_8250: return "8250";
+        case DRIVE_TYPE_9000: return "D9090/60";
+        case DRIVE_TYPE_CMDHD: return "CMD HD";
+        default: return "Unknown";
+    }
+}
+
+void helper_get_drive_info(int unit, mad_drive_info_t *info)
+{
+    diskunit_context_t *dc;
+    disk_image_t *image;
+    const char *name;
+    int i, jobBase = 0, tsBase = 0;
+
+    memset(info, 0, sizeof(*info));
+    info->headerTrack = -1;
+    info->headerSector = -1;
+    if (unit < 0 || unit >= MAD_DRIVE_UNITS || unit >= NUM_DISK_UNITS) {
+        return;
+    }
+
+    dc = diskunit_context[unit];
+    if (dc != NULL) {
+        info->type = (int)dc->type;
+    }
+    strncpy(info->typeName, drive_type_name(info->type), sizeof(info->typeName) - 1);
+
+    image = file_system_get_image((unsigned int)unit + 8, 0);
+    if (image != NULL) {
+        info->hasImage = 1;
+        info->imageType = (int)image->type;
+        info->imageTracks = (int)image->tracks;
+        info->readOnly = (int)image->read_only;
+        name = file_system_get_disk_name((unsigned int)unit + 8, 0);
+        if (name != NULL) {
+            strncpy(info->imageName, name, sizeof(info->imageName) - 1);
+        }
+    }
+
+    if (dc == NULL || info->type == DRIVE_TYPE_NONE || !dc->enable) {
+        return;
+    }
+    info->trueEmulation = 1;
+
+    /* job queue location in drive RAM */
+    switch (info->type) {
+        case DRIVE_TYPE_1540:
+        case DRIVE_TYPE_1541:
+        case DRIVE_TYPE_1541II:
+        case DRIVE_TYPE_1551:
+        case DRIVE_TYPE_1570:
+        case DRIVE_TYPE_1571:
+        case DRIVE_TYPE_1571CR:
+        case DRIVE_TYPE_2031:
+            jobBase = 0x00;
+            tsBase = 0x06;
+            info->jobCount = 6;
+            break;
+        case DRIVE_TYPE_1581:
+            jobBase = 0x02;
+            tsBase = 0x0b;
+            info->jobCount = 9;
+            break;
+        default:
+            break;
+    }
+    for (i = 0; i < info->jobCount; i++) {
+        info->jobCode[i] = dc->drive_ram[jobBase + i];
+        info->jobTrack[i] = dc->drive_ram[tsBase + i * 2];
+        info->jobSector[i] = dc->drive_ram[tsBase + i * 2 + 1];
+    }
+
+    /* GCR drive mechanics */
+    if (dc->drives[0] != NULL) {
+        drive_t *drive = dc->drives[0];
+        info->halfTrack = drive->current_half_track;
+        info->side = (int)drive->side;
+        info->motorOn = (drive->byte_ready_active & BRA_MOTOR_ON) != 0;
+        info->ledOn = drive->led_status != 0;
+        info->writeMode = drive->read_write_mode == 0;
+        info->trackSize = (int)drive->GCR_current_track_size;
+        info->headOffset = drive->GCR_current_track_size ? (int)((drive->GCR_head_offset >> 3) % drive->GCR_current_track_size) : 0;
+        if (info->type != DRIVE_TYPE_1581 && info->type != DRIVE_TYPE_2000 && info->type != DRIVE_TYPE_4000) {
+            find_header_under_head(drive, &info->headerTrack, &info->headerSector);
+        }
+    }
+}
+
+int helper_disk_image_unit(const void *image)
+{
+    unsigned int unit;
+
+    if (image == NULL) {
+        return -1;
+    }
+    for (unit = 0; unit < MAD_DRIVE_UNITS; unit++) {
+        if ((const void *)file_system_get_image(unit + 8, 0) == image) {
+            return (int)unit;
+        }
+    }
+    return -1;
+}

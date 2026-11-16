@@ -11,6 +11,7 @@
 #include "EmuScreenWindow.h"
 #include "VicScreenWindow.h"
 #include "SidWindow.h"
+#include "DriveIOWindow.h"
 #include "SpriteViewWindow.h"
 #include "BitmapViewWindow.h"
 #include "DisAssemblyWindow.h"
@@ -578,7 +579,10 @@ void WindowLayout::LoadLayout(const std::vector<std::string>& layoutTokens, size
                                                         {
                                                             if (!SidWindow::CreateFromLayoutTokens(this, layoutTokens, idx))
                                                             {
-                                                                Log(LogGroup::System, "Unknown window token: {}", layoutTokens[idx]);
+                                                                if (!DriveIOWindow::CreateFromLayoutTokens(this, layoutTokens, idx))
+                                                                {
+                                                                    Log(LogGroup::System, "Unknown window token: {}", layoutTokens[idx]);
+                                                                }
                                                             }
                                                         }
                                                     }

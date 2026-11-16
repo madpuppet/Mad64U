@@ -51,6 +51,7 @@
 #include "realimage.h"
 #include "types.h"
 #include "p64.h"
+#include "mad_drive.h"
 
 
 /** \brief  Number of speed zones for a given floppy
@@ -667,6 +668,11 @@ int disk_image_read_sector(const disk_image_t *image, uint8_t *buf, const disk_a
             rc = -1;
     }
 
+    /* MAD64: sector activity for the DriveIOWindow */
+    if (rc >= 0) {
+        mad64_disk_sector_access(image, dadr->track, dadr->sector, 0);
+    }
+
     return rc;
 }
 
@@ -691,6 +697,11 @@ int disk_image_write_sector(disk_image_t *image, const uint8_t *buf, const disk_
         default:
             log_error(disk_image_log, "Unknow image device %u.", image->device);
             rc = -1;
+    }
+
+    /* MAD64: sector activity for the DriveIOWindow */
+    if (rc >= 0) {
+        mad64_disk_sector_access(image, dadr->track, dadr->sector, 1);
     }
 
     return rc;
