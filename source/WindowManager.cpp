@@ -953,9 +953,14 @@ void WindowManager::RemoveWindow(WindowBase* window)
         auto layout = tree->FindLayoutFromWindow(window, tabIdx);
         if (layout)
         {
+            // keep the active tab index pointing at the same window (tabs after the removed one shift down)
             if (layout->m_activeTab == tabIdx)
                 layout->m_activeTab = 0;
+            else if (layout->m_activeTab > tabIdx)
+                layout->m_activeTab--;
             layout->m_tabs.erase(layout->m_tabs.begin() + tabIdx);
+            if (layout->m_activeTab >= (int)layout->m_tabs.size())
+                layout->m_activeTab = layout->m_tabs.empty() ? -1 : 0;
             if (layout->m_tabs.empty())
             {
                 // collapse empty tab

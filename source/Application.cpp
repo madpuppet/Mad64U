@@ -135,10 +135,38 @@ void DeplayPrgToU64Callback(void* userdata, const char* const* filelist, int fil
     }
 }
 
+// directory the Vice file requestors open in: the one the last Vice file was picked from, else the current directory
+static std::string GetViceFileDir()
+{
+    std::string dir = Settings::Instance().GetString(SETTING_VICE_LAST_DIR);
+    std::error_code ec;
+    if (dir.empty() || !std::filesystem::is_directory(dir, ec))
+        dir = std::filesystem::current_path().string();
+    return dir;
+}
+
+// remember the directory of a file picked from a Vice file requestor.
+// SDL may call the dialog callbacks on another thread, so the settings are updated on the main thread.
+static void RememberViceFileDir(const char* file)
+{
+    auto dir = new std::string(std::filesystem::path(file).parent_path().string());
+    SDL_RunOnMainThread([](void* userdata)
+        {
+            auto dir = (std::string*)userdata;
+            if (!dir->empty())
+            {
+                Settings::Instance().SetString(SETTING_VICE_LAST_DIR, *dir);
+                Settings::Instance().Save();
+            }
+            delete dir;
+        }, dir, false);
+}
+
 void AutoStartFileCallback(void* userdata, const char* const* filelist, int filter)
 {
     if (filelist && *filelist)
     {
+        RememberViceFileDir(*filelist);
         auto cmd = new VBC_RunPrg;
         cmd->m_path = std::string(*filelist);
         ViceBridge::Instance().SendMad2Vice(cmd);
@@ -149,6 +177,7 @@ void MountDiskFileCallback(void* userdata, const char* const* filelist, int filt
 {
     if (filelist && *filelist)
     {
+        RememberViceFileDir(*filelist);
         auto cmd = new VBC_MountDisk;
         cmd->m_path = std::string(*filelist);
         ViceBridge::Instance().SendMad2Vice(cmd);
@@ -367,7 +396,7 @@ void Application::CreateMenus()
 
     auto autoStart = []()
         {
-            std::string cwd = std::filesystem::current_path().string();
+            std::string cwd = GetViceFileDir();
 
             SDL_ShowOpenFileDialog(
                 AutoStartFileCallback,
@@ -383,7 +412,7 @@ void Application::CreateMenus()
 
     auto mountDisk = []()
         {
-            std::string cwd = std::filesystem::current_path().string();
+            std::string cwd = GetViceFileDir();
             SDL_ShowOpenFileDialog(
                 MountDiskFileCallback,
                 nullptr,

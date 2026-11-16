@@ -20,6 +20,7 @@
 #define SETTING_VICE_IS_PAL "vice_isPal"
 #define SETTING_VICE_VOLUME "vice_volume"
 #define SETTING_VICE_SID_8580 "vice_sid8580"
+#define SETTING_VICE_LAST_DIR "vice_lastDir"
 
 #define SETTING_COLOUR_1 "col1"
 #define SETTING_COLOUR_2 "col2"
