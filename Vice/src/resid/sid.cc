@@ -824,6 +824,12 @@ void SID::clock(cycle_count delta_t)
     voice[i].wave.set_waveform_output(delta_t);
   }
 
+  // MAD64: tap the voice outputs for the oscilloscope (held for the whole batch of cycles)
+  mad64_sid_voice_output((int)delta_t,
+    ((voice[0].wave.output() - 0x800) * voice[0].envelope.output()) >> 4,
+    ((voice[1].wave.output() - 0x800) * voice[1].envelope.output()) >> 4,
+    ((voice[2].wave.output() - 0x800) * voice[2].envelope.output()) >> 4);
+
   // Clock filter.
   filter.clock(delta_t, voice[0].output(), voice[1].output(), voice[2].output());
 

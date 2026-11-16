@@ -32,6 +32,10 @@
 #include "extfilt.h"
 #include "pot.h"
 
+// MAD64: per voice output for the SID oscilloscope. Called with the number of cycles the given voice outputs
+// are held for. Values are (waveform - midpoint) * envelope, scaled to fit a signed 16 bit range.
+extern "C" void mad64_sid_voice_output(int cycles, int v0, int v1, int v2);
+
 namespace reSID
 {
 
@@ -221,6 +225,12 @@ void SID::clock()
   for (i = 0; i < 3; i++) {
     voice[i].wave.set_waveform_output();
   }
+
+  // MAD64: tap the voice outputs for the oscilloscope
+  mad64_sid_voice_output(1,
+    ((voice[0].wave.output() - 0x800) * voice[0].envelope.output()) >> 4,
+    ((voice[1].wave.output() - 0x800) * voice[1].envelope.output()) >> 4,
+    ((voice[2].wave.output() - 0x800) * voice[2].envelope.output()) >> 4);
 
   // Clock filter.
   filter.clock(voice[0].output(), voice[1].output(), voice[2].output());

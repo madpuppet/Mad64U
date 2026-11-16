@@ -189,6 +189,16 @@ struct VicRasterState
     }
 };
 
+// SID oscilloscope capture: per voice output, one sample every SID_SCOPE_DECIMATE cycles
+#define SID_SCOPE_DECIMATE 4
+#define SID_SCOPE_SAMPLES (1 << 16)     // ring buffer size per voice (~265ms on PAL)
+struct SidScope
+{
+    i16 m_samples[3][SID_SCOPE_SAMPLES];
+    std::atomic<u32> m_writeIdx{ 0 };   // total samples written; ring index is m_writeIdx & (SID_SCOPE_SAMPLES - 1)
+    u32 m_cycleAcc = 0;                 // cycles not yet turned into a sample (emulation thread only)
+};
+
 // Snapshot of the SID chip
 struct SidState
 {
@@ -309,6 +319,9 @@ public:
     void CaptureSidState();
     bool GetSidState(SidState& state, u32& version);
     u32 GetSidStateVersion() { return m_sidStateVersion; }
+
+    // SID oscilloscope samples, written on the emulation thread as the SID is clocked
+    const SidScope& GetSidScope();
 
     // general state info
     ViceState GetViceState();

@@ -6,9 +6,8 @@
 // Shows the current state of the SID chip: per voice frequency / pulse width / waveform / control bits / ADSR and
 // live envelope level, a waveform display for each voice, and the filter and volume settings.
 //
-// The waveform displays are drawn from the chip state (waveform select, pulse width, sync / ring modulation with the
-// neighbouring voice, and the live envelope level) rather than from recorded audio, so they are stable and show the
-// shape of what each oscillator is producing right now.
+// The waveform displays are oscilloscopes of each voice's real output (oscillator x envelope), captured from reSID as
+// the chip is clocked. They are triggered on a rising zero crossing; the header zoom icon changes the timebase.
 class SidWindow : public WindowBase
 {
 public:
@@ -17,6 +16,7 @@ public:
     void Paint(SDL_Renderer* renderer, const Recti& dirtyArea) override;
     void MessageChild(WindowLayout* layout, struct WindowMessageStruct& msg) override;
     bool Tick() override;
+    bool HandleEvent(SDL_Event* e) override;
 
     // true if a newer SID state than the one being displayed has been captured
     bool NeedsRefresh();
@@ -30,6 +30,6 @@ protected:
 
     SidState m_state;
     u32 m_stateVersion = 0;
-    std::vector<float> m_wave;
     std::vector<SDL_FPoint> m_points;
+    int m_timebase = 2;         // index into the timebase table (5ms)
 };

@@ -24,6 +24,10 @@ static const SDL_Color s_labelCol{ 160, 160, 160, 255 };
 static const SDL_Color s_valueCol{ 255, 255, 255, 255 };
 static const SDL_Color s_offCol{ 80, 80, 80, 255 };
 
+// oscilloscope timebases: time shown across each voice scope
+static const float s_timebaseMs[] = { 1.0f, 2.0f, 5.0f, 10.0f, 20.0f, 50.0f };
+static const int s_timebaseCount = (int)(sizeof(s_timebaseMs) / sizeof(s_timebaseMs[0]));
+
 static std::string FormatMs(int ms)
 {
     if (ms >= 1000)
@@ -47,6 +51,22 @@ void SidWindow::MessageChild(WindowLayout* layout, struct WindowMessageStruct& m
         case WindowMessage::Query_Highlight:
         {
             auto query = (WindowHighlightQuery*)msg.m_query;
+
+            // timebase (zoom) icon in the header
+            Recti iconArea = IconRenderer::Instance().CalcIconArea(Icons::Zoom, m_clientArea.x + 16, m_clientArea.y + 12);
+            if (iconArea.Contains(msg.m_x, msg.m_y))
+            {
+                query->m_area = iconArea;
+                query->m_highlight = WindowHighlightType::EmuScreenIcon;
+                query->m_id = 0;
+                query->m_emuScreen.m_icon = Icons::Zoom;
+                query->m_tree = msg.m_tree;
+                query->m_layout = layout;
+                query->m_window = this;
+                msg.m_response++;
+                return;
+            }
+
             if (m_clientArea.Contains(msg.m_x, msg.m_y))
             {
                 msg.m_response++;
@@ -62,6 +82,24 @@ void SidWindow::MessageChild(WindowLayout* layout, struct WindowMessageStruct& m
     }
 }
 
+bool SidWindow::HandleEvent(SDL_Event* e)
+{
+    if (e->type == SDL_EVENT_MOUSE_BUTTON_DOWN && e->button.button == SDL_BUTTON_LEFT)
+    {
+        auto& selected = WindowManager::Instance().GetWindowSelectionQuery();
+        if (selected.m_highlight == WindowHighlightType::EmuScreenIcon && selected.m_window == this && selected.m_emuScreen.m_icon == Icons::Zoom)
+        {
+            // shift-click zooms in, click zooms out
+            if (SDL_GetModState() & SDL_KMOD_SHIFT)
+                m_timebase = (m_timebase + s_timebaseCount - 1) % s_timebaseCount;
+            else
+                m_timebase = (m_timebase + 1) % s_timebaseCount;
+            return true;
+        }
+    }
+    return false;
+}
+
 bool SidWindow::Tick()
 {
     return NeedsRefresh();
@@ -73,78 +111,15 @@ bool SidWindow::NeedsRefresh()
 }
 
 //==================================================================================================================================
-// Waveform display
+// Oscilloscope
 //
-// Runs the voice's oscillator (and the voice that sync / ring modulates it) over a couple of periods, starting from
-// phase zero so the picture is stable, and produces the 12 bit waveform output the SID would generate.
+// Plots each voice's real output, captured from reSID as the chip is clocked (one sample every SID_SCOPE_DECIMATE
+// cycles, ~246kHz). Like a real scope the trace is triggered on a rising zero crossing so periodic waveforms stand still,
+// and each pixel column draws the min..max of the samples it covers so no detail is lost when zoomed out.
 //==================================================================================================================================
-static void SimulateVoice(const SidState& sid, int voice, std::vector<float>& out)
-{
-    const u8* r = &sid.m_regs[voice * 7];
-    int src = (voice + 2) % 3;                      // voice 1 is modulated by voice 3, 2 by 1, 3 by 2
-    const u8* rs = &sid.m_regs[src * 7];
 
-    u32 freq = r[0] | (r[1] << 8);
-    u32 srcFreq = rs[0] | (rs[1] << 8);
-    u32 pw = (r[2] | (r[3] << 8)) & 0xfff;
-    u8 ctrl = r[4];
-    bool test = (ctrl & 0x08) != 0;
-    bool ring = (ctrl & 0x04) != 0;
-    bool sync = (ctrl & 0x02) != 0;
-    int waveSel = ctrl >> 4;
-
-    // noise only changes 16 times per oscillator period, so show a few more periods of it
-    double periods = (waveSel & 8) ? 4.0 : 2.0;
-    int steps = (int)out.size();
-    double inc = (freq && !test) ? periods * 16777216.0 / steps : 0.0;
-    double srcInc = freq ? inc * (double)srcFreq / (double)freq : 0.0;
-
-    double acc = 0.0, srcAcc = 0.0, total = 0.0;
-    u32 shiftReg = 0x7ffff8;
-    u64 noiseClock = 0;
-
-    for (int i = 0; i < steps; i++)
-    {
-        u32 a = (u32)acc & 0xffffff;
-        u32 sa = (u32)srcAcc & 0xffffff;
-
-        // noise shift register is clocked each time accumulator bit 19 goes high
-        u64 clock = (u64)((total + 524288.0) / 1048576.0);
-        for (; noiseClock < clock; noiseClock++)
-        {
-            u32 bit0 = ((shiftReg >> 22) ^ (shiftReg >> 17)) & 1;
-            shiftReg = ((shiftReg << 1) | bit0) & 0x7fffff;
-        }
-
-        u32 value = 0xfff;
-        if (waveSel & 1)
-        {
-            // triangle; ring modulation replaces the oscillator MSB with (MSB xor source MSB)
-            u32 msb = (ring ? (a ^ sa) : a) & 0x800000;
-            value &= ((msb ? ~a : a) >> 11) & 0xfff;
-        }
-        if (waveSel & 2)
-            value &= a >> 12;
-        if (waveSel & 4)
-            value &= (test || (a >> 12) >= pw) ? 0xfff : 0;
-        if (waveSel & 8)
-        {
-            value &= ((shiftReg & 0x400000) >> 11) | ((shiftReg & 0x100000) >> 10) | ((shiftReg & 0x010000) >> 7) | ((shiftReg & 0x002000) >> 5) |
-                     ((shiftReg & 0x000800) >> 4) | ((shiftReg & 0x000080) >> 1) | ((shiftReg & 0x000010) << 1) | ((shiftReg & 0x000004) << 2);
-        }
-
-        out[i] = waveSel ? ((float)value - 2048.0f) / 2048.0f : 0.0f;
-
-        // advance; hard sync resets this oscillator when the source oscillator's MSB goes high
-        double nextSrc = srcAcc + srcInc;
-        bool srcMsbRise = !((u32)srcAcc & 0x800000) && ((u32)nextSrc & 0x800000);
-        srcAcc = fmod(nextSrc, 16777216.0);
-        acc = fmod(acc + inc, 16777216.0);
-        total += inc;
-        if (sync && srcMsbRise)
-            acc = 0.0;
-    }
-}
+// trigger hysteresis: the signal must come from below -this before crossing zero
+#define SCOPE_TRIGGER_HYSTERESIS 512
 
 void SidWindow::DrawWaveform(SDL_Renderer* renderer, int voice, const SDL_FRect& area)
 {
@@ -153,34 +128,117 @@ void SidWindow::DrawWaveform(SDL_Renderer* renderer, int voice, const SDL_FRect&
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderFillRect(renderer, &area);
+
+    // grid: 10 time divisions, centre line and +-half scale
+    float midY = area.y + area.h * 0.5f;
+    SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
+    for (int d = 1; d < 10; d++)
+    {
+        float x = area.x + area.w * d / 10.0f;
+        SDL_RenderLine(renderer, x, area.y, x, area.y + area.h);
+    }
+    SDL_RenderLine(renderer, area.x, area.y + area.h * 0.25f, area.x + area.w, area.y + area.h * 0.25f);
+    SDL_RenderLine(renderer, area.x, area.y + area.h * 0.75f, area.x + area.w, area.y + area.h * 0.75f);
     SDL_SetRenderDrawColor(renderer, 60, 60, 60, 255);
+    SDL_RenderLine(renderer, area.x, midY, area.x + area.w, midY);
     SDL_RenderRect(renderer, &area);
 
-    float midY = area.y + area.h * 0.5f;
-    SDL_RenderLine(renderer, area.x, midY, area.x + area.w, midY);
+    auto& scope = ViceBridge::Instance().GetSidScope();
+    const i16* samples = scope.m_samples[voice];
+    const u32 mask = SID_SCOPE_SAMPLES - 1;
+    u32 writeIdx = scope.m_writeIdx.load(std::memory_order_acquire);
 
-    int steps = std::clamp((int)area.w * 2, 64, 4096);
-    m_wave.resize(steps);
-    m_points.resize(steps);
-    SimulateVoice(m_state, voice, m_wave);
+    double clock = Application::Instance().IsPAL() ? SID_CLOCK_PAL : SID_CLOCK_NTSC;
+    double sampleRate = clock / SID_SCOPE_DECIMATE;
+    u32 span = (u32)(sampleRate * s_timebaseMs[m_timebase] / 1000.0);
+    span = std::clamp(span, 16u, (u32)(SID_SCOPE_SAMPLES / 3));
+    if (writeIdx < span + 2)
+        return;
 
-    float amp = area.h * 0.5f - 3.0f;
-    float level = m_state.m_envelope[voice] / 255.0f;
+    // find the most recent rising zero crossing that still leaves a full span after it (trigger at 10% from the left).
+    // search back up to one more span; if there is none (silence, noise-free DC) the trace free runs.
+    u32 pre = span / 10;
+    u32 newest = writeIdx - 1;
+    u32 latestTrigger = newest - (span - pre);
+    u32 searchLimit = (std::min)(writeIdx - 1, span * 2);
+    u32 start = writeIdx - span;
+    bool armed = false;
+    // oldest sample still in the ring, leaving room for the hysteresis look-back
+    u32 oldest = (writeIdx > SID_SCOPE_SAMPLES ? writeIdx - SID_SCOPE_SAMPLES : 0) + 64;
+    for (u32 back = 0; back < searchLimit && latestTrigger >= oldest + back; back++)
+    {
+        // walk backwards: look for "at or above zero" preceded (earlier in time) by "below -hysteresis"
+        u32 t = latestTrigger - back;
+        i16 cur = samples[t & mask];
+        i16 prev = samples[(t - 1) & mask];
+        if (cur >= 0 && prev < 0)
+        {
+            // confirm the signal was properly below the hysteresis level shortly before
+            armed = false;
+            for (u32 k = 1; k < 64 && k <= t; k++)
+            {
+                if (samples[(t - k) & mask] < -SCOPE_TRIGGER_HYSTERESIS)
+                {
+                    armed = true;
+                    break;
+                }
+                if (samples[(t - k) & mask] > 0)
+                    break;
+            }
+            if (armed)
+            {
+                start = t - pre;
+                break;
+            }
+        }
+    }
+
+    // one point pair (min, max) per pixel column
+    int columns = (std::max)(1, (int)area.w - 2);
+    m_points.resize(columns * 2);
+    float amp = (area.h * 0.5f - 2.0f) / 32768.0f;
+    int n = 0;
+    for (int c = 0; c < columns; c++)
+    {
+        u32 s0 = start + (u32)((u64)span * c / columns);
+        u32 s1 = start + (u32)((u64)span * (c + 1) / columns);
+        if (s1 <= s0)
+            s1 = s0 + 1;
+
+        int lo = 32767, hi = -32768;
+        for (u32 s = s0; s < s1; s++)
+        {
+            int v = samples[s & mask];
+            lo = (std::min)(lo, v);
+            hi = (std::max)(hi, v);
+        }
+
+        float x = area.x + 1.0f + c;
+        // alternate the order so the polyline zig-zags cleanly between neighbouring columns
+        if (c & 1)
+        {
+            m_points[n++] = { x, midY - hi * amp };
+            m_points[n++] = { x, midY - lo * amp };
+        }
+        else
+        {
+            m_points[n++] = { x, midY - lo * amp };
+            m_points[n++] = { x, midY - hi * amp };
+        }
+    }
+
     SDL_Color col = s_voiceColours[voice];
-
-    // the shape at full volume, dimmed, so it is still visible while the envelope is low or silent
-    for (int i = 0; i < steps; i++)
-        m_points[i] = { area.x + 1.0f + (area.w - 2.0f) * i / (steps - 1), midY - m_wave[i] * amp };
-    SDL_SetRenderDrawColor(renderer, col.r / 4, col.g / 4, col.b / 4, 255);
-    SDL_RenderLines(renderer, m_points.data(), steps);
-
-    // the actual output, scaled by the live envelope level
-    for (int i = 0; i < steps; i++)
-        m_points[i].y = midY - m_wave[i] * amp * level;
     SDL_SetRenderDrawColor(renderer, col.r, col.g, col.b, 255);
-    SDL_RenderLines(renderer, m_points.data(), steps);
-}
+    SDL_RenderLines(renderer, m_points.data(), n);
 
+    // trigger marker
+    if (armed)
+    {
+        float tx = area.x + 1.0f + columns * (float)pre / span;
+        SDL_SetRenderDrawColor(renderer, col.r / 2, col.g / 2, col.b / 2, 255);
+        SDL_RenderLine(renderer, tx, area.y + 1, tx, area.y + 6);
+    }
+}
 void SidWindow::DrawVoice(SDL_Renderer* renderer, int voice, const SDL_FRect& area, int charWidth)
 {
     auto& fr = FontRenderer::Instance();
@@ -339,8 +397,17 @@ void SidWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     SDL_RenderFillRect(renderer, &headerArea);
     setClip(headerArea);
     {
-        int x = (int)headerArea.x + 8;
+        // timebase (zoom) control
+        auto& ir = IconRenderer::Instance();
+        ir.DrawIcon(renderer, Icons::Zoom, m_clientArea.x + 16, m_clientArea.y + 12);
+        auto& highlight = wm.GetWindowHighlightQuery();
+        if (highlight.m_highlight == WindowHighlightType::EmuScreenIcon && highlight.m_window == this)
+            ir.DrawIcon(renderer, Icons::Highlight, highlight.m_area.x + 8, highlight.m_area.y + 8);
+
+        int x = (int)headerArea.x + 32;
         int y = (int)headerArea.y + 2;
+        x = text(x, y, std::format("{:g}ms/scope", s_timebaseMs[m_timebase]), s_valueCol);
+        x += charWidth;
         x = text(x, y, std::format("SID {}", m_state.m_model == 0 ? "6581" : "8580"), s_valueCol);
         x = text(x, y, Application::Instance().IsPAL() ? "PAL" : "NTSC", s_labelCol);
         x += charWidth;

@@ -280,6 +280,43 @@ extern "C" void mad64_process_vice_commands(void)
     ViceBridge::Instance().CaptureSidState();
 }
 
+static SidScope s_sidScope;
+
+extern "C" void mad64_sid_voice_output(int cycles, int v0, int v1, int v2)
+{
+    if (cycles <= 0)
+        return;
+
+    // the outputs are held for 'cycles' cycles; emit one sample for every SID_SCOPE_DECIMATE cycles that pass
+    auto& scope = s_sidScope;
+    u32 total = scope.m_cycleAcc + (u32)cycles;
+    u32 count = total / SID_SCOPE_DECIMATE;
+    scope.m_cycleAcc = total % SID_SCOPE_DECIMATE;
+    if (count == 0)
+        return;
+    if (count > SID_SCOPE_SAMPLES)
+        count = SID_SCOPE_SAMPLES;
+
+    i16 s0 = (i16)std::clamp(v0, -32768, 32767);
+    i16 s1 = (i16)std::clamp(v1, -32768, 32767);
+    i16 s2 = (i16)std::clamp(v2, -32768, 32767);
+
+    u32 idx = scope.m_writeIdx.load(std::memory_order_relaxed);
+    for (u32 i = 0; i < count; i++)
+    {
+        u32 r = (idx + i) & (SID_SCOPE_SAMPLES - 1);
+        scope.m_samples[0][r] = s0;
+        scope.m_samples[1][r] = s1;
+        scope.m_samples[2][r] = s2;
+    }
+    scope.m_writeIdx.store(idx + count, std::memory_order_release);
+}
+
+const SidScope& ViceBridge::GetSidScope()
+{
+    return s_sidScope;
+}
+
 void ViceBridge::CaptureSidState()
 {
     SidState state;
