@@ -22,6 +22,7 @@ extern "C" void helper_set_sid_model(int is8580);
 extern "C" void helper_get_sid_state(unsigned char* regs, unsigned int* accumulator, unsigned int* shiftRegister, unsigned char* envelope, unsigned char* envelopeState, int* model);
 extern "C" void helper_get_vicii_beam(int* line, int* beamX, int* cyclesPerLine, int* screenHeight);
 extern "C" void helper_get_vicii_memory(unsigned char* ram, unsigned char* colourRam, unsigned char* charRom, int* vbank);
+extern "C" void helper_get_cpu_memory(unsigned char* mem);
 
 //==================================================================================================================================
 // Emulation internals
@@ -494,6 +495,12 @@ ViceState ViceBridge::GetViceState()
 u8* ViceBridge::GetRam()
 {
     return s_emulationState.m_ram;
+}
+
+u8* ViceBridge::GetCpuMemory()
+{
+    helper_get_cpu_memory(m_cpuMemory);
+    return m_cpuMemory;
 }
 
 u64* ViceBridge::GetPCTouchRam()

@@ -391,3 +391,21 @@ int helper_disk_image_unit(const void *image)
     }
     return -1;
 }
+
+/* MAD64: snapshot of memory as the CPU currently sees it, for the disassembler.
+   BASIC, KERNAL, character ROM and cartridge ROM are mapped in according to the current $01 / EXROM / GAME
+   configuration. I/O ($d000-$dfff when mapped in) is left as the RAM underneath, since peeking I/O from
+   another thread is not safe and it is never code anyway. mem: 64k */
+void helper_get_cpu_memory(unsigned char *mem)
+{
+    extern const unsigned int c64meminit_io_config[32];
+    int config = mem_get_current_bank_config() & 0x1f;
+    unsigned int addr;
+
+    memcpy(mem, mem_ram, 0x10000);
+    for (addr = 0x8000; addr <= 0xffff; addr++) {
+        if (addr >= 0xd000 && addr < 0xe000 && c64meminit_io_config[config])
+            continue;
+        mem[addr] = mem_peek_with_config(config, (uint16_t)addr, NULL);
+    }
+}

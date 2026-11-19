@@ -20,14 +20,16 @@ void DisAssemblyWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     auto& wm = WindowManager::Instance();
     auto& highlight = wm.GetWindowHighlightQuery();
     ViceState vs = ViceBridge::Instance().GetViceState();
-    u8* ram = ViceBridge::Instance().GetRam();
+
+    // memory as the CPU sees it, so BASIC / KERNAL ROM shows when it is banked in
+    u8* ram = ViceBridge::Instance().GetCpuMemory();
 
     int visLines = m_clientArea.h / LINE_HEIGHT + 1;
     if (vs.m_pc != m_cacheAddr || m_lines.size() != visLines)
     {
         m_cacheAddr = vs.m_pc;
         m_lines.resize(visLines);
-        BuildLines();
+        BuildLines(ram);
     }
 
     // draw background
@@ -63,7 +65,7 @@ void DisAssemblyWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
 
         for (int ii = 0; ii < ln.bytes; ii++)
         {
-            fr.RenderText(renderer, std::format("{:02x}", ram[ln.addr+ii]), tp.m_colors[(int)ThemeColor::TextLabel], x + ii * 30, y, FontType::Text);
+            fr.RenderText(renderer, std::format("{:02x}", ram[(u16)(ln.addr+ii)]), tp.m_colors[(int)ThemeColor::TextLabel], x + ii * 30, y, FontType::Text);
         }
         x += 100;
         fr.RenderText(renderer, std::format("{:02x}", ln.cycles), tp.m_colors[(int)ThemeColor::TextLabel], x, y, FontType::Text);
@@ -89,6 +91,14 @@ DisAssemblyWindow::~DisAssemblyWindow()
 
 bool DisAssemblyWindow::HandleEvent(SDL_Event* e)
 {
+    if (e->type == SDL_EVENT_KEY_DOWN && e->key.key == SDLK_F11)
+    {
+        if (e->key.mod & SDL_KMOD_SHIFT)
+            ViceBridge::Instance().MultiStep();
+        else
+            ViceBridge::Instance().SingleStep();
+        return true;
+    }
     return WindowBase::HandleEvent(e);
 }
 
@@ -172,11 +182,10 @@ int DisAssemblyWindow::DisassembleLine(Cpu6502 &cpu, u8 *ram, int l, u16 addr)
 
 static bool stopme = false;
 
-void DisAssemblyWindow::BuildLines()
+void DisAssemblyWindow::BuildLines(u8* ram)
 {
     auto& vb = ViceBridge::Instance();
     ViceState state = vb.GetViceState();
-    u8* ram = vb.GetRam();
     u64* pcTouchRam = vb.GetPCTouchRam();
     auto& cpu = Cpu6502::Instance();
 

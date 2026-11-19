@@ -374,6 +374,8 @@ public:
     // general state info
     ViceState GetViceState();
     u8* GetRam();
+    // memory as the CPU sees it right now (BASIC / KERNAL / char / cartridge ROM banked in per $01), refreshed on each call
+    u8* GetCpuMemory();
     u64* GetPCTouchRam();
     u64* GetHeatMap();
     void GetVicRasterState(VicRasterState& state);
@@ -403,6 +405,8 @@ protected:
     std::deque<ViceBridgeCmd*> m_syncVice2Mad;
 
     bool m_vice_stopped = false;
+
+    u8 m_cpuMemory[0x10000] = {};
 
     std::mutex m_vicSnapshotMutex;
     VicRasterState m_vicSnapshot;

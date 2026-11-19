@@ -27,7 +27,7 @@ protected:
     };
     std::vector<Line> m_lines;
     u16 m_cacheAddr = 0;
-    void BuildLines();
+    void BuildLines(u8* ram);
     int DisassembleLine(class Cpu6502 &cpu, u8* ram, int l, u16 addr);
 };
 
