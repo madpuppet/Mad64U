@@ -138,6 +138,13 @@ struct VBC_SetSidModel : ViceBridgeCmd
     bool m_is8580;
 };
 
+struct VBC_Joystick : ViceBridgeCmd
+{
+    int m_port;     // C64 control port, 1 or 2
+    u8 m_value;     // bit 0 up, 1 down, 2 left, 3 right, 4 fire
+    void Execute() override;
+};
+
 struct VBC_Key : ViceBridgeCmd
 {
     int m_row;
@@ -380,6 +387,14 @@ public:
     u64* GetHeatMap();
     void GetVicRasterState(VicRasterState& state);
 
+    // host game controllers -> C64 joystick ports (main thread).
+    // Returns true if the event was a controller event and has been consumed.
+    bool HandleControllerEvent(SDL_Event* e);
+    // the port the first controller drives (1 or 2); a second controller drives the other port
+    void SetJoystickPort(int port);
+    int GetJoystickPort() { return m_joystickPort; }
+    int GetControllerCount() { return (int)m_controllers.size(); }
+
     void SetActiveFileID(int fileID) { m_activeFileID = fileID; }
     int GetActiveFileID() { return m_activeFileID; }
 
@@ -407,6 +422,17 @@ protected:
     bool m_vice_stopped = false;
 
     u8 m_cpuMemory[0x10000] = {};
+
+    struct Controller
+    {
+        SDL_JoystickID m_id = 0;
+        SDL_Gamepad* m_gamepad = nullptr;       // set for devices SDL knows the button layout of
+        SDL_Joystick* m_joystick = nullptr;     // otherwise a raw joystick (hat / first two axes / first two buttons)
+    };
+    std::vector<Controller> m_controllers;     // in connection order
+    int m_joystickPort = 2;
+    u8 m_sentJoystick[2] = {};                 // last value sent to VICE for each port
+    void SendJoystickState();
 
     std::mutex m_vicSnapshotMutex;
     VicRasterState m_vicSnapshot;

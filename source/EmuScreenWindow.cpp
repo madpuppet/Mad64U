@@ -171,7 +171,10 @@ void EmuScreenWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     // draw emulator state
     auto& fr = FontRenderer::Instance();
     SDL_Color stateCol{ 255,255,255,255 };
-    std::string text = std::format("PC {:4x} ROW {:03x} COL {:3d} A {:2x} X {:2x} Y {:2x} Flags {}{}.{}{}{}{}{} Zoom {} Mode {}{}",
+    auto& vb = ViceBridge::Instance();
+    int pads = vb.GetControllerCount();
+    std::string joyText = pads == 0 ? "-" : pads == 1 ? std::format("{}", vb.GetJoystickPort()) : "1+2";
+    std::string text = std::format("PC {:4x} ROW {:03x} COL {:3d} A {:2x} X {:2x} Y {:2x} Flags {}{}.{}{}{}{}{} Zoom {} Mode {}{} Joy {}",
         viceState.m_pc, viceState.m_rasterLine, viceState.m_rasterCycle, viceState.m_acc, viceState.m_x, viceState.m_y,
         viceState.m_flags & 128 ? 'N' : 'n',
         viceState.m_flags & 64 ? 'V' : 'v',
@@ -182,7 +185,8 @@ void EmuScreenWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
         viceState.m_flags & 1 ? 'C' : 'c',
         s_zoomText[m_zoom],
         isPal ? "PAL" : "NTSC",
-        m_warpMode ? " WARP" : "");
+        m_warpMode ? " WARP" : "",
+        joyText);
     fr.RenderText(renderer, text, stateCol, m_clientArea.x + 100, m_clientArea.y, FontType::UI);
 }
 
@@ -205,6 +209,11 @@ bool EmuScreenWindow::HandleEvent(SDL_Event* e)
                         auto cmd = new VBC_SetWarpMode;
                         cmd->m_enable = m_warpMode;
                         ViceBridge::Instance().SendMad2Vice(cmd);
+                    }
+                    else if (e->key.scancode == SDL_SCANCODE_J)
+                    {
+                        // swap which control port the controller drives
+                        Application::Instance().Vice_SetJoystickPort(3 - ViceBridge::Instance().GetJoystickPort());
                     }
                 }
                 return true;

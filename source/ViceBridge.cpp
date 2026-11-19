@@ -23,6 +23,7 @@ extern "C" void helper_get_sid_state(unsigned char* regs, unsigned int* accumula
 extern "C" void helper_get_vicii_beam(int* line, int* beamX, int* cyclesPerLine, int* screenHeight);
 extern "C" void helper_get_vicii_memory(unsigned char* ram, unsigned char* colourRam, unsigned char* charRom, int* vbank);
 extern "C" void helper_get_cpu_memory(unsigned char* mem);
+extern "C" void helper_set_joystick(int port, int value);
 
 //==================================================================================================================================
 // Emulation internals
@@ -647,6 +648,178 @@ void VBC_SetVideoStandard::Execute()
 void VBC_SetVolume::Execute()
 {
     helper_set_volume(m_volume);
+}
+
+void VBC_Joystick::Execute()
+{
+    helper_set_joystick(m_port, m_value);
+}
+
+//==================================================================================================================================
+// Host controllers
+//==================================================================================================================================
+
+#define JOY_UP    0x01
+#define JOY_DOWN  0x02
+#define JOY_LEFT  0x04
+#define JOY_RIGHT 0x08
+#define JOY_FIRE  0x10
+
+// stick deflection needed to count as a direction (axes are -32768..32767)
+#define JOY_DEADZONE 12000
+
+static u8 AxesToJoystick(int x, int y)
+{
+    u8 value = 0;
+    if (x < -JOY_DEADZONE) value |= JOY_LEFT;
+    if (x > JOY_DEADZONE) value |= JOY_RIGHT;
+    if (y < -JOY_DEADZONE) value |= JOY_UP;
+    if (y > JOY_DEADZONE) value |= JOY_DOWN;
+    return value;
+}
+
+bool ViceBridge::HandleControllerEvent(SDL_Event* e)
+{
+    auto find = [this](SDL_JoystickID id)
+        {
+            return std::find_if(m_controllers.begin(), m_controllers.end(), [id](const Controller& c) { return c.m_id == id; });
+        };
+
+    switch (e->type)
+    {
+        case SDL_EVENT_GAMEPAD_ADDED:
+        {
+            if (find(e->gdevice.which) != m_controllers.end())
+                return true;
+            Controller c;
+            c.m_id = e->gdevice.which;
+            c.m_gamepad = SDL_OpenGamepad(c.m_id);
+            if (!c.m_gamepad)
+            {
+                Log(LogGroup::System, "Gamepad open failed: {}", SDL_GetError());
+                return true;
+            }
+            m_controllers.push_back(c);
+            Log(LogGroup::System, "Gamepad connected: {}", SDL_GetGamepadName(c.m_gamepad));
+            break;
+        }
+
+        case SDL_EVENT_JOYSTICK_ADDED:
+        {
+            // devices with a gamepad mapping arrive as SDL_EVENT_GAMEPAD_ADDED too
+            if (SDL_IsGamepad(e->jdevice.which) || find(e->jdevice.which) != m_controllers.end())
+                return true;
+            Controller c;
+            c.m_id = e->jdevice.which;
+            c.m_joystick = SDL_OpenJoystick(c.m_id);
+            if (!c.m_joystick)
+            {
+                Log(LogGroup::System, "Joystick open failed: {}", SDL_GetError());
+                return true;
+            }
+            m_controllers.push_back(c);
+            Log(LogGroup::System, "Joystick connected: {}", SDL_GetJoystickName(c.m_joystick));
+            break;
+        }
+
+        case SDL_EVENT_GAMEPAD_REMOVED:
+        case SDL_EVENT_JOYSTICK_REMOVED:
+        {
+            SDL_JoystickID id = (e->type == SDL_EVENT_GAMEPAD_REMOVED) ? e->gdevice.which : e->jdevice.which;
+            auto it = find(id);
+            if (it == m_controllers.end())
+                return true;
+            if (it->m_gamepad)
+                SDL_CloseGamepad(it->m_gamepad);
+            if (it->m_joystick)
+                SDL_CloseJoystick(it->m_joystick);
+            m_controllers.erase(it);
+            Log(LogGroup::System, "Controller disconnected");
+            break;
+        }
+
+        case SDL_EVENT_GAMEPAD_AXIS_MOTION:
+        case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
+        case SDL_EVENT_GAMEPAD_BUTTON_UP:
+        case SDL_EVENT_GAMEPAD_REMAPPED:
+        case SDL_EVENT_JOYSTICK_AXIS_MOTION:
+        case SDL_EVENT_JOYSTICK_HAT_MOTION:
+        case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
+        case SDL_EVENT_JOYSTICK_BUTTON_UP:
+            break;
+
+        default:
+            return false;
+    }
+
+    SendJoystickState();
+    return true;
+}
+
+void ViceBridge::SetJoystickPort(int port)
+{
+    m_joystickPort = (port == 1) ? 1 : 2;
+    SendJoystickState();
+}
+
+// recompute both ports from the current state of every controller and send VICE whatever changed
+void ViceBridge::SendJoystickState()
+{
+    u8 ports[2] = {};
+    for (size_t i = 0; i < m_controllers.size(); i++)
+    {
+        auto& c = m_controllers[i];
+        u8 value = 0;
+        if (c.m_gamepad)
+        {
+            auto pad = c.m_gamepad;
+            value = AxesToJoystick(SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_LEFTX), SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_LEFTY));
+            if (SDL_GetGamepadButton(pad, SDL_GAMEPAD_BUTTON_DPAD_UP)) value |= JOY_UP;
+            if (SDL_GetGamepadButton(pad, SDL_GAMEPAD_BUTTON_DPAD_DOWN)) value |= JOY_DOWN;
+            if (SDL_GetGamepadButton(pad, SDL_GAMEPAD_BUTTON_DPAD_LEFT)) value |= JOY_LEFT;
+            if (SDL_GetGamepadButton(pad, SDL_GAMEPAD_BUTTON_DPAD_RIGHT)) value |= JOY_RIGHT;
+            // A fires, B pushes up (jump in most platformers)
+            if (SDL_GetGamepadButton(pad, SDL_GAMEPAD_BUTTON_SOUTH))
+                value |= JOY_FIRE;
+            if (SDL_GetGamepadButton(pad, SDL_GAMEPAD_BUTTON_EAST))
+                value |= JOY_UP;
+        }
+        else if (c.m_joystick)
+        {
+            auto joy = c.m_joystick;
+            if (SDL_GetNumJoystickAxes(joy) >= 2)
+                value = AxesToJoystick(SDL_GetJoystickAxis(joy, 0), SDL_GetJoystickAxis(joy, 1));
+            if (SDL_GetNumJoystickHats(joy) >= 1)
+            {
+                u8 hat = SDL_GetJoystickHat(joy, 0);
+                if (hat & SDL_HAT_UP) value |= JOY_UP;
+                if (hat & SDL_HAT_DOWN) value |= JOY_DOWN;
+                if (hat & SDL_HAT_LEFT) value |= JOY_LEFT;
+                if (hat & SDL_HAT_RIGHT) value |= JOY_RIGHT;
+            }
+            // button 0 fires, button 1 pushes up
+            int buttons = SDL_GetNumJoystickButtons(joy);
+            if (buttons >= 1 && SDL_GetJoystickButton(joy, 0))
+                value |= JOY_FIRE;
+            if (buttons >= 2 && SDL_GetJoystickButton(joy, 1))
+                value |= JOY_UP;
+        }
+
+        // first controller drives the selected port, second the other one, and so on alternating
+        int port = (i & 1) ? 3 - m_joystickPort : m_joystickPort;
+        ports[port - 1] |= value;
+    }
+
+    for (int p = 0; p < 2; p++)
+    {
+        if (ports[p] == m_sentJoystick[p])
+            continue;
+        m_sentJoystick[p] = ports[p];
+        auto cmd = new VBC_Joystick;
+        cmd->m_port = p + 1;
+        cmd->m_value = ports[p];
+        SendMad2Vice(cmd);
+    }
 }
 
 void VBC_SetSidModel::Execute()

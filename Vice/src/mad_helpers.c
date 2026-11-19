@@ -409,3 +409,14 @@ void helper_get_cpu_memory(unsigned char *mem)
         mem[addr] = mem_peek_with_config(config, (uint16_t)addr, NULL);
     }
 }
+
+#include "joystick.h"
+
+/* MAD64: set the state of a C64 control port joystick from a host controller.
+   port: 1 or 2. value: bit 0 up, 1 down, 2 left, 3 right, 4 fire */
+void helper_set_joystick(int port, int value)
+{
+    if (port < 1 || port > 2)
+        return;
+    joystick_set_value_absolute((unsigned int)(port - 1), (uint16_t)(value & 0x1f));
+}

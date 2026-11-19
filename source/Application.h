@@ -101,6 +101,7 @@ public:
     void Vice_EnablePAL(bool enable);
     void Vice_SetVolume(int volume);
     void Vice_SetSidModel(bool is8580);
+    void Vice_SetJoystickPort(int port);
     bool IsPAL() { return m_vice_pal; }
 
 protected:
@@ -135,6 +136,7 @@ protected:
     WindowMenuItem* m_viceVideoStandardMenu;
     WindowMenuItem* m_viceVolumeMenu;
     WindowMenuItem* m_viceSidModelMenu;
+    WindowMenuItem* m_viceJoystickPortMenu;
 
     bool m_vice_pal = true;
     int m_vice_vol = 100;

@@ -444,6 +444,13 @@ void Application::CreateMenus()
     m_viceSidModelMenu->m_subMenus.push_back(new WindowMenuItem("8580", setSid8580));
     viceMenu->m_items.push_back(m_viceSidModelMenu);
 
+    m_viceJoystickPortMenu = new WindowMenuItem("Joystick Port");
+    auto setJoyPort1 = []() { Application::Instance().Vice_SetJoystickPort(1); };
+    auto setJoyPort2 = []() { Application::Instance().Vice_SetJoystickPort(2); };
+    m_viceJoystickPortMenu->m_subMenus.push_back(new WindowMenuItem("Port 1", setJoyPort1));
+    m_viceJoystickPortMenu->m_subMenus.push_back(new WindowMenuItem("Port 2", setJoyPort2));
+    viceMenu->m_items.push_back(m_viceJoystickPortMenu);
+
     auto autoStart = []()
         {
             std::string cwd = GetViceFileDir();
@@ -880,7 +887,7 @@ int Application::Run()
 
     LogManager::Startup();
 
-    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK))
+    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD))
     {
         Log("SDL could not initialize! SDL Error: %s\n", SDL_GetError());
         exit(0);
@@ -958,6 +965,7 @@ int Application::Run()
 
     Vice_EnablePAL(isPal);
     Vice_SetSidModel(Settings::Instance().GetBool(SETTING_VICE_SID_8580));
+    Vice_SetJoystickPort(Settings::Instance().GetInt(SETTING_VICE_JOY_PORT) == 1 ? 1 : 2);
 
     SDL_Event e;
     while (!m_quit)
@@ -970,7 +978,7 @@ int Application::Run()
                 ProcessShellOutput();
                 wm.SendDeferredMessages();
             }
-            else
+            else if (!ViceBridge::Instance().HandleControllerEvent(&e))
                 wm.HandleEvent(&e);
         }
         ViceBridge::Instance().ExecuteMadCmds();
@@ -1038,6 +1046,17 @@ void Application::Vice_SetSidModel(bool is8580)
 
     m_viceSidModelMenu->m_name = std::format("SID Chip : {}", is8580 ? "8580" : "6581");
     Settings::Instance().SetInt(SETTING_VICE_SID_8580, is8580);
+    Settings::Instance().Save();
+    WindowManager::Instance().LayoutMenu();
+}
+
+void Application::Vice_SetJoystickPort(int port)
+{
+    ViceBridge::Instance().SetJoystickPort(port);
+    port = ViceBridge::Instance().GetJoystickPort();
+
+    m_viceJoystickPortMenu->m_name = std::format("Joystick Port : {}", port);
+    Settings::Instance().SetInt(SETTING_VICE_JOY_PORT, port);
     Settings::Instance().Save();
     WindowManager::Instance().LayoutMenu();
 }
