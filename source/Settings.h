@@ -21,7 +21,8 @@
 #define SETTING_VICE_VOLUME "vice_volume"
 #define SETTING_VICE_SID_8580 "vice_sid8580"
 #define SETTING_VICE_LAST_DIR "vice_lastDir"
-#define SETTING_VICE_JOY_PORT "vice_joyPort"
+#define SETTING_VICE_JOY_PORT "vice_joyPort"                    // old: 1 or 2, used when there is no controller mode yet
+#define SETTING_VICE_CONTROLLER_MODE "vice_controllerMode"      // ControllerMode + 1 (0 = not set)
 
 #define SETTING_COLOUR_1 "col1"
 #define SETTING_COLOUR_2 "col2"

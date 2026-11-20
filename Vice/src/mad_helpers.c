@@ -411,14 +411,55 @@ void helper_get_cpu_memory(unsigned char *mem)
 }
 
 #include "joystick.h"
+#include "joyport.h"
+#include "mouse.h"
+#include <stdio.h>
 
 /* MAD64: set the state of a C64 control port joystick from a host controller.
-   port: 1 or 2. value: bit 0 up, 1 down, 2 left, 3 right, 4 fire */
+   port: 1 or 2. value: bit 0 up, 1 down, 2 left, 3 right, 4 fire, 5 second fire (the paddle device's POTY fire) */
 void helper_set_joystick(int port, int value)
 {
     if (port < 1 || port > 2)
         return;
-    joystick_set_value_absolute((unsigned int)(port - 1), (uint16_t)(value & 0x1f));
+    joystick_set_value_absolute((unsigned int)(port - 1), (uint16_t)(value & 0x3f));
+}
+
+/* MAD64: set the pot values of the paddles in a control port. port: 1 or 2 */
+void helper_set_paddles(int port, int potx, int poty)
+{
+    extern void mad_joystick_set_axis(int port, int pot, uint8_t value);
+    if (port < 1 || port > 2)
+        return;
+    mad_joystick_set_axis(port - 1, 0, (uint8_t)potx);
+    mad_joystick_set_axis(port - 1, 1, (uint8_t)poty);
+}
+
+/* MAD64: attach a joystick or paddles to a control port. port: 1 or 2.
+   Paddles read their pots from the values set by helper_set_paddles, and their fire buttons from the joystick value
+   (bit 4 = POTX paddle fire, bit 5 = POTY paddle fire). Emulation thread only. */
+void helper_set_port_device(int port, int paddles)
+{
+    char name[32];
+    if (port < 1 || port > 2)
+        return;
+    sprintf(name, "PaddlesInput%d", port);
+    resources_set_int(name, 1);     /* PADDLES_INPUT_JOY_AXIS */
+    sprintf(name, "JoyPort%dDevice", port);
+    resources_set_int(name, paddles ? JOYPORT_ID_PADDLES : JOYPORT_ID_JOYSTICK);
+
+    /* VICE keeps one mouse_type for both ports, and taking the paddles out of one port sets it to none even when the
+       other port still has paddles. Every read of those paddles then logs "joyport_display_joyport: device with id
+       '-1' not in port 'n'". Put it back while either port has paddles. */
+    {
+        int p, device;
+        for (p = 1; p <= 2; p++) {
+            sprintf(name, "JoyPort%dDevice", p);
+            if (resources_get_int(name, &device) == 0 && device == JOYPORT_ID_PADDLES) {
+                mouse_type = MOUSE_TYPE_PADDLE;
+                break;
+            }
+        }
+    }
 }
 
 /* MAD64: cold reboot - power cycle the machine (clears RAM, as if switched off and on). Emulation thread only. */

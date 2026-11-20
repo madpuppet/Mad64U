@@ -445,12 +445,13 @@ void Application::CreateMenus()
     m_viceSidModelMenu->m_subMenus.push_back(new WindowMenuItem("8580", setSid8580));
     viceMenu->m_items.push_back(m_viceSidModelMenu);
 
-    m_viceJoystickPortMenu = new WindowMenuItem("Joystick Port");
-    auto setJoyPort1 = []() { Application::Instance().Vice_SetJoystickPort(1); };
-    auto setJoyPort2 = []() { Application::Instance().Vice_SetJoystickPort(2); };
-    m_viceJoystickPortMenu->m_subMenus.push_back(new WindowMenuItem("Port 1", setJoyPort1));
-    m_viceJoystickPortMenu->m_subMenus.push_back(new WindowMenuItem("Port 2", setJoyPort2));
-    viceMenu->m_items.push_back(m_viceJoystickPortMenu);
+    m_viceControllerModeMenu = new WindowMenuItem("Controller Mode");
+    for (int m = 0; m < (int)ControllerMode::Count; m++)
+    {
+        auto setMode = [m]() { Application::Instance().Vice_SetControllerMode((ControllerMode)m); };
+        m_viceControllerModeMenu->m_subMenus.push_back(new WindowMenuItem(ControllerModeName((ControllerMode)m), setMode));
+    }
+    viceMenu->m_items.push_back(m_viceControllerModeMenu);
 
     auto autoStart = []()
         {
@@ -976,7 +977,16 @@ int Application::Run()
 
     Vice_EnablePAL(isPal);
     Vice_SetSidModel(Settings::Instance().GetBool(SETTING_VICE_SID_8580));
-    Vice_SetJoystickPort(Settings::Instance().GetInt(SETTING_VICE_JOY_PORT) == 1 ? 1 : 2);
+    {
+        // stored as mode + 1; before controller modes there was only the joystick port
+        int storedMode = Settings::Instance().GetInt(SETTING_VICE_CONTROLLER_MODE);
+        ControllerMode mode;
+        if (storedMode > 0 && storedMode <= (int)ControllerMode::Count)
+            mode = (ControllerMode)(storedMode - 1);
+        else
+            mode = Settings::Instance().GetInt(SETTING_VICE_JOY_PORT) == 1 ? ControllerMode::Joy1 : ControllerMode::Joy2;
+        Vice_SetControllerMode(mode);
+    }
 
     SDL_Event e;
     while (!m_quit)
@@ -989,7 +999,7 @@ int Application::Run()
                 ProcessShellOutput();
                 wm.SendDeferredMessages();
             }
-            else if (!ViceBridge::Instance().HandleControllerEvent(&e))
+            else if (!ViceBridge::Instance().HandleControllerEvent(&e) && !ViceBridge::Instance().HandleMouseEvent(&e))
                 wm.HandleEvent(&e);
         }
         ViceBridge::Instance().ExecuteMadCmds();
@@ -1061,15 +1071,29 @@ void Application::Vice_SetSidModel(bool is8580)
     WindowManager::Instance().LayoutMenu();
 }
 
-void Application::Vice_SetJoystickPort(int port)
+void Application::Vice_SetControllerMode(ControllerMode mode)
 {
-    ViceBridge::Instance().SetJoystickPort(port);
-    port = ViceBridge::Instance().GetJoystickPort();
+    ViceBridge::Instance().SetControllerMode(mode);
+    mode = ViceBridge::Instance().GetControllerMode();
 
-    m_viceJoystickPortMenu->m_name = std::format("Joystick Port : {}", port);
-    Settings::Instance().SetInt(SETTING_VICE_JOY_PORT, port);
+    m_viceControllerModeMenu->m_name = std::format("Controller Mode : {}", ControllerModeName(mode));
+    Settings::Instance().SetInt(SETTING_VICE_CONTROLLER_MODE, (int)mode + 1);
     Settings::Instance().Save();
     WindowManager::Instance().LayoutMenu();
+}
+
+void Application::Vice_SwapControllerPorts()
+{
+    switch (ViceBridge::Instance().GetControllerMode())
+    {
+        case ControllerMode::Joy1:    Vice_SetControllerMode(ControllerMode::Joy2); break;
+        case ControllerMode::Joy2:    Vice_SetControllerMode(ControllerMode::Joy1); break;
+        case ControllerMode::Paddle1: Vice_SetControllerMode(ControllerMode::Paddle2); break;
+        case ControllerMode::Paddle2: Vice_SetControllerMode(ControllerMode::Paddle1); break;
+        case ControllerMode::MousePad1: Vice_SetControllerMode(ControllerMode::MousePad2); break;
+        case ControllerMode::MousePad2: Vice_SetControllerMode(ControllerMode::MousePad1); break;
+        default: break;     // the dual modes already use both ports
+    }
 }
 
 void Application::Vice_EnablePAL(bool enable)

@@ -7,6 +7,8 @@
 #include "Singleton.h"
 #include <array>
 
+enum class ControllerMode;      // ViceBridge.h
+
 #define VERSION "1.1.0"
 
 extern u32 C64Palette[16];
@@ -101,7 +103,9 @@ public:
     void Vice_EnablePAL(bool enable);
     void Vice_SetVolume(int volume);
     void Vice_SetSidModel(bool is8580);
-    void Vice_SetJoystickPort(int port);
+    void Vice_SetControllerMode(ControllerMode mode);
+    // Ctrl+J: swap the ports the controllers drive (Joy 1 <-> Joy 2, Paddle 1 <-> Paddle 2)
+    void Vice_SwapControllerPorts();
     bool IsPAL() { return m_vice_pal; }
 
 protected:
@@ -136,7 +140,7 @@ protected:
     WindowMenuItem* m_viceVideoStandardMenu;
     WindowMenuItem* m_viceVolumeMenu;
     WindowMenuItem* m_viceSidModelMenu;
-    WindowMenuItem* m_viceJoystickPortMenu;
+    WindowMenuItem* m_viceControllerModeMenu;
 
     bool m_vice_pal = true;
     int m_vice_vol = 100;

@@ -17,6 +17,7 @@ public:
     void Paint(SDL_Renderer* renderer, const Recti& dirtyArea) override;
     void MessageChild(WindowLayout* layout, struct WindowMessageStruct& msg) override;
     bool Tick() override;
+    bool HandleEvent(SDL_Event* e) override;
 
     // true if a newer input state than the one being displayed has been captured
     bool NeedsRefresh();
@@ -35,6 +36,10 @@ protected:
 
     InputState m_state;
     u32 m_stateVersion = 0;
+
+    // controller mode button above the keyboard: click for the next mode, right click for the previous one
+    SDL_FRect m_modeButton{ 0, 0, 0, 0 };
+    ControllerMode m_shownMode = ControllerMode::Count;     // mode last drawn, so a change from the menu repaints
 
     // what each key types, from the KERNAL decode tables: [normal, SHIFT, C=, CTRL][matrix position]
     u8 m_keyTables[4][64] = {};

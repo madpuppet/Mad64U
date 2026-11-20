@@ -283,9 +283,46 @@ bool InputScreenWindow::Tick()
     return NeedsRefresh();
 }
 
+bool InputScreenWindow::HandleEvent(SDL_Event* e)
+{
+    if (e->type == SDL_EVENT_MOUSE_BUTTON_DOWN && (e->button.button == SDL_BUTTON_LEFT || e->button.button == SDL_BUTTON_RIGHT))
+    {
+        SDL_FPoint p{ e->button.x, e->button.y };
+        if (ViceBridge::Exists() && SDL_PointInRectFloat(&p, &m_modeButton))
+        {
+            int count = (int)ControllerMode::Count;
+            int step = (e->button.button == SDL_BUTTON_LEFT) ? 1 : count - 1;
+            int mode = ((int)ViceBridge::Instance().GetControllerMode() + step) % count;
+            Application::Instance().Vice_SetControllerMode((ControllerMode)mode);
+            return true;
+        }
+    }
+    return false;
+}
+
+// what each controller mode does, for the line next to the mode button
+static const char* ControllerModeHelp(ControllerMode mode)
+{
+    switch (mode)
+    {
+        case ControllerMode::DualStick:   return "pad 1: left stick + A fire + B up -> joy 1,  right stick + X fire + Y up -> joy 2";
+        case ControllerMode::DualPaddles: return "pad 1: left stick -> paddles 1 (A / B fire),  right stick -> paddles 2 (X / Y fire)";
+        case ControllerMode::Joy1:        return "pad 1 -> joy 1, pad 2 -> joy 2  (stick / d-pad, A fire, B up)";
+        case ControllerMode::Joy2:        return "pad 1 -> joy 2, pad 2 -> joy 1  (stick / d-pad, A fire, B up)";
+        case ControllerMode::Paddle1:     return "pad 1 -> paddles 1, pad 2 -> paddles 2  (left stick POTX / POTY, A / B fire)";
+        case ControllerMode::Paddle2:     return "pad 1 -> paddles 2, pad 2 -> paddles 1  (left stick POTX / POTY, A / B fire)";
+        case ControllerMode::MousePad1:   return "mouse -> paddles 1 (X / Y -> POTX / POTY, left / right button fire), pad 1 -> joy 2.  Click the emu screen to capture";
+        case ControllerMode::MousePad2:   return "mouse -> paddles 2 (X / Y -> POTX / POTY, left / right button fire), pad 1 -> joy 1.  Click the emu screen to capture";
+        default:                          return "";
+    }
+}
+
 bool InputScreenWindow::NeedsRefresh()
 {
-    return ViceBridge::Exists() && ViceBridge::Instance().GetInputStateVersion() != m_stateVersion;
+    if (!ViceBridge::Exists())
+        return false;
+    auto& vb = ViceBridge::Instance();
+    return vb.GetInputStateVersion() != m_stateVersion || vb.GetControllerMode() != m_shownMode;
 }
 
 static bool KeyHeld(const InputState& state, int row, int col)
@@ -472,12 +509,36 @@ void InputScreenWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
 
     float x0 = (float)(m_clientArea.x - m_clientContentOffset.x + INPUT_MARGIN);
     float y0 = (float)(m_clientArea.y - m_clientContentOffset.y + INPUT_MARGIN);
+    auto& fr = FontRenderer::Instance();
+
+    // controller mode button
+    float y = y0;
+    if (ViceBridge::Exists())
+    {
+        auto& vb = ViceBridge::Instance();
+        ControllerMode mode = vb.GetControllerMode();
+        std::string text = std::format("Controller: {}", ControllerModeName(mode));
+        Recti area;
+        fr.CalcTextArea(renderer, text, { 0, 0 }, FontType::Text, area);
+        m_modeButton = SDL_FRect{ x0, y, (float)area.w + 16, (float)INPUT_ROW_HEIGHT + 6 };
+
+        m_shownMode = mode;
+        FillRect(renderer, m_modeButton, SDL_Color{ 50, 50, 70, 255 });
+        OutlineRect(renderer, m_modeButton, SDL_Color{ 140, 140, 200, 255 });
+        TextInRect(renderer, text.c_str(), s_valueCol, m_modeButton, true);
+
+        std::string help = ControllerModeHelp(mode);
+        if (vb.GetControllerCount() == 0)
+            help += "   (no controller connected)";
+        fr.RenderText(renderer, help, s_labelCol, (int)(m_modeButton.x + m_modeButton.w + 12), (int)(y + 3), FontType::Text);
+        y += m_modeButton.h + 10;
+    }
 
     // keyboard, scaled to the window width
     float unit = std::clamp((m_clientArea.w - 2.0f * INPUT_MARGIN) / KEYBOARD_UNITS_W, 26.0f, 44.0f);
-    DrawKeyboard(renderer, x0, y0, unit);
+    DrawKeyboard(renderer, x0, y, unit);
     float keyboardW = KEYBOARD_UNITS_W * unit;
-    float y = y0 + KEYBOARD_UNITS_H * unit * KEY_HEIGHT_SCALE + INPUT_SECTION_GAP;
+    y += KEYBOARD_UNITS_H * unit * KEY_HEIGHT_SCALE + INPUT_SECTION_GAP;
 
     // matrix, joysticks and paddles side by side underneath
     float x = x0;

@@ -173,8 +173,10 @@ void EmuScreenWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     SDL_Color stateCol{ 255,255,255,255 };
     auto& vb = ViceBridge::Instance();
     int pads = vb.GetControllerCount();
-    std::string joyText = pads == 0 ? "-" : pads == 1 ? std::format("{}", vb.GetJoystickPort()) : "1+2";
-    std::string text = std::format("PC {:4x} ROW {:03x} COL {:3d} A {:2x} X {:2x} Y {:2x} Flags {}{}.{}{}{}{}{} Zoom {} Mode {}{} Joy {}",
+    std::string joyText = (pads == 0 && !vb.IsMouseControllerMode()) ? std::string("-") : std::string(ControllerModeName(vb.GetControllerMode()));
+    if (vb.IsMouseControllerMode())
+        joyText += vb.IsMouseCaptured() ? " (Ctrl+M / middle click releases mouse)" : " (click screen to capture mouse)";
+    std::string text = std::format("PC {:4x} ROW {:03x} COL {:3d} A {:2x} X {:2x} Y {:2x} Flags {}{}.{}{}{}{}{} Zoom {} Mode {}{} Pad {}",
         viceState.m_pc, viceState.m_rasterLine, viceState.m_rasterCycle, viceState.m_acc, viceState.m_x, viceState.m_y,
         viceState.m_flags & 128 ? 'N' : 'n',
         viceState.m_flags & 64 ? 'V' : 'v',
@@ -199,9 +201,10 @@ bool EmuScreenWindow::HandleEvent(SDL_Event* e)
         {
             m_shift = (e->key.mod & SDL_KMOD_SHIFT);
 
-            // Ctrl+W (warp) and Ctrl+J (swap joystick port) are MAD64 shortcuts; every other Ctrl combination goes to
-            // the C64, as left Ctrl is the C64's CTRL key
-            if ((e->key.mod & SDL_KMOD_LCTRL) && (e->key.scancode == SDL_SCANCODE_W || e->key.scancode == SDL_SCANCODE_J))
+            // Ctrl+W (warp), Ctrl+J (swap joystick port) and Ctrl+M (release a captured mouse) are MAD64 shortcuts; every
+            // other Ctrl combination goes to the C64, as left Ctrl is the C64's CTRL key
+            if ((e->key.mod & SDL_KMOD_LCTRL) && (e->key.scancode == SDL_SCANCODE_W || e->key.scancode == SDL_SCANCODE_J
+                || (e->key.scancode == SDL_SCANCODE_M && ViceBridge::Instance().IsMouseCaptured())))
             {
                 if (e->type == SDL_EVENT_KEY_DOWN && !e->key.repeat)
                 {
@@ -212,10 +215,14 @@ bool EmuScreenWindow::HandleEvent(SDL_Event* e)
                         cmd->m_enable = m_warpMode;
                         ViceBridge::Instance().SendMad2Vice(cmd);
                     }
-                    else
+                    else if (e->key.scancode == SDL_SCANCODE_J)
                     {
                         // swap which control port the controller drives
-                        Application::Instance().Vice_SetJoystickPort(3 - ViceBridge::Instance().GetJoystickPort());
+                        Application::Instance().Vice_SwapControllerPorts();
+                    }
+                    else
+                    {
+                        ViceBridge::Instance().ReleaseMouse();
                     }
                 }
                 return true;
@@ -420,6 +427,12 @@ bool EmuScreenWindow::HandleEvent(SDL_Event* e)
                         m_zoom = (m_zoom + 1) % 4;
                         break;
                 }
+            }
+            else if (e->button.button == SDL_BUTTON_LEFT && ViceBridge::Instance().IsMouseControllerMode())
+            {
+                // MousePad modes: clicking the screen hands the mouse to the paddles until released
+                ViceBridge::Instance().CaptureMouse(SDL_GetWindowFromID(e->button.windowID));
+                return true;
             }
         }
     }

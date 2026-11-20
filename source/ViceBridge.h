@@ -146,9 +146,42 @@ struct VBC_SetSidModel : ViceBridgeCmd
 struct VBC_Joystick : ViceBridgeCmd
 {
     int m_port;     // C64 control port, 1 or 2
-    u8 m_value;     // bit 0 up, 1 down, 2 left, 3 right, 4 fire
+    u8 m_value;     // bit 0 up, 1 down, 2 left, 3 right, 4 fire, 5 second fire (POTY paddle fire)
     void Execute() override;
 };
+
+// pot values of the paddles in a control port
+struct VBC_SetPaddles : ViceBridgeCmd
+{
+    int m_port;     // 1 or 2
+    u8 m_potX;
+    u8 m_potY;
+    void Execute() override;
+};
+
+// attach a joystick or paddles to a control port
+struct VBC_SetPortDevice : ViceBridgeCmd
+{
+    int m_port;     // 1 or 2
+    bool m_paddles;
+    void Execute() override;
+};
+
+// How host controllers drive the C64 control ports. "A B X Y" are the gamepad face buttons (south, east, west, north).
+enum class ControllerMode
+{
+    DualStick,      // controller 1: left stick / d-pad + A fire + B up -> joystick 1, right stick + X fire + Y up -> joystick 2
+    DualPaddles,    // controller 1: left stick -> port 1 paddles (A / B fire), right stick -> port 2 paddles (X / Y fire)
+    Joy1,           // controller 1 -> joystick 1, controller 2 -> joystick 2 (left stick / d-pad, A fire, B up)
+    Joy2,           // controller 1 -> joystick 2, controller 2 -> joystick 1
+    Paddle1,        // controller 1 -> port 1 paddles, controller 2 -> port 2 paddles (left stick -> POTX / POTY, A / B fire)
+    Paddle2,        // controller 1 -> port 2 paddles, controller 2 -> port 1 paddles
+    MousePad1,      // mouse -> port 1 paddles (X -> POTX, Y -> POTY, no centering, left / right button fire),
+                    // controller 1 -> joystick 2
+    MousePad2,      // mouse -> port 2 paddles, controller 1 -> joystick 1
+    Count
+};
+const char* ControllerModeName(ControllerMode mode);
 
 struct VBC_Key : ViceBridgeCmd
 {
@@ -427,10 +460,18 @@ public:
     // host game controllers -> C64 joystick ports (main thread).
     // Returns true if the event was a controller event and has been consumed.
     bool HandleControllerEvent(SDL_Event* e);
-    // the port the first controller drives (1 or 2); a second controller drives the other port
-    void SetJoystickPort(int port);
-    int GetJoystickPort() { return m_joystickPort; }
+    // how the controllers map to the control ports; switches the port devices between joysticks and paddles
+    void SetControllerMode(ControllerMode mode);
+    ControllerMode GetControllerMode() { return m_controllerMode; }
     int GetControllerCount() { return (int)m_controllers.size(); }
+
+    // host mouse -> paddles (the MousePad modes). The emulator screen captures the mouse when clicked; while captured
+    // every mouse event goes to the paddles (main thread). Returns true if the event was consumed.
+    bool IsMouseControllerMode();
+    void CaptureMouse(SDL_Window* window);
+    void ReleaseMouse();
+    bool IsMouseCaptured() { return m_mouseWindow != nullptr; }
+    bool HandleMouseEvent(SDL_Event* e);
 
     void SetActiveFileID(int fileID) { m_activeFileID = fileID; }
     int GetActiveFileID() { return m_activeFileID; }
@@ -467,9 +508,17 @@ protected:
         SDL_Joystick* m_joystick = nullptr;     // otherwise a raw joystick (hat / first two axes / first two buttons)
     };
     std::vector<Controller> m_controllers;     // in connection order
-    int m_joystickPort = 2;
-    u8 m_sentJoystick[2] = {};                 // last value sent to VICE for each port
+    ControllerMode m_controllerMode = ControllerMode::Joy2;
+    // last state sent to VICE for each port
+    u8 m_sentJoystick[2] = {};
+    u8 m_sentPot[2][2] = { { 0x80, 0x80 }, { 0x80, 0x80 } };   // VICE's starting pot values
+    bool m_portPaddles[2] = {};                                 // VICE starts with joysticks in both ports
     void SendJoystickState();
+
+    // mouse paddles: pot positions stay where the mouse left them (no centering)
+    SDL_Window* m_mouseWindow = nullptr;        // window holding the captured mouse
+    float m_mousePot[2] = { 128.0f, 128.0f };   // POTX, POTY
+    bool m_mouseButtons[2] = {};                // left, right
 
     std::mutex m_vicSnapshotMutex;
     VicRasterState m_vicSnapshot;

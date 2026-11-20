@@ -4253,3 +4253,12 @@ void joystick_device_close(joystick_device_t *joydev)
         joy_driver.close(joydev);
     }
 }
+
+/* MAD64: set the pot values a paddle device reads (when its input is a joystick axis) directly, for host controllers.
+   port: 0 or 1, pot: 0 = POTX, 1 = POTY */
+void mad_joystick_set_axis(int port, int pot, uint8_t value)
+{
+    if (port >= 0 && port < 2 && pot >= 0 && pot < 2) {
+        joystick_axis_value[port][pot] = value;
+    }
+}

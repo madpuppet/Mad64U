@@ -24,6 +24,8 @@ extern "C" void helper_get_vicii_beam(int* line, int* beamX, int* cyclesPerLine,
 extern "C" void helper_get_vicii_memory(unsigned char* ram, unsigned char* colourRam, unsigned char* charRom, int* vbank);
 extern "C" void helper_get_cpu_memory(unsigned char* mem);
 extern "C" void helper_set_joystick(int port, int value);
+extern "C" void helper_set_paddles(int port, int potx, int poty);
+extern "C" void helper_set_port_device(int port, int paddles);
 extern "C" void helper_cold_reset();
 extern "C" int helper_get_keyboard_tables(unsigned char* tables, unsigned char* charRom);
 extern "C" int helper_get_input_state(unsigned char* keyMatrix, unsigned char* joystick, unsigned char* potx, unsigned char* poty, char* device, int deviceLen);
@@ -701,6 +703,16 @@ void VBC_Joystick::Execute()
     helper_set_joystick(m_port, m_value);
 }
 
+void VBC_SetPaddles::Execute()
+{
+    helper_set_paddles(m_port, m_potX, m_potY);
+}
+
+void VBC_SetPortDevice::Execute()
+{
+    helper_set_port_device(m_port, m_paddles ? 1 : 0);
+}
+
 //==================================================================================================================================
 // Host controllers
 //==================================================================================================================================
@@ -710,6 +722,7 @@ void VBC_Joystick::Execute()
 #define JOY_LEFT  0x04
 #define JOY_RIGHT 0x08
 #define JOY_FIRE  0x10
+#define JOY_FIRE2 0x20      // second fire: the POTY paddle's button when a port has paddles
 
 // stick deflection needed to count as a direction (axes are -32768..32767)
 #define JOY_DEADZONE 12000
@@ -802,69 +815,308 @@ bool ViceBridge::HandleControllerEvent(SDL_Event* e)
     return true;
 }
 
-void ViceBridge::SetJoystickPort(int port)
+const char* ControllerModeName(ControllerMode mode)
 {
-    m_joystickPort = (port == 1) ? 1 : 2;
+    switch (mode)
+    {
+        case ControllerMode::DualStick:   return "Dual Stick";
+        case ControllerMode::DualPaddles: return "Dual Paddles";
+        case ControllerMode::Joy1:        return "Joy 1";
+        case ControllerMode::Joy2:        return "Joy 2";
+        case ControllerMode::Paddle1:     return "Paddle 1";
+        case ControllerMode::Paddle2:     return "Paddle 2";
+        case ControllerMode::MousePad1:   return "Mouse Pad 1";
+        case ControllerMode::MousePad2:   return "Mouse Pad 2";
+        default:                          return "?";
+    }
+}
+
+// does this mode put paddles in control port 1 (port 0) / 2 (port 1)?
+static bool ModeUsesPaddles(ControllerMode mode, int port)
+{
+    switch (mode)
+    {
+        case ControllerMode::DualPaddles:
+        case ControllerMode::Paddle1:
+        case ControllerMode::Paddle2:
+            return true;
+        case ControllerMode::MousePad1:
+            return port == 0;
+        case ControllerMode::MousePad2:
+            return port == 1;
+        default:
+            return false;
+    }
+}
+
+void ViceBridge::SetControllerMode(ControllerMode mode)
+{
+    if ((int)mode < 0 || mode >= ControllerMode::Count)
+        mode = ControllerMode::Joy2;
+    m_controllerMode = mode;
+    if (!IsMouseControllerMode())
+        ReleaseMouse();
     SendJoystickState();
 }
 
-// recompute both ports from the current state of every controller and send VICE whatever changed
+bool ViceBridge::IsMouseControllerMode()
+{
+    return m_controllerMode == ControllerMode::MousePad1 || m_controllerMode == ControllerMode::MousePad2;
+}
+
+void ViceBridge::CaptureMouse(SDL_Window* window)
+{
+    if (!window || !IsMouseControllerMode() || m_mouseWindow == window)
+        return;
+    ReleaseMouse();
+    if (!SDL_SetWindowRelativeMouseMode(window, true))
+    {
+        Log(LogGroup::System, "Mouse capture failed: {}", SDL_GetError());
+        return;
+    }
+    m_mouseWindow = window;
+    m_mouseButtons[0] = m_mouseButtons[1] = false;
+    SendJoystickState();
+}
+
+void ViceBridge::ReleaseMouse()
+{
+    if (!m_mouseWindow)
+        return;
+    SDL_SetWindowRelativeMouseMode(m_mouseWindow, false);
+    m_mouseWindow = nullptr;
+    // let go of the paddle buttons; the pots stay where they are
+    m_mouseButtons[0] = m_mouseButtons[1] = false;
+    SendJoystickState();
+}
+
+// mouse movement -> pot units. Matches VICE's own mouse paddles (half a unit per mouse unit).
+#define MOUSE_POT_SCALE 0.5f
+
+bool ViceBridge::HandleMouseEvent(SDL_Event* e)
+{
+    if (!m_mouseWindow)
+        return false;
+
+    switch (e->type)
+    {
+        case SDL_EVENT_MOUSE_MOTION:
+            // moving right / down lowers the pot value, as for the sticks and VICE's mouse paddles
+            m_mousePot[0] = std::clamp(m_mousePot[0] - e->motion.xrel * MOUSE_POT_SCALE, 0.0f, 255.0f);
+            m_mousePot[1] = std::clamp(m_mousePot[1] - e->motion.yrel * MOUSE_POT_SCALE, 0.0f, 255.0f);
+            break;
+
+        case SDL_EVENT_MOUSE_BUTTON_DOWN:
+        case SDL_EVENT_MOUSE_BUTTON_UP:
+            if (e->button.button == SDL_BUTTON_LEFT)
+                m_mouseButtons[0] = e->button.down;
+            else if (e->button.button == SDL_BUTTON_RIGHT)
+                m_mouseButtons[1] = e->button.down;
+            else if (e->button.button == SDL_BUTTON_MIDDLE && e->button.down)
+            {
+                ReleaseMouse();
+                return true;
+            }
+            break;
+
+        case SDL_EVENT_MOUSE_WHEEL:
+            break;
+
+        case SDL_EVENT_WINDOW_FOCUS_LOST:
+            if (SDL_GetWindowFromID(e->window.windowID) == m_mouseWindow)
+                ReleaseMouse();
+            return false;       // the window manager still wants to see it
+
+        default:
+            return false;
+    }
+
+    SendJoystickState();
+    return true;
+}
+
+// what one host controller is doing, in gamepad terms
+struct PadInput
+{
+    int m_lx = 0, m_ly = 0;     // sticks, -32768..32767
+    int m_rx = 0, m_ry = 0;
+    u8 m_dpad = 0;              // as JOY_ direction bits
+    bool m_a = false, m_b = false, m_x = false, m_y = false;
+};
+
+static PadInput ReadPad(SDL_Gamepad* pad, SDL_Joystick* joy)
+{
+    PadInput in;
+    if (pad)
+    {
+        in.m_lx = SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_LEFTX);
+        in.m_ly = SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_LEFTY);
+        in.m_rx = SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_RIGHTX);
+        in.m_ry = SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_RIGHTY);
+        if (SDL_GetGamepadButton(pad, SDL_GAMEPAD_BUTTON_DPAD_UP)) in.m_dpad |= JOY_UP;
+        if (SDL_GetGamepadButton(pad, SDL_GAMEPAD_BUTTON_DPAD_DOWN)) in.m_dpad |= JOY_DOWN;
+        if (SDL_GetGamepadButton(pad, SDL_GAMEPAD_BUTTON_DPAD_LEFT)) in.m_dpad |= JOY_LEFT;
+        if (SDL_GetGamepadButton(pad, SDL_GAMEPAD_BUTTON_DPAD_RIGHT)) in.m_dpad |= JOY_RIGHT;
+        in.m_a = SDL_GetGamepadButton(pad, SDL_GAMEPAD_BUTTON_SOUTH);
+        in.m_b = SDL_GetGamepadButton(pad, SDL_GAMEPAD_BUTTON_EAST);
+        in.m_x = SDL_GetGamepadButton(pad, SDL_GAMEPAD_BUTTON_WEST);
+        in.m_y = SDL_GetGamepadButton(pad, SDL_GAMEPAD_BUTTON_NORTH);
+    }
+    else if (joy)
+    {
+        // raw joystick: axes 0/1 left stick, 2/3 right stick, hat 0 d-pad, buttons 0-3 A B X Y
+        int axes = SDL_GetNumJoystickAxes(joy);
+        if (axes >= 2)
+        {
+            in.m_lx = SDL_GetJoystickAxis(joy, 0);
+            in.m_ly = SDL_GetJoystickAxis(joy, 1);
+        }
+        if (axes >= 4)
+        {
+            in.m_rx = SDL_GetJoystickAxis(joy, 2);
+            in.m_ry = SDL_GetJoystickAxis(joy, 3);
+        }
+        if (SDL_GetNumJoystickHats(joy) >= 1)
+        {
+            u8 hat = SDL_GetJoystickHat(joy, 0);
+            if (hat & SDL_HAT_UP) in.m_dpad |= JOY_UP;
+            if (hat & SDL_HAT_DOWN) in.m_dpad |= JOY_DOWN;
+            if (hat & SDL_HAT_LEFT) in.m_dpad |= JOY_LEFT;
+            if (hat & SDL_HAT_RIGHT) in.m_dpad |= JOY_RIGHT;
+        }
+        int buttons = SDL_GetNumJoystickButtons(joy);
+        in.m_a = buttons >= 1 && SDL_GetJoystickButton(joy, 0);
+        in.m_b = buttons >= 2 && SDL_GetJoystickButton(joy, 1);
+        in.m_x = buttons >= 3 && SDL_GetJoystickButton(joy, 2);
+        in.m_y = buttons >= 4 && SDL_GetJoystickButton(joy, 3);
+    }
+    return in;
+}
+
+// stick deflection -> paddle pot value. Right / down gives the lower value, like turning a paddle clockwise.
+static u8 AxisToPot(int v)
+{
+    return (u8)(255 - ((v + 32768) >> 8));
+}
+
+// Recompute both control ports from the current state of the controllers and the controller mode, and send VICE
+// whatever changed: the device in each port (joystick or paddles), the joystick lines and the paddle pots.
 void ViceBridge::SendJoystickState()
 {
-    u8 ports[2] = {};
-    for (size_t i = 0; i < m_controllers.size(); i++)
+    PadInput pads[2];
+    bool havePad[2];
+    for (int i = 0; i < 2; i++)
     {
-        auto& c = m_controllers[i];
-        u8 value = 0;
-        if (c.m_gamepad)
+        havePad[i] = i < (int)m_controllers.size();
+        if (havePad[i])
+            pads[i] = ReadPad(m_controllers[i].m_gamepad, m_controllers[i].m_joystick);
+    }
+
+    u8 joy[2] = {};
+    u8 pot[2][2] = { { 0x80, 0x80 }, { 0x80, 0x80 } };
+
+    // left stick / d-pad, A fires, B pushes up
+    auto stickJoystick = [](const PadInput& p) -> u8
         {
-            auto pad = c.m_gamepad;
-            value = AxesToJoystick(SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_LEFTX), SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_LEFTY));
-            if (SDL_GetGamepadButton(pad, SDL_GAMEPAD_BUTTON_DPAD_UP)) value |= JOY_UP;
-            if (SDL_GetGamepadButton(pad, SDL_GAMEPAD_BUTTON_DPAD_DOWN)) value |= JOY_DOWN;
-            if (SDL_GetGamepadButton(pad, SDL_GAMEPAD_BUTTON_DPAD_LEFT)) value |= JOY_LEFT;
-            if (SDL_GetGamepadButton(pad, SDL_GAMEPAD_BUTTON_DPAD_RIGHT)) value |= JOY_RIGHT;
-            // A fires, B pushes up (jump in most platformers)
-            if (SDL_GetGamepadButton(pad, SDL_GAMEPAD_BUTTON_SOUTH))
-                value |= JOY_FIRE;
-            if (SDL_GetGamepadButton(pad, SDL_GAMEPAD_BUTTON_EAST))
-                value |= JOY_UP;
-        }
-        else if (c.m_joystick)
+            return AxesToJoystick(p.m_lx, p.m_ly) | p.m_dpad | (p.m_a ? JOY_FIRE : 0) | (p.m_b ? JOY_UP : 0);
+        };
+    // a pair of paddles: pots from a stick, fire buttons are the joystick fire (POTX paddle) and second fire (POTY paddle)
+    auto paddles = [&](int port, int x, int y, bool fireX, bool fireY)
         {
-            auto joy = c.m_joystick;
-            if (SDL_GetNumJoystickAxes(joy) >= 2)
-                value = AxesToJoystick(SDL_GetJoystickAxis(joy, 0), SDL_GetJoystickAxis(joy, 1));
-            if (SDL_GetNumJoystickHats(joy) >= 1)
+            pot[port][0] = AxisToPot(x);
+            pot[port][1] = AxisToPot(y);
+            joy[port] |= (fireX ? JOY_FIRE : 0) | (fireY ? JOY_FIRE2 : 0);
+        };
+
+    auto mode = m_controllerMode;
+    switch (mode)
+    {
+        case ControllerMode::DualStick:
+            if (havePad[0])
             {
-                u8 hat = SDL_GetJoystickHat(joy, 0);
-                if (hat & SDL_HAT_UP) value |= JOY_UP;
-                if (hat & SDL_HAT_DOWN) value |= JOY_DOWN;
-                if (hat & SDL_HAT_LEFT) value |= JOY_LEFT;
-                if (hat & SDL_HAT_RIGHT) value |= JOY_RIGHT;
+                auto& p = pads[0];
+                joy[0] = stickJoystick(p);
+                joy[1] = AxesToJoystick(p.m_rx, p.m_ry) | (p.m_x ? JOY_FIRE : 0) | (p.m_y ? JOY_UP : 0);
             }
-            // button 0 fires, button 1 pushes up
-            int buttons = SDL_GetNumJoystickButtons(joy);
-            if (buttons >= 1 && SDL_GetJoystickButton(joy, 0))
-                value |= JOY_FIRE;
-            if (buttons >= 2 && SDL_GetJoystickButton(joy, 1))
-                value |= JOY_UP;
+            break;
+
+        case ControllerMode::DualPaddles:
+            if (havePad[0])
+            {
+                auto& p = pads[0];
+                paddles(0, p.m_lx, p.m_ly, p.m_a, p.m_b);
+                paddles(1, p.m_rx, p.m_ry, p.m_x, p.m_y);
+            }
+            break;
+
+        case ControllerMode::Joy1:
+        case ControllerMode::Joy2:
+            for (int i = 0; i < 2; i++)
+            {
+                int port = (mode == ControllerMode::Joy1) ? i : 1 - i;
+                if (havePad[i])
+                    joy[port] = stickJoystick(pads[i]);
+            }
+            break;
+
+        case ControllerMode::Paddle1:
+        case ControllerMode::Paddle2:
+            for (int i = 0; i < 2; i++)
+            {
+                int port = (mode == ControllerMode::Paddle1) ? i : 1 - i;
+                if (havePad[i])
+                    paddles(port, pads[i].m_lx, pads[i].m_ly, pads[i].m_a, pads[i].m_b);
+            }
+            break;
+
+        case ControllerMode::MousePad1:
+        case ControllerMode::MousePad2:
+        {
+            int port = (mode == ControllerMode::MousePad1) ? 0 : 1;
+            pot[port][0] = (u8)(m_mousePot[0] + 0.5f);
+            pot[port][1] = (u8)(m_mousePot[1] + 0.5f);
+            joy[port] |= (m_mouseButtons[0] ? JOY_FIRE : 0) | (m_mouseButtons[1] ? JOY_FIRE2 : 0);
+            // controller 1 still drives a joystick in the other port
+            if (havePad[0])
+                joy[1 - port] = stickJoystick(pads[0]);
+            break;
         }
 
-        // first controller drives the selected port, second the other one, and so on alternating
-        int port = (i & 1) ? 3 - m_joystickPort : m_joystickPort;
-        ports[port - 1] |= value;
+        default:
+            break;
     }
 
     for (int p = 0; p < 2; p++)
     {
-        if (ports[p] == m_sentJoystick[p])
-            continue;
-        m_sentJoystick[p] = ports[p];
-        auto cmd = new VBC_Joystick;
-        cmd->m_port = p + 1;
-        cmd->m_value = ports[p];
-        SendMad2Vice(cmd);
+        bool usePaddles = ModeUsesPaddles(mode, p);
+        if (usePaddles != m_portPaddles[p])
+        {
+            m_portPaddles[p] = usePaddles;
+            auto cmd = new VBC_SetPortDevice;
+            cmd->m_port = p + 1;
+            cmd->m_paddles = usePaddles;
+            SendMad2Vice(cmd);
+        }
+
+        if (pot[p][0] != m_sentPot[p][0] || pot[p][1] != m_sentPot[p][1])
+        {
+            m_sentPot[p][0] = pot[p][0];
+            m_sentPot[p][1] = pot[p][1];
+            auto cmd = new VBC_SetPaddles;
+            cmd->m_port = p + 1;
+            cmd->m_potX = pot[p][0];
+            cmd->m_potY = pot[p][1];
+            SendMad2Vice(cmd);
+        }
+
+        if (joy[p] != m_sentJoystick[p])
+        {
+            m_sentJoystick[p] = joy[p];
+            auto cmd = new VBC_Joystick;
+            cmd->m_port = p + 1;
+            cmd->m_value = joy[p];
+            SendMad2Vice(cmd);
+        }
     }
 }
 
