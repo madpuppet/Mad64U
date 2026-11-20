@@ -426,3 +426,24 @@ void helper_cold_reset(void)
 {
     machine_trigger_reset(MACHINE_RESET_MODE_POWER_CYCLE);
 }
+
+/* MAD64: snapshot of the C64 inputs for the InputScreen window (emulation thread).
+   keyMatrix: 8 rows (CIA1 port A bit), bit n set = key on port B bit n held
+   joystick:  2 ports, bit 0 up, 1 down, 2 left, 3 right, 4 fire
+   potx/poty: 2 ports, pot values of the attached devices (0xff if none)
+   device:    2 ports x deviceLen chars, attached device names
+   returns the port(s) the SID is reading pots from (1 = port 1, 2 = port 2, 3 = both) */
+int helper_get_input_state(unsigned char *keyMatrix, unsigned char *joystick, unsigned char *potx, unsigned char *poty, char *device, int deviceLen)
+{
+    extern int mad_joyport_get_state(int port, char *name, int nameLen, uint8_t *potx, uint8_t *poty);
+    int i, mask = 1;
+
+    for (i = 0; i < 8; i++)
+        keyMatrix[i] = (unsigned char)keyarr[i];
+
+    for (i = 0; i < 2; i++) {
+        joystick[i] = (unsigned char)(get_joystick_value(i) & 0x1f);
+        mask = mad_joyport_get_state(i, device + i * deviceLen, deviceLen, &potx[i], &poty[i]);
+    }
+    return mask;
+}

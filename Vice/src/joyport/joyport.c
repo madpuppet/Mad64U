@@ -2083,3 +2083,28 @@ int joyport_snapshot_read_module(struct snapshot_s *s, int port)
 
     return 0;
 }
+
+/* MAD64: state of one control port for the input viewer, without side effects.
+   name: attached device name (empty if none). potx / poty: the device's pot values (0xff if it has none).
+   Returns the port(s) the SID is currently reading pots from (1 = port 1, 2 = port 2, 3 = both). */
+int mad_joyport_get_state(int port, char *name, int nameLen, uint8_t *potx, uint8_t *poty)
+{
+    int id = joy_port[port];
+
+    name[0] = 0;
+    *potx = 0xff;
+    *poty = 0xff;
+    if (id != JOYPORT_ID_NONE) {
+        if (joyport_device[id].name) {
+            strncpy(name, joyport_device[id].name, nameLen - 1);
+            name[nameLen - 1] = 0;
+        }
+        if (joyport_device[id].read_potx) {
+            *potx = joyport_device[id].read_potx(port);
+        }
+        if (joyport_device[id].read_poty) {
+            *poty = joyport_device[id].read_poty(port);
+        }
+    }
+    return pot_port_mask;
+}

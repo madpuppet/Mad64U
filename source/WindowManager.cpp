@@ -10,6 +10,7 @@
 #include "VicScreenWindow.h"
 #include "SidWindow.h"
 #include "DriveIOWindow.h"
+#include "InputScreenWindow.h"
 #include <filesystem>
 
 std::vector<std::string> GetSourceFiles(const std::string& pathStr)
@@ -909,6 +910,19 @@ void WindowManager::Paint()
             msg.m_query = &query;
             tree->Message(msg);
             if (msg.m_response > 0 && ((DriveIOWindow*)msg.m_window)->NeedsRefresh())
+                tree->m_dirty = true;
+        }
+
+        // and a visible InputScreenWindow when a key, joystick or paddle changes
+        {
+            WindowMessageStruct msg;
+            WindowFindQuery query;
+            query.m_windowName = "InputScreen";
+            msg.m_type = WindowMessage::Query_FindWindow;
+            msg.m_flags = WMF_Window | WMF_TabActive | WMF_EarlyOut;
+            msg.m_query = &query;
+            tree->Message(msg);
+            if (msg.m_response > 0 && ((InputScreenWindow*)msg.m_window)->NeedsRefresh())
                 tree->m_dirty = true;
         }
 

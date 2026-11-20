@@ -100,6 +100,9 @@
     <ClCompile Include="source\DriveIOWindow.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="source\InputScreenWindow.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
     <ClCompile Include="source\Importer.cpp">
       <Filter>source</Filter>
     </ClCompile>
@@ -478,6 +481,9 @@
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="source\DriveIOWindow.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="source\InputScreenWindow.h">
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="source\Importer.h">

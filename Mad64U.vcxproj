@@ -164,6 +164,7 @@
     <ClCompile Include="source\VicScreenWindow.cpp" />
     <ClCompile Include="source\SidWindow.cpp" />
     <ClCompile Include="source\DriveIOWindow.cpp" />
+    <ClCompile Include="source\InputScreenWindow.cpp" />
     <ClCompile Include="source\Importer.cpp" />
     <ClCompile Include="source\FontRenderer.cpp" />
     <ClCompile Include="source\FunctionsWindow.cpp" />
@@ -290,6 +291,7 @@
     <ClInclude Include="source\VicScreenWindow.h" />
     <ClInclude Include="source\SidWindow.h" />
     <ClInclude Include="source\DriveIOWindow.h" />
+    <ClInclude Include="source\InputScreenWindow.h" />
     <ClInclude Include="source\Importer.h" />
     <ClInclude Include="source\FontRenderer.h" />
     <ClInclude Include="source\common.h" />

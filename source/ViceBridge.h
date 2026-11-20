@@ -223,6 +223,26 @@ struct SidState
     int m_model = 0;                // 0 = 6581, otherwise 8580
 };
 
+// Snapshot of the C64 inputs: keyboard matrix, joysticks and paddles
+#define INPUT_DEVICE_NAME_LEN 48
+struct InputState
+{
+    u8 m_keyMatrix[8] = {};         // [CIA1 port A bit] bit n set = the key on port B bit n is held
+    u8 m_joystick[2] = {};          // per control port: bit 0 up, 1 down, 2 left, 3 right, 4 fire
+    u8 m_potX[2] = { 0xff, 0xff };  // per control port: the attached device's pot values (0xff = none)
+    u8 m_potY[2] = { 0xff, 0xff };
+    int m_potPortMask = 1;          // port(s) the SID reads POTX / POTY from: 1 = port 1, 2 = port 2, 3 = both
+    char m_device[2][INPUT_DEVICE_NAME_LEN] = {};   // attached device names
+
+    // field by field, so padding bytes don't count
+    bool operator==(const InputState& o) const
+    {
+        return memcmp(m_keyMatrix, o.m_keyMatrix, sizeof(m_keyMatrix)) == 0 && memcmp(m_joystick, o.m_joystick, sizeof(m_joystick)) == 0 &&
+            memcmp(m_potX, o.m_potX, sizeof(m_potX)) == 0 && memcmp(m_potY, o.m_potY, sizeof(m_potY)) == 0 &&
+            m_potPortMask == o.m_potPortMask && memcmp(m_device, o.m_device, sizeof(m_device)) == 0;
+    }
+};
+
 // Disk drive activity
 #define DRIVE_MAP_TRACKS 84         // highest track number tracked (D64 42, D71 70, D81 80)
 #define DRIVE_MAP_SECTORS 40        // most sectors per track (D81)
@@ -385,6 +405,12 @@ public:
     bool GetDriveState(DriveState& state, u32& version);
     u32 GetDriveStateVersion() { return m_driveStateVersion; }
 
+    // C64 input state, captured on the emulation thread once per frame and while stopped; the version only changes
+    // when the state does
+    void CaptureInputState();
+    bool GetInputState(InputState& state, u32& version);
+    u32 GetInputStateVersion() { return m_inputStateVersion; }
+
     // general state info
     ViceState GetViceState();
     u8* GetRam();
@@ -448,6 +474,10 @@ protected:
     std::mutex m_sidStateMutex;
     SidState m_sidState;
     std::atomic<u32> m_sidStateVersion{ 0 };
+
+    std::mutex m_inputStateMutex;
+    InputState m_inputState;
+    std::atomic<u32> m_inputStateVersion{ 1 };
 
     std::mutex m_driveStateMutex;
     DriveState m_driveState;

@@ -25,6 +25,7 @@ extern "C" void helper_get_vicii_memory(unsigned char* ram, unsigned char* colou
 extern "C" void helper_get_cpu_memory(unsigned char* mem);
 extern "C" void helper_set_joystick(int port, int value);
 extern "C" void helper_cold_reset();
+extern "C" int helper_get_input_state(unsigned char* keyMatrix, unsigned char* joystick, unsigned char* potx, unsigned char* poty, char* device, int deviceLen);
 
 //==================================================================================================================================
 // Emulation internals
@@ -282,6 +283,7 @@ extern "C" void mad64_process_vice_commands(void)
     // called once per frame on the emulation thread
     ViceBridge::Instance().CaptureSidState();
     ViceBridge::Instance().CaptureDriveState();
+    ViceBridge::Instance().CaptureInputState();
 }
 
 static SidScope s_sidScope;
@@ -466,6 +468,28 @@ bool ViceBridge::GetSidState(SidState& state, u32& version)
     return true;
 }
 
+void ViceBridge::CaptureInputState()
+{
+    InputState state;
+    state.m_potPortMask = helper_get_input_state(state.m_keyMatrix, state.m_joystick, state.m_potX, state.m_potY, &state.m_device[0][0], INPUT_DEVICE_NAME_LEN);
+
+    std::lock_guard<std::mutex> lock(m_inputStateMutex);
+    if (state == m_inputState)
+        return;
+    m_inputState = state;
+    m_inputStateVersion++;
+}
+
+bool ViceBridge::GetInputState(InputState& state, u32& version)
+{
+    std::lock_guard<std::mutex> lock(m_inputStateMutex);
+    if (version == m_inputStateVersion)
+        return false;
+    state = m_inputState;
+    version = m_inputStateVersion;
+    return true;
+}
+
 static uint64_t s_clock_start = 0;
 static uint64_t s_clock_elapsed = 0;
 
@@ -475,6 +499,9 @@ void ViceBridge::ProcessViceCmdsTillContinue()
     {
         Sleep(1);
         ExecuteViceCmds();
+
+        // keys and joysticks still change while stopped
+        CaptureInputState();
     }
 }
 
