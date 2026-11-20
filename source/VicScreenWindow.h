@@ -25,12 +25,18 @@ public:
 
 protected:
     void UpdateTexture(SDL_Renderer* renderer);
+    void UpdateSpriteTexture(SDL_Renderer* renderer);
 
     SDL_Renderer* m_renderer = nullptr;
     SDL_Texture* m_texture = nullptr;
+
+    // the 8 sprites side by side at 24x21 each (no X/Y expansion), for the sprite strip above the info panel
+    SDL_Renderer* m_spriteRenderer = nullptr;
+    SDL_Texture* m_spriteTexture = nullptr;
     int m_textureWidth = 0;
     int m_textureHeight = 0;
     int m_zoom = 0;
+    bool m_charGrid = false;    // overlay: false = shade bad lines, true = draw the 8x8 character cell grid
 
     VicRasterState m_raster;
 

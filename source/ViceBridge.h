@@ -111,6 +111,11 @@ struct VBC_Pause : ViceBridgeCmd
     virtual void Execute() override;
 };
 
+struct VBC_ColdReset : ViceBridgeCmd
+{
+    virtual void Execute() override;
+};
+
 struct VBC_BreakPointHit : ViceBridgeCmd
 {
     virtual void Execute() override;
@@ -352,6 +357,8 @@ public:
     void SingleStep();
     void Continue();
     void Pause();
+    // power cycle the emulated C64 and let it run (also resumes if stopped at a breakpoint)
+    void ColdReboot();
 
     // set the single raster point. Instructions take several cycles, so the point triggers at the first
     // instruction boundary at or after that beam position.

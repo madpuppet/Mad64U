@@ -482,6 +482,9 @@ void Application::CreateMenus()
         };
     viceMenu->m_items.push_back(new WindowMenuItem("Mount D64 as Drive 8", mountDisk));
 
+    auto coldReboot = []() { ViceBridge::Instance().ColdReboot(); };
+    viceMenu->m_items.push_back(new WindowMenuItem("Cold Reboot", coldReboot));
+
     wm.AddWindowMenu(viceMenu);
 
     auto newWindowProjectList = []()

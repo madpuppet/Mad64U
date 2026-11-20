@@ -24,6 +24,7 @@ extern "C" void helper_get_vicii_beam(int* line, int* beamX, int* cyclesPerLine,
 extern "C" void helper_get_vicii_memory(unsigned char* ram, unsigned char* colourRam, unsigned char* charRom, int* vbank);
 extern "C" void helper_get_cpu_memory(unsigned char* mem);
 extern "C" void helper_set_joystick(int port, int value);
+extern "C" void helper_cold_reset();
 
 //==================================================================================================================================
 // Emulation internals
@@ -583,6 +584,17 @@ void ViceBridge::Continue()
 void ViceBridge::Pause()
 {
     SendMad2Vice(new VBC_Pause);
+}
+
+void ViceBridge::ColdReboot()
+{
+    SendMad2Vice(new VBC_ColdReset);
+    Continue();
+}
+
+void VBC_ColdReset::Execute()
+{
+    helper_cold_reset();
 }
 
 void VBC_Continue::Execute()

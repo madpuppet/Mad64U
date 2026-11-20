@@ -34,6 +34,8 @@ IconRenderer::IconRenderer()
     LoadImage("data/icon_2.png");
     LoadImage("data/icon_3.png");
     LoadImage("data/icon_4.png");
+    LoadImage("data/icon_badlines.png");
+    LoadImage("data/icon_chargrid.png");
 }
 
 IconRenderer::~IconRenderer()

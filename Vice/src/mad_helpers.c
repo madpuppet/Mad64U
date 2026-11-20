@@ -420,3 +420,9 @@ void helper_set_joystick(int port, int value)
         return;
     joystick_set_value_absolute((unsigned int)(port - 1), (uint16_t)(value & 0x1f));
 }
+
+/* MAD64: cold reboot - power cycle the machine (clears RAM, as if switched off and on). Emulation thread only. */
+void helper_cold_reset(void)
+{
+    machine_trigger_reset(MACHINE_RESET_MODE_POWER_CYCLE);
+}

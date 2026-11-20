@@ -86,6 +86,8 @@ VicScreenWindow::~VicScreenWindow()
 
     if (m_texture)
         SDL_DestroyTexture(m_texture);
+    if (m_spriteTexture)
+        SDL_DestroyTexture(m_spriteTexture);
 }
 
 void VicScreenWindow::MessageChild(WindowLayout* layout, struct WindowMessageStruct& msg)
@@ -124,6 +126,8 @@ void VicScreenWindow::MessageChild(WindowLayout* layout, struct WindowMessageStr
             if (testIcon(Icons::SingleStep, m_clientArea.x + 56, m_clientArea.y + 12))
                 return;
             if (testIcon(Icons::Zoom, m_clientArea.x + 76, m_clientArea.y + 12))
+                return;
+            if (testIcon(m_charGrid ? Icons::CharGrid : Icons::BadLines, m_clientArea.x + 96, m_clientArea.y + 12))
                 return;
 
             if (m_clientArea.Contains(msg.m_x, msg.m_y))
@@ -469,6 +473,70 @@ void VicScreenWindow::UpdateTexture(SDL_Renderer* renderer)
     }
 
     SDL_UnlockTexture(m_texture);
+
+    UpdateSpriteTexture(renderer);
+}
+
+#define SPRITE_W 24
+#define SPRITE_H 21
+
+// Draws the data of all 8 sprites (enabled or not) from the current pointers, in their own colours over the background
+// colour, ignoring position and X/Y expansion.
+void VicScreenWindow::UpdateSpriteTexture(SDL_Renderer* renderer)
+{
+    if (renderer != m_spriteRenderer || !m_spriteTexture)
+    {
+        if (m_spriteTexture)
+            SDL_DestroyTexture(m_spriteTexture);
+
+        m_spriteRenderer = renderer;
+        m_spriteTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, SPRITE_W * 8, SPRITE_H);
+        if (!m_spriteTexture)
+        {
+            Log(LogGroup::System, "VicScreen sprite texture: {}", SDL_GetError());
+            return;
+        }
+        SDL_SetTextureScaleMode(m_spriteTexture, SDL_SCALEMODE_NEAREST);
+    }
+
+    void* texPixels = nullptr;
+    int pitch = 0;
+    if (!SDL_LockTexture(m_spriteTexture, nullptr, &texPixels, &pitch))
+        return;
+
+    const VicRasterState& vic = m_raster;
+    const u8* regs = vic.m_regs;
+    int screenBase = (regs[0x18] >> 4) * 0x400;
+    u32 bg = C64Palette[regs[0x21] & 15];
+    u32 mc0 = C64Palette[regs[0x25] & 15];
+    u32 mc1 = C64Palette[regs[0x26] & 15];
+
+    for (int i = 0; i < 8; i++)
+    {
+        int dataBase = vic.VicRead(screenBase + 0x3f8 + i) * 64;
+        bool multi = (regs[0x1c] & (1 << i)) != 0;
+        u32 sprCol = C64Palette[regs[0x27 + i] & 15];
+
+        for (int y = 0; y < SPRITE_H; y++)
+        {
+            u32* out = (u32*)((u8*)texPixels + y * pitch) + i * SPRITE_W;
+            u32 bits = (vic.VicRead(dataBase + y * 3) << 16) | (vic.VicRead(dataBase + y * 3 + 1) << 8) | vic.VicRead(dataBase + y * 3 + 2);
+            for (int x = 0; x < SPRITE_W; x++)
+            {
+                if (multi)
+                {
+                    int v = (bits >> (22 - (x & ~1))) & 3;
+                    out[x] = (v == 0) ? bg : (v == 1) ? mc0 : (v == 2) ? sprCol : mc1;
+                }
+                else
+                {
+                    out[x] = ((bits >> (23 - x)) & 1) ? sprCol : bg;
+                }
+            }
+        }
+    }
+
+    SDL_UnlockTexture(m_spriteTexture);
 }
 
 static const char* s_zoomText[] = { "Auto", "1x", "2x", "4x" };
@@ -507,6 +575,22 @@ void VicScreenWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     SDL_FRect infoArea{ body.x, body.y + body.h - infoHeight, body.w, infoHeight };
     body.h = (std::max)(body.h - infoHeight, 16.0f);
 
+    // sprite strip above the info panel: the 8 sprites at the largest whole scale (up to 4x) that fits the width.
+    // Each cell is wide enough for its "n $addr" label.
+    int spriteScale = 1;
+    auto spriteCellWidth = [charWidth](int scale) { return (std::max)(SPRITE_W * scale, 7 * charWidth) + 8; };
+    for (int s = 4; s > 1; s--)
+    {
+        if (8 * spriteCellWidth(s) + 8 <= (int)body.w)
+        {
+            spriteScale = s;
+            break;
+        }
+    }
+    float spriteHeight = (float)(REG_ROW_HEIGHT + SPRITE_H * spriteScale + 8);
+    SDL_FRect spriteArea{ body.x, body.y + body.h - spriteHeight, body.w, spriteHeight };
+    body.h = (std::max)(body.h - spriteHeight, 16.0f);
+
     bool isPal = m_raster.m_lineCount > 300;
     int hoverLine = -1;
     int hoverCycle = -1;
@@ -536,7 +620,7 @@ void VicScreenWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
         }
         m_imageArea = body;
         m_viewRight = panelArea.x;
-        m_viewBottom = infoArea.y;
+        m_viewBottom = spriteArea.y;
 
         SDL_RenderTexture(renderer, m_texture, nullptr, &body);
 
@@ -545,8 +629,36 @@ void VicScreenWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
 
         SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
+        // character grid: the 40x25 8x8 character cells, following XSCROLL / YSCROLL, clipped to the display window
+        if (m_charGrid)
+        {
+            const u8* regs = m_raster.m_regs;
+            int xscroll = regs[0x16] & 7;
+            int yscroll = regs[0x11] & 7;
+            float left = body.x + VIC_DISPLAY_X * pixelWidth;
+            float right = left + VIC_DISPLAY_W * pixelWidth;
+            float top = body.y + VIC_DISPLAY_Y * pixelHeight;
+            float bottom = top + VIC_DISPLAY_H * pixelHeight;
+
+            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 72);
+            for (int c = 0; c <= 40; c++)
+            {
+                float x = body.x + (VIC_DISPLAY_X + xscroll + c * 8) * pixelWidth;
+                if (x >= left && x <= right)
+                    SDL_RenderLine(renderer, x, top, x, bottom);
+            }
+            for (int r = 0; r <= 25; r++)
+            {
+                // the first character row starts on the first bad line: line $30 + yscroll
+                float y = body.y + (0x30 + yscroll + r * 8) * pixelHeight;
+                if (y >= top && y <= bottom)
+                    SDL_RenderLine(renderer, left, y, right, y);
+            }
+        }
+
         // bad lines (from the current register values): raster $30-$f7 where the low 3 bits match YSCROLL,
         // with the display enabled. Shaded with a 20% overlay.
+        else
         {
             const u8* regs = m_raster.m_regs;
             if (regs[0x11] & 0x10)
@@ -653,7 +765,7 @@ void VicScreenWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
         {
             int px = (int)((m_mouseX - body.x) / pixelWidth);
             int py = (int)((m_mouseY - body.y) / pixelHeight);
-            if (px >= 0 && px < m_textureWidth && py >= 0 && py < m_textureHeight && m_mouseY >= m_clientArea.y + LINE_HEIGHT && m_mouseX < panelArea.x && m_mouseY < infoArea.y)
+            if (px >= 0 && px < m_textureWidth && py >= 0 && py < m_textureHeight && m_mouseY >= m_clientArea.y + LINE_HEIGHT && m_mouseX < panelArea.x && m_mouseY < spriteArea.y)
             {
                 hoverX = px;
                 hoverLine = py;
@@ -670,7 +782,7 @@ void VicScreenWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
         if (m_zoom != 0)
         {
             m_clientContentSize.x = (int)(body.w + panelWidth);
-            m_clientContentSize.y = (int)(body.h + infoHeight) + LINE_HEIGHT;
+            m_clientContentSize.y = (int)(body.h + spriteHeight + infoHeight) + LINE_HEIGHT;
         }
         else
         {
@@ -678,6 +790,44 @@ void VicScreenWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
             m_clientContentSize.y = 0;
         }
         LayoutScrollbars();
+    }
+
+    // sprite strip: what each sprite pointer currently points at. Disabled sprites are dimmed.
+    {
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_RenderFillRect(renderer, &spriteArea);
+        SDL_SetRenderDrawColor(renderer, 80, 80, 80, 255);
+        SDL_RenderLine(renderer, spriteArea.x, spriteArea.y, spriteArea.x + spriteArea.w, spriteArea.y);
+
+        const u8* regs = m_raster.m_regs;
+        int screenBase = (regs[0x18] >> 4) * 0x400;
+        int cellWidth = spriteCellWidth(spriteScale);
+        SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+        for (int i = 0; i < 8; i++)
+        {
+            bool enabled = (regs[0x15] & (1 << i)) != 0;
+            int dataAddr = m_raster.m_bank + m_raster.VicRead(screenBase + 0x3f8 + i) * 64;
+            int x = (int)spriteArea.x + 8 + i * cellWidth;
+            int y = (int)spriteArea.y + 4;
+
+            SDL_Color labelCol = enabled ? SDL_Color{ 255, 255, 255, 255 } : SDL_Color{ 110, 110, 110, 255 };
+            fr.RenderText(renderer, std::format("{} ${:04X}", i, dataAddr), labelCol, x, y, FontType::Text);
+
+            SDL_FRect dst{ (float)x, (float)(y + REG_ROW_HEIGHT), (float)(SPRITE_W * spriteScale), (float)(SPRITE_H * spriteScale) };
+            if (m_spriteTexture)
+            {
+                SDL_FRect src{ (float)(i * SPRITE_W), 0.0f, (float)SPRITE_W, (float)SPRITE_H };
+                SDL_RenderTexture(renderer, m_spriteTexture, &src, &dst);
+            }
+            if (!enabled)
+            {
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 160);
+                SDL_RenderFillRect(renderer, &dst);
+            }
+            SDL_SetRenderDrawColor(renderer, 80, 80, 80, 255);
+            SDL_FRect frame{ dst.x - 1, dst.y - 1, dst.w + 2, dst.h + 2 };
+            SDL_RenderRect(renderer, &frame);
+        }
     }
 
     // info panel: where the VIC is reading its data from, and what mode it is in
@@ -801,6 +951,7 @@ void VicScreenWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
     ir.DrawIcon(renderer, Icons::Pause, m_clientArea.x + 36, m_clientArea.y + 12);
     ir.DrawIcon(renderer, Icons::SingleStep, m_clientArea.x + 56, m_clientArea.y + 12);
     ir.DrawIcon(renderer, Icons::Zoom, m_clientArea.x + 76, m_clientArea.y + 12);
+    ir.DrawIcon(renderer, m_charGrid ? Icons::CharGrid : Icons::BadLines, m_clientArea.x + 96, m_clientArea.y + 12);
 
     if (highlight.m_highlight == WindowHighlightType::EmuScreenIcon && highlight.m_window == this)
         ir.DrawIcon(renderer, Icons::Highlight, highlight.m_area.x + 8, highlight.m_area.y + 8);
@@ -819,7 +970,7 @@ void VicScreenWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
         viceState.m_flags & 1 ? 'C' : 'c',
         s_zoomText[m_zoom],
         isPal ? "PAL" : "NTSC");
-    fr.RenderText(renderer, text, stateCol, m_clientArea.x + 100, m_clientArea.y, FontType::UI);
+    fr.RenderText(renderer, text, stateCol, m_clientArea.x + 120, m_clientArea.y, FontType::UI);
 }
 
 // Convert a mouse position to a raster line / pixel. Returns false if it is not over the visible image.
@@ -874,6 +1025,17 @@ bool VicScreenWindow::HandleEvent(SDL_Event* e)
 {
     switch (e->type)
     {
+        case SDL_EVENT_KEY_DOWN:
+            if (e->key.key == SDLK_F11)
+            {
+                if (e->key.mod & SDL_KMOD_SHIFT)
+                    ViceBridge::Instance().MultiStep();
+                else
+                    ViceBridge::Instance().SingleStep();
+                return true;
+            }
+            break;
+
         case SDL_EVENT_MOUSE_BUTTON_UP:
             m_dragMode = VicRasterPointMode::Off;
             break;
@@ -946,6 +1108,12 @@ bool VicScreenWindow::HandleEvent(SDL_Event* e)
                     case Icons::Zoom:
                         m_zoom = (m_zoom + 1) % 4;
                         m_clientContentOffset = { 0, 0 };
+                        break;
+
+                    // overlay toggle: bad lines <-> character grid
+                    case Icons::BadLines:
+                    case Icons::CharGrid:
+                        m_charGrid = !m_charGrid;
                         break;
 
                     default:
