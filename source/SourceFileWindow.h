@@ -98,7 +98,7 @@ protected:
     Vec2i m_mouseDownPos{ 0,0 };
 
     int m_lineNmbrOffset = 12*5;
-    int m_disOffset = 12*11;
+    int m_disOffset = 12*13;    // address, up to 3 bytes and the cycle count
     float m_breakpointFlash = 0.0f;
 };
 

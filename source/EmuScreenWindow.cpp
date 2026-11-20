@@ -260,7 +260,19 @@ bool EmuScreenWindow::HandleEvent(SDL_Event* e)
                 case SDL_SCANCODE_5:         row = 2; column = 0; break;
                 case SDL_SCANCODE_6:         row = 2; column = 3; break;
                 case SDL_SCANCODE_7:         row = 3; column = 0; break;
-                case SDL_SCANCODE_8:         row = 3; column = 3; break;
+                case SDL_SCANCODE_8:
+                    if (e->key.mod & SDL_KMOD_SHIFT)
+                    {
+                        // PC shift+8 is '*', which has its own key on the C64 (shift+8 there is '(')
+                        cancelShift = true;
+                        row = 6; column = 1;
+                    }
+                    else
+                    {
+                        row = 3; column = 3;
+                    }
+                    break;
+                case SDL_SCANCODE_KP_MULTIPLY: row = 6; column = 1; break;
                 case SDL_SCANCODE_9:         row = 4; column = 0; break;
 
                 case SDL_SCANCODE_LEFT:   r2 = 1; c2 = 7; row = 0; column = 2; break;
@@ -308,6 +320,27 @@ bool EmuScreenWindow::HandleEvent(SDL_Event* e)
             // Forward transitions only. The emulated machine handles key repeat.
             if (e->key.repeat)
                 return true;
+
+            // Release whatever C64 key this PC key pressed, even if the modifiers changed in between
+            // (e.g. shift let go before the 8 of a shift+8 '*'), so no C64 key is left held down.
+            int sc = (int)e->key.scancode;
+            if (sc >= 0 && sc < SDL_SCANCODE_COUNT)
+            {
+                auto& held = m_heldKeys[sc];
+                if (e->key.down)
+                {
+                    held = { true, row, column, r2, c2, cancelShift };
+                }
+                else if (held.m_held)
+                {
+                    row = held.m_row;
+                    column = held.m_column;
+                    r2 = held.m_r2;
+                    c2 = held.m_c2;
+                    cancelShift = held.m_cancelShift;
+                    held.m_held = false;
+                }
+            }
 
             auto* cmd = new VBC_Key;
             cmd->m_row = row;

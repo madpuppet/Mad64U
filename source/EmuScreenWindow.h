@@ -27,4 +27,16 @@ protected:
     float m_animTime = 0.0f;
     bool m_warpMode = false;
     bool m_shift = false;
+
+    // the C64 key each held PC key pressed, so the release goes to the same key
+    struct HeldKey
+    {
+        bool m_held = false;
+        int m_row = 0;
+        int m_column = 0;
+        int m_r2 = -1;
+        int m_c2 = -1;
+        bool m_cancelShift = false;
+    };
+    HeldKey m_heldKeys[SDL_SCANCODE_COUNT];
 };

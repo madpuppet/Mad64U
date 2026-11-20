@@ -8,6 +8,7 @@
 #include "SearchWindow.h"
 #include "Settings.h"
 #include "ViceBridge.h"
+#include "cpu6502.h"
 #include <filesystem>
 
 SourceFileWindow::SourceFileWindow(SourceFile* file) : m_sourceFile(file)
@@ -216,12 +217,19 @@ void SourceFileWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
                 u32 bytes = Min(line.m_addressLength, 3);
                 fr.RenderText(renderer, std::format("{:04x}", line.m_addressStart), tp.m_colors[(int)ThemeColor::TextOperator], lx, ly, FontType::Text);
                 lx += 50;
+                int cyclesX = lx + 3 * 24 + 4;     // after room for 3 bytes, so the counts line up
                 for (u32 b = 0; b < bytes; b++)
                 {
                     u8 byte = dis->m_info->m_memory[offsetAddress + b];
                     fr.RenderText(renderer, std::format("{:02x}", byte), tp.m_colors[(int)ThemeColor::TextComment], lx, ly, FontType::Text);
                     lx += 24;
                 }
+
+                // base cycle count, for lines that assembled to a single instruction (a known opcode of the same size).
+                // Unknown opcodes have cycles == 1 in the table.
+                auto op = Cpu6502::Instance().GetOpcode(dis->m_info->m_memory[offsetAddress]);
+                if (op->cycles != 1 && op->size == line.m_addressLength)
+                    fr.RenderText(renderer, std::format("{}", op->cycles), SDL_Color{ 190, 110, 255, 255 }, cyclesX, ly, FontType::Text);
                 ly += LINE_HEIGHT;
             }
             SDL_SetRenderClipRect(renderer, &oldArea);
@@ -364,8 +372,9 @@ bool SourceFileWindow::Tick()
 
 void SourceFileWindow::CalcXYFromClientPos(int x, int y, int& col, int& row)
 {
-    bool showLineNumbers = true;
-    bool showDisassembly = true;
+    // must match the gutters Paint() draws
+    bool showLineNumbers = Settings::Instance().GetBool(SETTING_SHOW_LINES);
+    bool showDisassembly = Settings::Instance().GetBool(SETTING_SHOW_BYTES);
 
     auto &fr = FontRenderer::Instance();
     int xBase = m_clientArea.x - m_clientContentOffset.x + BORDER_MARGIN;
