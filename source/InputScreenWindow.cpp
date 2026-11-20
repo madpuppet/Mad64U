@@ -82,7 +82,59 @@ static const C64Key s_keys[] =
 
 #define KEYBOARD_UNITS_W 18.25f
 #define KEYBOARD_UNITS_H 5.0f
-#define KEY_HEIGHT_SCALE 0.85f
+#define KEY_HEIGHT_SCALE 1.25f      // keys are taller than wide, to fit the label above the SHIFT / C= characters
+
+// PETSCII -> screen code (the char ROM index) for printable characters; false for control codes
+static bool PetsciiToScreen(u8 p, int& screen)
+{
+    if (p >= 0x20 && p <= 0x3f) screen = p;
+    else if (p >= 0x40 && p <= 0x5f) screen = p - 0x40;
+    else if (p >= 0x60 && p <= 0x7f) screen = p - 0x20;
+    else if (p >= 0xa0 && p <= 0xbf) screen = p - 0x40;
+    else if (p >= 0xc0 && p <= 0xdf) screen = p - 0x80;
+    else if (p >= 0xe0 && p <= 0xfe) screen = p - 0x80;
+    else if (p == 0xff) screen = 0x5e;
+    else return false;
+    return true;
+}
+
+// PETSCII function key codes -> function key number (1-8), 0 if not a function key
+static int PetsciiToFunctionKey(u8 p)
+{
+    static const int fkeys[8] = { 1, 3, 5, 7, 2, 4, 6, 8 };    // $85-$8c
+    return (p >= 0x85 && p <= 0x8c) ? fkeys[p - 0x85] : 0;
+}
+
+// width of a key code as drawn by DrawKeyCode, in characters
+static int KeyCodeChars(u8 p)
+{
+    return PetsciiToFunctionKey(p) ? 2 : 1;
+}
+
+// PETSCII colour control codes -> C64 colour index, -1 if not a colour code
+static int PetsciiToColour(u8 p)
+{
+    switch (p)
+    {
+        case 0x90: return 0;    // black
+        case 0x05: return 1;    // white
+        case 0x1c: return 2;    // red
+        case 0x9f: return 3;    // cyan
+        case 0x9c: return 4;    // purple
+        case 0x1e: return 5;    // green
+        case 0x1f: return 6;    // blue
+        case 0x9e: return 7;    // yellow
+        case 0x81: return 8;    // orange
+        case 0x95: return 9;    // brown
+        case 0x96: return 10;   // light red
+        case 0x97: return 11;   // dark grey
+        case 0x98: return 12;   // grey
+        case 0x99: return 13;   // light green
+        case 0x9a: return 14;   // light blue
+        case 0x9b: return 15;   // light grey
+    }
+    return -1;
+}
 
 // names of the key at each matrix position, [row][col]
 static const char* s_matrixNames[8][8] =
@@ -128,6 +180,80 @@ InputScreenWindow::InputScreenWindow()
 
 InputScreenWindow::~InputScreenWindow()
 {
+    if (m_glyphTexture)
+        SDL_DestroyTexture(m_glyphTexture);
+}
+
+// (re)build the glyph texture when the renderer or the character ROM changes
+void InputScreenWindow::UpdateGlyphTexture(SDL_Renderer* renderer)
+{
+    if (m_glyphTexture && renderer == m_glyphRenderer && memcmp(m_glyphRom, m_charRom, sizeof(m_glyphRom)) == 0)
+        return;
+
+    if (m_glyphTexture)
+        SDL_DestroyTexture(m_glyphTexture);
+    m_glyphRenderer = renderer;
+    memcpy(m_glyphRom, m_charRom, sizeof(m_glyphRom));
+
+    // 16 x 8 characters of 8x8 pixels, bit 7 of each byte is the leftmost pixel
+    static u32 pixels[128 * 64];
+    for (int ch = 0; ch < 128; ch++)
+    {
+        int cx = (ch & 15) * 8;
+        int cy = (ch >> 4) * 8;
+        for (int y = 0; y < 8; y++)
+        {
+            u8 bits = m_glyphRom[ch * 8 + y];
+            for (int x = 0; x < 8; x++)
+                pixels[(cy + y) * 128 + cx + x] = (bits & (0x80 >> x)) ? 0xffffffff : 0x00000000;
+        }
+    }
+
+    m_glyphTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, 128, 64);
+    if (!m_glyphTexture)
+        return;
+    SDL_UpdateTexture(m_glyphTexture, nullptr, pixels, 128 * 4);
+    SDL_SetTextureBlendMode(m_glyphTexture, SDL_BLENDMODE_BLEND);
+    SDL_SetTextureScaleMode(m_glyphTexture, SDL_SCALEMODE_NEAREST);
+}
+
+// what a key types with a modifier: a printable character as its C64 glyph, a function key as "Fn" (KeyCodeChars
+// wide), a colour code as a colour swatch, anything else (cursor / control codes) as nothing
+void InputScreenWindow::DrawKeyCode(SDL_Renderer* renderer, u8 petscii, float x, float y, float size, const SDL_Color& col)
+{
+    auto glyph = [&](int screen, float gx)
+        {
+            if (!m_glyphTexture)
+                return;
+            SDL_FRect src{ (float)((screen & 15) * 8), (float)((screen >> 4) * 8), 8.0f, 8.0f };
+            SDL_FRect dst{ gx, y, size, size };
+            SDL_SetTextureColorMod(m_glyphTexture, col.r, col.g, col.b);
+            SDL_RenderTexture(renderer, m_glyphTexture, &src, &dst);
+        };
+
+    int screen;
+    if (PetsciiToScreen(petscii, screen))
+    {
+        glyph(screen, x);
+        return;
+    }
+
+    int fkey = PetsciiToFunctionKey(petscii);
+    if (fkey)
+    {
+        glyph(0x06, x);                 // 'F'
+        glyph(0x30 + fkey, x + size);   // digit
+        return;
+    }
+
+    int colour = PetsciiToColour(petscii);
+    if (colour >= 0)
+    {
+        u32 argb = C64Palette[colour];
+        SDL_FRect swatch{ x + 1, y + 1, size - 2, size - 2 };
+        FillRect(renderer, swatch, SDL_Color{ (u8)(argb >> 16), (u8)(argb >> 8), (u8)argb, 255 });
+        OutlineRect(renderer, swatch, col);
+    }
 }
 
 void InputScreenWindow::MessageChild(WindowLayout* layout, struct WindowMessageStruct& msg)
@@ -170,6 +296,16 @@ static bool KeyHeld(const InputState& state, int row, int col)
 void InputScreenWindow::DrawKeyboard(SDL_Renderer* renderer, float x, float y, float unit)
 {
     float keyH = unit * KEY_HEIGHT_SCALE;
+
+    // the C= and SHIFT characters along the bottom of each key, like the key fronts: C= on the left, SHIFT on the right.
+    // Holding a modifier highlights the characters it selects.
+    float glyph = unit >= 36.0f ? 16.0f : 8.0f;
+    bool shiftHeld = KeyHeld(m_state, 1, 7) || KeyHeld(m_state, 6, 4);
+    bool cbmHeld = KeyHeld(m_state, 7, 5);
+    SDL_Color glyphCol{ 200, 200, 200, 255 };
+    SDL_Color activeCol{ 255, 220, 80, 255 };
+    SDL_Color dimCol{ 100, 100, 100, 255 };
+
     for (auto& key : s_keys)
     {
         SDL_FRect r{ x + key.m_x * unit + 1, y + key.m_y * keyH + 1, key.m_w * unit - 2, keyH - 2 };
@@ -179,9 +315,30 @@ void InputScreenWindow::DrawKeyboard(SDL_Renderer* renderer, float x, float y, f
         FillRect(renderer, r, held ? s_onFill : inMatrix ? s_offFill : SDL_Color{ 35, 35, 35, 255 });
         OutlineRect(renderer, r, s_edge);
 
+        // label in the top part of the key
+        SDL_FRect labelArea{ r.x, r.y, r.w, r.h - glyph - 2 };
         SDL_Color textCol = held ? SDL_Color{ 0, 0, 0, 255 } : inMatrix ? SDL_Color{ 220, 220, 220, 255 } : s_offCol;
-        if (!TextInRect(renderer, key.m_label, textCol, r, false))
-            TextInRect(renderer, key.m_short, textCol, r, true);
+        if (!TextInRect(renderer, key.m_label, textCol, labelArea, false))
+            TextInRect(renderer, key.m_short, textCol, labelArea, true);
+
+        if (inMatrix && m_haveKeyTables)
+        {
+            int idx = key.m_row * 8 + key.m_col;
+            float gy = r.y + r.h - glyph - 3;
+            auto colFor = [&](bool active, bool otherActive)
+                {
+                    if (held)
+                        return SDL_Color{ 0, 0, 0, 255 };
+                    return active ? activeCol : otherActive ? dimCol : glyphCol;
+                };
+            u8 cbmCode = m_keyTables[2][idx];
+            u8 shiftCode = m_keyTables[1][idx];
+
+            // C= and SHIFT both give F2 / F4 / F6 / F8 on the function keys: show that once, as SHIFT
+            if (cbmCode != shiftCode || !PetsciiToFunctionKey(shiftCode))
+                DrawKeyCode(renderer, cbmCode, r.x + 3, gy, glyph, colFor(cbmHeld, shiftHeld));
+            DrawKeyCode(renderer, shiftCode, r.x + r.w - glyph * KeyCodeChars(shiftCode) - 3, gy, glyph, colFor(shiftHeld, cbmHeld));
+        }
     }
 }
 
@@ -296,7 +453,12 @@ float InputScreenWindow::DrawPaddles(SDL_Renderer* renderer, float x, float y)
 void InputScreenWindow::Paint(SDL_Renderer* renderer, const Recti& dirtyArea)
 {
     if (ViceBridge::Exists())
-        ViceBridge::Instance().GetInputState(m_state, m_stateVersion);
+    {
+        auto& vb = ViceBridge::Instance();
+        vb.GetInputState(m_state, m_stateVersion);
+        m_haveKeyTables = vb.GetKeyboardTables(&m_keyTables[0][0], m_charRom);
+        UpdateGlyphTexture(renderer);
+    }
 
     auto& wm = WindowManager::Instance();
     auto& tp = Application::Instance().GetThemeProperties();

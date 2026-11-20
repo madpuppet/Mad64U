@@ -199,9 +199,11 @@ bool EmuScreenWindow::HandleEvent(SDL_Event* e)
         {
             m_shift = (e->key.mod & SDL_KMOD_SHIFT);
 
-            if (e->key.mod & SDL_KMOD_LCTRL)
+            // Ctrl+W (warp) and Ctrl+J (swap joystick port) are MAD64 shortcuts; every other Ctrl combination goes to
+            // the C64, as left Ctrl is the C64's CTRL key
+            if ((e->key.mod & SDL_KMOD_LCTRL) && (e->key.scancode == SDL_SCANCODE_W || e->key.scancode == SDL_SCANCODE_J))
             {
-                if (e->type == SDL_EVENT_KEY_DOWN)
+                if (e->type == SDL_EVENT_KEY_DOWN && !e->key.repeat)
                 {
                     if (e->key.scancode == SDL_SCANCODE_W)
                     {
@@ -210,7 +212,7 @@ bool EmuScreenWindow::HandleEvent(SDL_Event* e)
                         cmd->m_enable = m_warpMode;
                         ViceBridge::Instance().SendMad2Vice(cmd);
                     }
-                    else if (e->key.scancode == SDL_SCANCODE_J)
+                    else
                     {
                         // swap which control port the controller drives
                         Application::Instance().Vice_SetJoystickPort(3 - ViceBridge::Instance().GetJoystickPort());
@@ -224,6 +226,17 @@ bool EmuScreenWindow::HandleEvent(SDL_Event* e)
             int row = 0;
             int column = 0;
             bool cancelShift = false;
+
+            // Keys are mapped by the character printed on a (US) PC keyboard rather than by position, so where shift
+            // gives a different character on each machine the C64 key that types it is used instead:
+            //  - c64(row, col)              the C64 key on its own
+            //  - c64Unshifted(row, col)     with the C64's shift released (the PC shift is held for a C64 unshifted key)
+            //  - c64Shifted(row, col)       with the C64's left shift added (a PC unshifted key types a C64 shifted one)
+            bool shifted = (e->key.mod & SDL_KMOD_SHIFT) != 0;
+            auto c64 = [&](int r, int c) { row = r; column = c; };
+            auto c64Unshifted = [&](int r, int c) { row = r; column = c; cancelShift = true; };
+            auto c64Shifted = [&](int r, int c) { row = r; column = c; r2 = 1; c2 = 7; };
+
             switch (e->key.scancode)
             {
                 case SDL_SCANCODE_A:         row = 1; column = 2; break;
@@ -252,28 +265,39 @@ bool EmuScreenWindow::HandleEvent(SDL_Event* e)
                 case SDL_SCANCODE_X:         row = 2; column = 7; break;
                 case SDL_SCANCODE_Y:         row = 3; column = 1; break;
                 case SDL_SCANCODE_Z:         row = 1; column = 4; break;
-                case SDL_SCANCODE_0:         row = 4; column = 3; break;
+                // number row. Shift+1/3/4/5 give the same symbol on both; the rest differ
                 case SDL_SCANCODE_1:         row = 7; column = 0; break;
-                case SDL_SCANCODE_2:         row = 7; column = 3; break;
+                case SDL_SCANCODE_2:         if (shifted) c64Unshifted(5, 6); else c64(7, 3); break;    // '@' has its own key
                 case SDL_SCANCODE_3:         row = 1; column = 0; break;
                 case SDL_SCANCODE_4:         row = 1; column = 3; break;
                 case SDL_SCANCODE_5:         row = 2; column = 0; break;
-                case SDL_SCANCODE_6:         row = 2; column = 3; break;
-                case SDL_SCANCODE_7:         row = 3; column = 0; break;
-                case SDL_SCANCODE_8:
-                    if (e->key.mod & SDL_KMOD_SHIFT)
-                    {
-                        // PC shift+8 is '*', which has its own key on the C64 (shift+8 there is '(')
-                        cancelShift = true;
-                        row = 6; column = 1;
-                    }
-                    else
-                    {
-                        row = 3; column = 3;
-                    }
-                    break;
-                case SDL_SCANCODE_KP_MULTIPLY: row = 6; column = 1; break;
-                case SDL_SCANCODE_9:         row = 4; column = 0; break;
+                case SDL_SCANCODE_6:         if (shifted) c64Unshifted(6, 6); else c64(2, 3); break;    // '^' is the up arrow key
+                case SDL_SCANCODE_7:         if (shifted) c64(2, 3); else c64(3, 0); break;             // '&' is C64 shift+6
+                case SDL_SCANCODE_8:         if (shifted) c64Unshifted(6, 1); else c64(3, 3); break;    // '*' has its own key
+                case SDL_SCANCODE_9:         if (shifted) c64(3, 3); else c64(4, 0); break;             // '(' is C64 shift+8
+                case SDL_SCANCODE_0:         if (shifted) c64(4, 0); else c64(4, 3); break;             // ')' is C64 shift+9
+
+                // numeric keypad
+                case SDL_SCANCODE_KP_0:      c64(4, 3); break;
+                case SDL_SCANCODE_KP_1:      c64(7, 0); break;
+                case SDL_SCANCODE_KP_2:      c64(7, 3); break;
+                case SDL_SCANCODE_KP_3:      c64(1, 0); break;
+                case SDL_SCANCODE_KP_4:      c64(1, 3); break;
+                case SDL_SCANCODE_KP_5:      c64(2, 0); break;
+                case SDL_SCANCODE_KP_6:      c64(2, 3); break;
+                case SDL_SCANCODE_KP_7:      c64(3, 0); break;
+                case SDL_SCANCODE_KP_8:      c64(3, 3); break;
+                case SDL_SCANCODE_KP_9:      c64(4, 0); break;
+                case SDL_SCANCODE_KP_PERIOD: c64(5, 4); break;
+                case SDL_SCANCODE_KP_PLUS:   c64(5, 0); break;
+                case SDL_SCANCODE_KP_MINUS:  c64(5, 3); break;
+                case SDL_SCANCODE_KP_MULTIPLY: c64(6, 1); break;
+                case SDL_SCANCODE_KP_ENTER:  c64(0, 1); break;
+
+                // editing keys
+                case SDL_SCANCODE_HOME:      c64(6, 3); break;          // CLR/HOME (shift gives CLR)
+                case SDL_SCANCODE_DELETE:    c64(0, 0); break;          // DEL (the C64 has no forward delete)
+                case SDL_SCANCODE_INSERT:    c64Shifted(0, 0); break;   // INST is shift+DEL
 
                 case SDL_SCANCODE_LEFT:   r2 = 1; c2 = 7; row = 0; column = 2; break;
                 case SDL_SCANCODE_RIGHT: row = 0; column = 2; break;
@@ -286,6 +310,8 @@ bool EmuScreenWindow::HandleEvent(SDL_Event* e)
                 case SDL_SCANCODE_ESCAPE:    row = 7; column = 7; break; // RUN/STOP
                 case SDL_SCANCODE_LSHIFT:    row = 1; column = 7; break;
                 case SDL_SCANCODE_RSHIFT:    row = 6; column = 4; break;
+                case SDL_SCANCODE_LCTRL:     row = 7; column = 2; break; // CTRL
+                case SDL_SCANCODE_LALT:      row = 7; column = 5; break; // C=
                 case SDL_SCANCODE_F1:        row = 0; column = 4; break;
                 case SDL_SCANCODE_F2:        r2 = 1; c2 = 7; row = 0; column = 4; break;
                 case SDL_SCANCODE_F3:        row = 0; column = 5; break;
@@ -297,6 +323,8 @@ bool EmuScreenWindow::HandleEvent(SDL_Event* e)
 
                 case SDL_SCANCODE_COMMA:     row = 5; column = 7; break;
                 case SDL_SCANCODE_PERIOD:    row = 5; column = 4; break;
+                case SDL_SCANCODE_SLASH:     row = 6; column = 7; break; // shift gives '?' on both
+                case SDL_SCANCODE_KP_DIVIDE: row = 6; column = 7; break;
                 case SDL_SCANCODE_EQUALS:
                 {
                     if (e->key.mod & SDL_KMOD_SHIFT)
@@ -311,7 +339,15 @@ bool EmuScreenWindow::HandleEvent(SDL_Event* e)
                     }
                 }
                 break;
-                case SDL_SCANCODE_MINUS:     row = 5; column = 3; break;
+                case SDL_SCANCODE_MINUS:     if (shifted) c64Unshifted(7, 1); else c64(5, 3); break;    // '_' is PETSCII's left arrow
+
+                // punctuation
+                case SDL_SCANCODE_SEMICOLON: if (shifted) c64Unshifted(5, 5); else c64(6, 2); break;    // ':' has its own key
+                case SDL_SCANCODE_APOSTROPHE: if (shifted) c64(7, 3); else c64Shifted(3, 0); break;     // '"' is shift+2, ''' is shift+7
+                case SDL_SCANCODE_LEFTBRACKET: c64Shifted(5, 5); break;     // '[' is shift+':'
+                case SDL_SCANCODE_RIGHTBRACKET: c64Shifted(6, 2); break;    // ']' is shift+';'
+                case SDL_SCANCODE_BACKSLASH: c64(6, 0); break;              // PETSCII has the pound sign where ASCII has '\'
+                case SDL_SCANCODE_GRAVE:     c64(7, 1); break;              // left arrow
 
                 default:
                     return false;

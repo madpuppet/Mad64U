@@ -25,6 +25,7 @@ extern "C" void helper_get_vicii_memory(unsigned char* ram, unsigned char* colou
 extern "C" void helper_get_cpu_memory(unsigned char* mem);
 extern "C" void helper_set_joystick(int port, int value);
 extern "C" void helper_cold_reset();
+extern "C" int helper_get_keyboard_tables(unsigned char* tables, unsigned char* charRom);
 extern "C" int helper_get_input_state(unsigned char* keyMatrix, unsigned char* joystick, unsigned char* potx, unsigned char* poty, char* device, int deviceLen);
 
 //==================================================================================================================================
@@ -478,6 +479,12 @@ void ViceBridge::CaptureInputState()
         return;
     m_inputState = state;
     m_inputStateVersion++;
+}
+
+bool ViceBridge::GetKeyboardTables(u8* tables, u8* charRom)
+{
+    // ROM contents only change when a different ROM is loaded, so reading them from this thread is safe enough
+    return helper_get_keyboard_tables(tables, charRom) != 0;
 }
 
 bool ViceBridge::GetInputState(InputState& state, u32& version)

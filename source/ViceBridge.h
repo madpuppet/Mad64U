@@ -411,6 +411,10 @@ public:
     bool GetInputState(InputState& state, u32& version);
     u32 GetInputStateVersion() { return m_inputStateVersion; }
 
+    // the KERNAL's 4 keyboard decode tables (normal, SHIFT, C=, CTRL; 64 bytes each, indexed by matrix
+    // position) and the 4k character ROM. Returns false if the tables couldn't be found.
+    bool GetKeyboardTables(u8* tables, u8* charRom);
+
     // general state info
     ViceState GetViceState();
     u8* GetRam();

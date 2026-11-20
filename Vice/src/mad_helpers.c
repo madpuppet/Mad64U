@@ -447,3 +447,28 @@ int helper_get_input_state(unsigned char *keyMatrix, unsigned char *joystick, un
     }
     return mask;
 }
+
+/* MAD64: what each key types, for the InputScreen keyboard.
+   tables:  4 x 64 bytes, the KERNAL's keyboard decode tables (normal, SHIFT, C=, CTRL), indexed by
+            matrix position (port A bit * 8 + port B bit). Read through the pointer table at $EB79, so a
+            replacement KERNAL's own tables are used. Returns 0 (and leaves tables alone) if they can't be found.
+   charRom: 4k, the character ROM */
+int helper_get_keyboard_tables(unsigned char *tables, unsigned char *charRom)
+{
+    extern uint8_t c64memrom_kernal64_rom[];
+    extern uint8_t mem_chargen_rom[];
+    int t;
+
+    memcpy(charRom, mem_chargen_rom, 0x1000);
+
+    for (t = 0; t < 4; t++) {
+        unsigned int ptr = c64memrom_kernal64_rom[0xeb79 - 0xe000 + t * 2] | (c64memrom_kernal64_rom[0xeb79 - 0xe000 + t * 2 + 1] << 8);
+        if (ptr < 0xe000 || ptr > 0x10000 - 64)
+            return 0;
+    }
+    for (t = 0; t < 4; t++) {
+        unsigned int ptr = c64memrom_kernal64_rom[0xeb79 - 0xe000 + t * 2] | (c64memrom_kernal64_rom[0xeb79 - 0xe000 + t * 2 + 1] << 8);
+        memcpy(tables + t * 64, &c64memrom_kernal64_rom[ptr - 0xe000], 64);
+    }
+    return 1;
+}
